@@ -1,4 +1,4 @@
-name: tensorflow
+name: thesis-pilot
 channels:
   - apple
   - conda-forge
@@ -20,6 +20,10 @@ dependencies:
     - flask
     - boto3
     - ipykernel
+    - click
+    - Sphinx
+    - coverage
+    - flake8
     - pip:
         - tensorflow-macos
         - tensorflow-metal
