@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='src',
+    name='thesis_pilot',
     packages=find_packages(),
     version='0.1.0',
     description='Preliminary work for my control systems with RL MSc thesis',

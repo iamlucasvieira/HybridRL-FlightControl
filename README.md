@@ -4,13 +4,14 @@ thesis_pilot
 Preliminary work for my control systems with RL MSc thesis
 
 ## Installation
-1. Create a conda environment\
+1. Create a conda environment \
 ```conda env create -f environmnet.yml -n thesis-pilot``` 
-2. Activete the environment
+2. Activate the environment\
 ```conda activate thesis-pilot```
 3. Add the conda environment to Jupiter kernel \
-```python3 -m ipykernel install --user --name tesis-pilot --display-name "Python 3.9 (thesis
-_pilot)```
+```python3 -m ipykernel install --user --name tesis-pilot --display-name "Python 3.9 (thesis_pilot)```
+4. Install current package \
+```conda develop .```
 
 Project Organization
 ------------

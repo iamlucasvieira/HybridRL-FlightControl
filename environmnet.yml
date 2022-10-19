@@ -2,6 +2,7 @@ name: thesis-pilot
 channels:
   - apple
   - conda-forge
+  - pytorch-nightly
 dependencies:
     - python=3.9
     - pip>=19.0
@@ -14,6 +15,9 @@ dependencies:
     - matplotlib
     - pillow
     - tqdm
+    - pytorch
+    - torchvision
+    - torchaudio
     - requests
     - h5py
     - pyyaml
@@ -27,7 +31,7 @@ dependencies:
     - pip:
         - tensorflow-macos
         - tensorflow-metal
+        - gym[classic_control]
         - bayesian-optimization
-        - gym
         - kaggle
         
