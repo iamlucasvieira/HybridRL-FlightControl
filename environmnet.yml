@@ -6,32 +6,32 @@ channels:
 dependencies:
     - python=3.9
     - pip>=19.0
-    - jupyter
+#    - jupyter
     - tensorflow-deps
-    - scikit-learn
-    - scipy
-    - pandas
-    - pandas-datareader
-    - matplotlib
-    - pillow
-    - tqdm
+#    - scikit-learn
+#    - scipy
+#    - pandas
+#    - pandas-datareader
+#    - matplotlib
+#    - pillow
+#    - tqdm
     - pytorch
     - torchvision
     - torchaudio
-    - requests
-    - h5py
-    - pyyaml
-    - flask
-    - boto3
-    - ipykernel
-    - click
-    - Sphinx
-    - coverage
-    - flake8
+#    - requests
+#    - h5py
+#    - pyyaml
+#    - flask
+#    - boto3
+#    - ipykernel
+#    - click
+#    - Sphinx
+#    - coverage
+#    - flake8
     - pip:
         - tensorflow-macos
         - tensorflow-metal
-        - gym[classic_control]
-        - bayesian-optimization
-        - kaggle
+#        - gym[classic_control]
+#        - bayesian-optimization
+#        - kaggle
         
