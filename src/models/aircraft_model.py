@@ -9,7 +9,7 @@ from data.load_aircraft_data import load_aircraft, AircraftData
 @rich.repr.auto
 class Aircraft:
 
-    def __init__(self, filename: str, auto_build: bool = True) -> None:
+    def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, symmetric: bool = True) -> None:
         """Initialize aircraft model.
 
         Args:
@@ -18,24 +18,29 @@ class Aircraft:
         """
         self.filename = filename
         self.data = load_aircraft(filename)
-        self.sym = None
-        self.asym = None
+        self.symmetric = symmetric
+        self.ss = None
 
         if auto_build:
             self.build_state_space()
 
     def build_state_space(self) -> None:
         """Build state space model."""
-        if self.data.symmetric:
-            self.sym = Symmetric(self.data)
-        if self.data.asymmetric:
-            self.asym = Asymmetric(self.data)
+        has_symmetric_data = self.data.symmetric is not None
+        has_asymmetric_data = self.data.asymmetric is not None
+
+        if self.symmetric and has_symmetric_data:
+            self.ss = Symmetric(self.data)
+        elif not self.symmetric and has_asymmetric_data:
+            self.ss = Asymmetric(self.data)
+        else:
+            raise ValueError(f"No {'symmetric' if self.symmetric else 'asymmetric'} "
+                             f"data provided in file {self.filename}.")
 
     def __rich_repr__(self) -> rich.repr.Result:
         """Representation of the state space model."""
         yield "Aircraft", self.filename
-        yield "Symmetric", self.sym is not None
-        yield "Asymmetric", self.asym is not None
+        yield "Symmetric" if self.symmetric else "Asymmetric"
 
 
 class StateSpace(ct.StateSpace):
