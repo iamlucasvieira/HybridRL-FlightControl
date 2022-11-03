@@ -78,10 +78,10 @@ class AircraftData(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    @validator('symmetric', always=True)
+    @validator('asymmetric', always=True)
     def check_type(cls, v: AsymmetricDerivative, values: dict) -> AsymmetricDerivative:
         """Required either symmetric or asymmetric variables"""
-        if not values.get('asymmetric') and not v:
+        if not values.get('symmetric') and not v:
             raise ValueError('Either symmetric or asymmetric must be provided.')
         return v
 
