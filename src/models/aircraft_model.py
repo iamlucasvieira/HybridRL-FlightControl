@@ -1,9 +1,12 @@
 """Class that creates LTI aircraft model."""
+import control as ct
 import numpy as np
-from data.load_aircraft_data import load_aircraft, AircraftData
 import rich.repr
 
+from data.load_aircraft_data import load_aircraft, AircraftData
 
+
+@rich.repr.auto
 class Aircraft:
 
     def __init__(self, filename: str) -> None:
@@ -18,11 +21,14 @@ class Aircraft:
         if self.data.asymmetric:
             self.asym = Asymmetric(self.data)
 
-        # self.asym = Asymmetric(self.data.asymmetric)
+    def __rich_repr__(self) -> rich.repr.Result:
+        """Representation of the state space model."""
+        yield "Aircraft", self.filename
+        yield "Symmetric", self.sym is not None
+        yield "Asymmetric", self.asym is not None
 
 
-@rich.repr.auto
-class StateSpace:
+class StateSpace(ct.StateSpace):
     a: np.ndarray
     b: np.ndarray
     x_names: list[str]
@@ -35,16 +41,12 @@ class StateSpace:
         self.x_names = x_names
         self.u_names = u_names
 
-    # def __repr__(self):
-    #     return self.__rich_repr__()
-
-    def __rich_repr__(self) -> rich.repr.Result:
-        """Representation of the state space model."""
-        yield "x_dot = Ax + Bu"
-        yield "x", self.x_names
-        yield "u", self.u_names
-        yield "A", self.a
-        yield "B", self.b
+        c = np.eye(a.shape[0])
+        d = np.zeros((a.shape[0], b.shape[1]))
+        super().__init__(a, b, c, d)
+        self.set_inputs(u_names)
+        self.set_outputs(x_names)
+        self.set_states(x_names)
 
 
 class Symmetric(StateSpace):
@@ -63,7 +65,8 @@ class Symmetric(StateSpace):
 
         super(Symmetric, self).__init__(a, b, x_names, u_names)
 
-    def build_a(self, data: AircraftData) -> np.ndarray:
+    @staticmethod
+    def build_a(data: AircraftData) -> np.ndarray:
         """Build A matrix"""
         # Load variables
         v = data.v
@@ -76,7 +79,7 @@ class Symmetric(StateSpace):
         cz = data.symmetric.cz
         cm = data.symmetric.cm
 
-        # Declare repetitive calualtions
+        # Declare repetitive calculations
         v_c = v / c_bar  # v/c_bar
         mu_c_cz_a = 2 * mu_c - cz.a_dot
         cm_a_mu_c = cm.a_dot / (2 * mu_c - cz.a_dot)
@@ -105,7 +108,8 @@ class Symmetric(StateSpace):
 
         return a
 
-    def build_b(self, data: AircraftData) -> np.ndarray:
+    @staticmethod
+    def build_b(data: AircraftData) -> np.ndarray:
         """Build B matrix"""
         # Load variables
         v = data.v
@@ -118,7 +122,7 @@ class Symmetric(StateSpace):
         cz = data.symmetric.cz
         cm = data.symmetric.cm
 
-        # Declare repetitive calualtions
+        # Declare repetitive calculations
         v_c = v / c_bar  # v/c_bar
         mu_c_cz_a = 2 * mu_c - cz.a_dot
 
@@ -152,7 +156,8 @@ class Asymmetric(StateSpace):
 
         super(Asymmetric, self).__init__(a, b, x_names, u_names)
 
-    def build_a(self, data: AircraftData) -> np.ndarray:
+    @staticmethod
+    def build_a(data: AircraftData) -> np.ndarray:
         """Build A matrix"""
         # Load variables
         v = data.v
@@ -168,7 +173,7 @@ class Asymmetric(StateSpace):
         cl = data.asymmetric.cl
         cn = data.asymmetric.cn
 
-        # Declare repetitive calualtions
+        # Declare repetitive calculations
         v_b = v / b
         mu_b_k = 4 * mu_b * (kx_2 * kz_2 - kxz ** 2)
 
@@ -194,7 +199,8 @@ class Asymmetric(StateSpace):
 
         return a
 
-    def build_b(self, data: AircraftData) -> np.ndarray:
+    @staticmethod
+    def build_b(data: AircraftData) -> np.ndarray:
         """Build B matrix."""
         # Load variables
         v = data.v
@@ -208,7 +214,7 @@ class Asymmetric(StateSpace):
         cl = data.asymmetric.cl
         cn = data.asymmetric.cn
 
-        # Declare repetitive calualtions
+        # Declare repetitive calculations
         v_b = v / mu_b
         mu_b_k = 4 * mu_b * (kx_2 * kz_2 - kxz ** 2)
 
@@ -228,7 +234,3 @@ class Asymmetric(StateSpace):
         ])
 
         return b
-
-
-acft = Aircraft('citation.yaml')
-print(acft.asym)
