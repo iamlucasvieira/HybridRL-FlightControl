@@ -9,13 +9,23 @@ from data.load_aircraft_data import load_aircraft, AircraftData
 @rich.repr.auto
 class Aircraft:
 
-    def __init__(self, filename: str) -> None:
-        """Initialize aircraft model."""
+    def __init__(self, filename: str, auto_build: bool = True) -> None:
+        """Initialize aircraft model.
+
+        Args:
+            filename (str): Aircraft data filename.
+            auto_build (bool, optional): Automatically build state space model. Defaults to True.
+        """
         self.filename = filename
         self.data = load_aircraft(filename)
         self.sym = None
         self.asym = None
 
+        if auto_build:
+            self.build_state_space()
+
+    def build_state_space(self) -> None:
+        """Build state space model."""
         if self.data.symmetric:
             self.sym = Symmetric(self.data)
         if self.data.asymmetric:

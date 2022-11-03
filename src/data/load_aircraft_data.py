@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ValidationError, validator, Extra
+from pydantic import BaseModel, validator, Extra
 import yaml
 from helpers.paths import Path
 from typing import Optional
