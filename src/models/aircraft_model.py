@@ -9,17 +9,23 @@ from data.load_aircraft_data import load_aircraft, AircraftData
 @rich.repr.auto
 class Aircraft:
 
-    def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, symmetric: bool = True) -> None:
+    def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, symmetric: bool = True,
+                 dt: float = 0.01) -> None:
         """Initialize aircraft model.
 
         Args:
             filename (str): Aircraft data filename.
             auto_build (bool, optional): Automatically build state space model. Defaults to True.
+            symmetric (bool, optional): Use symmetric model. Defaults to True.
+            dt (float, optional): Time step. Defaults to 1e-3.
+
         """
         self.filename = filename
         self.data = load_aircraft(filename)
         self.symmetric = symmetric
+        self.dt = dt
         self.ss = None
+        self.current_state = None
 
         if auto_build:
             self.build_state_space()
@@ -36,6 +42,26 @@ class Aircraft:
         else:
             raise ValueError(f"No {'symmetric' if self.symmetric else 'asymmetric'} "
                              f"data provided in file {self.filename}.")
+
+        self.current_state = np.zeros((self.ss.nstates, 1))
+
+
+    def response(self, u: np.ndarray, x: np.ndarray = None) -> np.ndarray:
+        """Return the response of the aircraft model to the input u."""
+        u = np.array(u).reshape(self.ss.ninputs, 1)
+
+        if x is None:
+            x = self.current_state
+
+        dx = self.ss.A @ x + self.ss.B @ u
+
+        current_state = x + dx * self.dt
+        self.current_state = current_state
+        return current_state
+
+    def set_initial_state(self, inital_state: np.ndarray) -> None:
+        """Set initial state of the aircraft."""
+        self.current_state = inital_state.reshape(self.ss.nstates, 1)
 
     def __rich_repr__(self) -> rich.repr.Result:
         """Representation of the state space model."""
