@@ -5,6 +5,7 @@ import numpy as np
 
 from models.aircraft_model import Aircraft
 
+
 # def reward_signal():
 #     pass
 
@@ -21,7 +22,7 @@ class AircraftEnv(gym.Env):
         self.dt = dt
 
         self.action_space = spaces.Box(low=-1, high=1,
-                                            shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
+                                       shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
 
         self.observation_space = spaces.Box(low=-25, high=25,
                                             shape=(self.aircraft.ss.nstates,), dtype=np.float64)
@@ -36,10 +37,9 @@ class AircraftEnv(gym.Env):
         observation = states.flatten()
         info = {}
 
-
         aoa = observation[1]
 
-        reward = -(0.05 - aoa)**2
+        reward = -(0.05 - aoa) ** 2
 
         if abs(aoa) > 0.5:
             reward = -100
@@ -68,7 +68,3 @@ class AircraftEnv(gym.Env):
 
     def close(self):
         pass
-
-
-a = AircraftEnv()
-a.step(-0.005)
