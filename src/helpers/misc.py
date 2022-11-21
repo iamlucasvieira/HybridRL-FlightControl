@@ -14,4 +14,4 @@ def get_device():
     # Use MPS if available, otherwise GPU if available, otherwise CPU
     device = "mps" if has_mps else "gpu" if has_gpu else "cpu"
 
-    return "cpu"
+    return device
