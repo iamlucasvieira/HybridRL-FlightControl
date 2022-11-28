@@ -9,7 +9,7 @@ env = AircraftEnv('citation.yaml', dt=0.01, T=100)
 if TRAIN:
     # check_env(env)
     model = SAC("MlpPolicy", env, verbose=1)
-    model.learn(total_timesteps=int(100000), log_interval=100)
+    model.learn(total_timesteps=int(10000), log_interval=100)
     model.save("citation_sac")
 else:
     model = SAC.load("citation_sac")

@@ -4,55 +4,56 @@ from gym import spaces
 import numpy as np
 
 from models.aircraft_model import Aircraft
+from models.tasks import get_task
 
+def sig_const(dt):
+    return 0.1
 
-# def reward_signal():
-#     pass
+# def sig_const(length, step):
+#     np.sin(np.arange(0, length, step)
+#     return np.sin(time)
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, *args, dt=0.001, T=100, **kwargs):
+    def __init__(self, config, *args, **kwargs):
         super(AircraftEnv, self).__init__()
+        self.dt = config.dt
+        self.episode_steps = config.episode_steps
+        self.episode_length = self.episode_steps * self.dt
+        self.task = get_task(config.task)
 
-        self.aircraft = Aircraft(*args, dt=dt, **kwargs)
-        self.total_time = T
+        self.aircraft = Aircraft(*args, dt=self.dt, **kwargs)
+
         self.current_time = 0
-        self.dt = dt
+        self.reference = []
+        self.track = []
+        self.actions = []
 
-        self.action_space = spaces.Box(low=-1, high=1,
+        self.action_space = spaces.Box(low=-0.5, high=0.5,
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
 
-        self.observation_space = spaces.Box(low=-25, high=25,
+        self.observation_space = spaces.Box(low=-1, high=1,
                                             shape=(self.aircraft.ss.nstates,), dtype=np.float64)
 
     def step(self, action):
 
         self.current_time += self.dt
+        self.actions.append(action)
 
         states = self.aircraft.response(action)
 
-        done = False
-        observation = states.flatten()
-        info = {}
-
-        aoa = observation[1]
-
-        reward = -(0.05 - aoa) ** 2
-
-        if abs(aoa) > 0.5:
-            reward = -100
-            done = True
-
-        if self.current_time > self.total_time:
-            done = True
+        observation, reward, done, info = self.task(states.flatten(), action, self)
 
         return observation, reward, done, info
 
     def reset(self):
 
         self.current_time = 0
+        self.reference = []
+        self.track = []
+        self.actions = []
 
         # Reset the state of the environment to an initial state
         self.aircraft.build_state_space()
