@@ -35,7 +35,7 @@ class AircraftEnv(gym.Env):
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
 
         self.observation_space = spaces.Box(low=-1, high=1,
-                                            shape=(self.aircraft.ss.nstates,), dtype=np.float64)
+                                            shape=(self.aircraft.ss.nstates + 2,), dtype=np.float32)
 
     def step(self, action):
 
@@ -44,8 +44,14 @@ class AircraftEnv(gym.Env):
 
         states = self.aircraft.response(action)
 
-        observation, reward, done, info = self.task(states.flatten(), action, self)
+        states, reward, done, info = self.task(states.flatten(), action, self)
 
+        reference = self.reference[-1]
+        track = self.track[-1]
+        tracking_error = (reference - track) ** 2
+
+        # Build observation with reference value  and tracking error
+        observation = np.append(states, [reference, tracking_error]).astype(np.float32)
         return observation, reward, done, info
 
     def reset(self):
@@ -59,7 +65,9 @@ class AircraftEnv(gym.Env):
         self.aircraft.build_state_space()
 
         #  Get initial state
-        observation = self.aircraft.current_state.flatten()
+        states = self.aircraft.current_state.flatten()
+
+        observation = np.append(states, [0, 0]).astype(np.float32)
 
         return observation  # reward, done, info can't be included
 
