@@ -10,6 +10,7 @@ def get_task(task_name):
 
     task_dict = {
         "aoa": linear_tasks.track_aoa,
+        "aoa_sin": linear_tasks.track_aoa_sin,
     }
 
     if task_name not in task_dict:
@@ -28,6 +29,35 @@ class LinearTasks:
         del action  # unused
 
         reference = 0.1
+        aoa = observation[1]
+
+        done = False
+        reward = - (reference - aoa) ** 2
+        info = {}
+
+        if abs(aoa) > 0.5:
+            reward *= 100
+            done = True
+
+        if env.current_time > env.episode_length:
+            done = True
+
+        env.reference.append(reference)
+        env.track.append(aoa)
+
+        return observation, reward, done, info,
+
+    @staticmethod
+    def track_aoa_sin(observation, action, env):
+        """Task to track angle of attack."""
+
+        del action
+
+        period = 4 * np.pi
+        length = env.episode_length
+        amplitude = 0.1
+
+        reference = amplitude * np.sin(period * env.current_time / length)
         aoa = observation[1]
 
         done = False
