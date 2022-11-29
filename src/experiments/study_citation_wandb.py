@@ -17,35 +17,53 @@ config = ConfigLinearAircraft(
     algorithm="SAC",
     dt=0.1,
     episode_steps=1_000,
-    learning_steps=10_000,
+    learning_steps=5_000,
+    task="aoa_sin",
 )
 
 TRAIN = True
 env = AircraftEnv(config)
 
 # name = get_name([config.env_name, config.algorithm])
-project_name = f"{config.env_name}-{config.algorithm}"
+project_name = f"{config.env_name}-{config.algorithm} v2"
 MODELS_PATH = Path.models / project_name
 LOGS_PATH = Path.logs / project_name
 
-run = wandb.init(
-    project=project_name,
-    config=config.asdict,
-    sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
-    save_code=True,  # optional
-)
-
-# Create directories
-pl.Path.mkdir(MODELS_PATH / run.name, parents=True, exist_ok=True)
-pl.Path.mkdir(LOGS_PATH, parents=True, exist_ok=True)
-
-env = Monitor(env, filename=f"{MODELS_PATH}/{run.name}")
-# wandb.tensorboard.patch(root_logdir=f"{LOGS_PATH}/{run.name}")
-#
 if TRAIN:
+
+    run = wandb.init(
+        project=project_name,
+        config=config.asdict,
+        sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+        save_code=True,  # optional
+    )
+
+    # Create directories
+    pl.Path.mkdir(MODELS_PATH / run.name, parents=True, exist_ok=True)
+    pl.Path.mkdir(LOGS_PATH, parents=True, exist_ok=True)
+
+    env = Monitor(env, filename=f"{MODELS_PATH}/{run.name}")
+    # wandb.tensorboard.patch(root_logdir=f"{LOGS_PATH}/{run.name}")
+
+    # name = get_name([config.env_name, config.algorithm])
+
+    run = wandb.init(
+        project=project_name,
+        config=config.asdict,
+        sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+        save_code=True,  # optional
+    )
+
+    # Create directories
+    pl.Path.mkdir(MODELS_PATH / run.name, parents=True, exist_ok=True)
+    pl.Path.mkdir(LOGS_PATH, parents=True, exist_ok=True)
+
+    env = Monitor(env, filename=f"{MODELS_PATH}/{run.name}")
+    # wandb.tensorboard.patch(root_logdir=f"{LOGS_PATH}/{run.name}")
+
     # Define the callbacks for the training
-    best_model_callback = SaveOnBestTrainingRewardCallback(check_freq=config.episode_steps * 2,
-                                                           log_dir=MODELS_PATH / run.name)
+    # best_model_callback = SaveOnBestTrainingRewardCallback(check_freq=config.episode_steps * 2,
+    #                                                        log_dir=MODELS_PATH / run.name)
     wandb_callback = WandbCallback(
         model_save_freq=100,
         # gradient_save_freq=config.episode_steps,
@@ -57,15 +75,16 @@ if TRAIN:
                 tensorboard_log=LOGS_PATH)
 
     model.learn(total_timesteps=config.learning_steps,
-                callback=[wandb_callback, ],#best_model_callback],
-                log_interval=2,
+                callback=[wandb_callback],#, best_model_callback],
+                log_interval=1,
                 tb_log_name=run.name,
                 progress_bar=False)
 
     # Replace previous latest-model with the new model
-    model.save(f"{MODELS_PATH / run.name}/latest-model")
+    model.save(f"{MODELS_PATH}/latest-model")
 else:
-    model = SAC.load(Path.models / "citation_SAC_2022-11-23T114943/dashing-snow-55/model.zip")
+    model_name = "olive-sun-4"
+    model = SAC.load(Path.models / project_name / model_name / "model.zip")
 
 for _ in range(1):
     obs = env.reset()
@@ -75,9 +94,12 @@ for _ in range(1):
 
         obs, reward, done, info = env.step(action)
         env.render()
-        wandb.log({f"reward": reward})
-        wandb.log({f"reference": env.reference[-1]})
-        wandb.log({f"state": env.track[-1]})
+
+        if wandb.run is not None:
+            wandb.log({f"reward": reward})
+            wandb.log({f"reference": env.reference[-1]})
+            wandb.log({f"state": env.track[-1]})
+
 
         if done:
             print(f"finished at {i}")
@@ -91,4 +113,6 @@ for _ in range(1):
 
     plt.show()
 
-run.finish()
+if wandb.run is not None:
+    run.finish()
+
