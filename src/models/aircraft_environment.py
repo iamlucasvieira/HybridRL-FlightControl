@@ -6,12 +6,6 @@ import numpy as np
 from models.aircraft_model import Aircraft
 from models.tasks import get_task
 
-def sig_const(dt):
-    return 0.1
-
-# def sig_const(length, step):
-#     np.sin(np.arange(0, length, step)
-#     return np.sin(time)
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""
@@ -25,6 +19,7 @@ class AircraftEnv(gym.Env):
         self.task = get_task(config.task)
 
         self.aircraft = Aircraft(*args, dt=self.dt, **kwargs)
+        self.current_states = None
 
         self.current_time = 0
         self.reference = []
@@ -34,28 +29,23 @@ class AircraftEnv(gym.Env):
         self.action_space = spaces.Box(low=-0.5, high=0.5,
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
 
+        obs_shape = self._get_obs_shape()
         self.observation_space = spaces.Box(low=-1, high=1,
-                                            shape=(self.aircraft.ss.nstates + 2,), dtype=np.float32)
+                                            shape=obs_shape, dtype=np.float32)
 
     def step(self, action):
-
         self.current_time += self.dt
         self.actions.append(action)
 
-        states = self.aircraft.response(action)
+        self.current_states = self.aircraft.response(action).flatten()
 
-        states, reward, done, info = self.task(states.flatten(), action, self)
+        _, reward, done, info = self.task(self.current_states, action, self)
 
-        reference = self.reference[-1]
-        track = self.track[-1]
-        tracking_error = (reference - track) ** 2
+        observation = self._get_obs()
 
-        # Build observation with reference value  and tracking error
-        observation = np.append(states, [reference, tracking_error]).astype(np.float32)
         return observation, reward, done, info
 
     def reset(self):
-
         self.current_time = 0
         self.reference = []
         self.track = []
@@ -66,8 +56,9 @@ class AircraftEnv(gym.Env):
 
         #  Get initial state
         states = self.aircraft.current_state.flatten()
+        self.current_states = self.aircraft.current_state.flatten()
 
-        observation = np.append(states, [0, 0]).astype(np.float32)
+        observation = self._get_obs()
 
         return observation  # reward, done, info can't be included
 
@@ -77,3 +68,15 @@ class AircraftEnv(gym.Env):
 
     def close(self):
         pass
+
+    def _get_obs(self):
+        """Returns the current observation."""
+        states = self.aircraft.current_state
+        reference = 0 if not self.reference else self.reference[-1]
+        track = 0 if not self.track else self.track[-1]
+        tracking_error = (reference - track) ** 2
+        return np.append(states, [reference, tracking_error]).astype(np.float32)
+
+    def _get_obs_shape(self):
+        """Returns the shape of the observation."""
+        return (self.aircraft.ss.nstates + 2,)

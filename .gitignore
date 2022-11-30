@@ -91,4 +91,3 @@ target/
 # Log files
 logs/
 models/
-src/experiments/wandb/

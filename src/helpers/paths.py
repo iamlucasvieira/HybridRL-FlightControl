@@ -2,6 +2,7 @@
 
 import pathlib as pl
 from dataclasses import dataclass
+import os
 
 # Project root
 ROOT = pl.Path(__file__).resolve().parents[2]
@@ -13,6 +14,7 @@ AIRCRAFT_DATA = DATA / pl.Path("aircraft")
 MODELS = ROOT / pl.Path("models")
 LOGS = ROOT / pl.Path("logs")
 
+
 @dataclass
 class Path:
     """Class that contains all project paths."""
@@ -22,3 +24,7 @@ class Path:
     aircraft_data: pl.Path = AIRCRAFT_DATA
     models: pl.Path = MODELS
     logs: pl.Path = LOGS
+
+
+def set_wandb_path():
+    os.environ["WANDB_DIR"] = Path.logs.as_posix()

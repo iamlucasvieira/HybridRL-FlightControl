@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import click
 import os
-from experiments import lti_citation
+from experiments.core import Experiment
+
+
 @click.group(context_settings={'show_default': True})
 @click.option('--no-log', '-nl', default=True, is_flag=True, help='Enable logging.')
 @click.pass_context
@@ -22,25 +24,25 @@ def main(ctx, no_log):
 @click.option('--global-steps', '-gs', default=1_000, help='Number of total learning steps.')
 @click.option('--offline', '-off', default=False, is_flag=True, help='Disable wandb sync.')
 @click.option('--verbose', '-v', default=1, help='Verbosity level.')
-@click.option("--to-plot", "-tp", default=False, is_flag=True, help="Plot results.")
+@click.option("--plot", "-p", default=False, is_flag=True, help="Plot results.")
+@click.option("--name", "-n", default=None, help="Name of the run.")
+@click.option("--tags", "-tg", default=None, help="Tags of the run.")
 @click.pass_context
 def learn(ctx, algo: str, env: str, task: str, seed: int, dt: float, episode_steps: int, global_steps: int,
-          offline: bool, verbose: int, to_plot: bool):
+          offline: bool, verbose: int, plot: bool, name: str, tags: str):
+    exp = Experiment(algorithm_name=algo,
+                     env_name=env,
+                     task_name=task,
+                     seed=seed,
+                     dt=dt,
+                     episode_steps=episode_steps,
+                     learning_steps=global_steps,
+                     verbose=verbose,
+                     offline=offline,
+                     )
 
-    if offline:
-        os.environ["WANDB_MODE"] = "offline"
+    exp.learn(name=name, tags=tags)
 
-    lti_citation.main(
-        algorithm_name=algo,
-        env_name=env,
-        task=task,
-        seed=seed,
-        dt=dt,
-        episode_steps=episode_steps,
-        learning_steps=global_steps,
-        verbose=verbose,
-        TO_PLOT=to_plot,
-    )
 
 if __name__ == '__main__':
     main()
