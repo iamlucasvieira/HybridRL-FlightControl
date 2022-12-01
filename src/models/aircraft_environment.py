@@ -25,6 +25,7 @@ class AircraftEnv(gym.Env):
         self.reference = []
         self.track = []
         self.actions = []
+        self.sq_error = []
 
         self.action_space = spaces.Box(low=-0.5, high=0.5,
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
@@ -50,6 +51,7 @@ class AircraftEnv(gym.Env):
         self.reference = []
         self.track = []
         self.actions = []
+        self.sq_error = []
 
         # Reset the state of the environment to an initial state
         self.aircraft.build_state_space()
@@ -73,8 +75,7 @@ class AircraftEnv(gym.Env):
         """Returns the current observation."""
         states = self.aircraft.current_state
         reference = 0 if not self.reference else self.reference[-1]
-        track = 0 if not self.track else self.track[-1]
-        tracking_error = (reference - track) ** 2
+        tracking_error = 0 if not self.sq_error else self.sq_error[-1]
         return np.append(states, [reference, tracking_error]).astype(np.float32)
 
     def _get_obs_shape(self):

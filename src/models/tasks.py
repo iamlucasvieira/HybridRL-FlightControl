@@ -44,6 +44,7 @@ class LinearTasks:
 
         env.reference.append(reference)
         env.track.append(aoa)
+        env.sq_error.append((reference - aoa) ** 2)
 
         return observation, reward, done, info,
 
