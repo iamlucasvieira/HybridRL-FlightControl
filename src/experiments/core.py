@@ -11,6 +11,7 @@ from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 
 from helpers.config import ConfigLinearAircraft
+from helpers.tracking import TensorboardCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
 from models.aircraft_environment import AircraftEnv
@@ -25,8 +26,8 @@ class Experiment:
                  task_name="aoa",
                  seed: Optional[int] = None,
                  dt: float = 0.1,
-                 episode_steps: int = 500,
-                 learning_steps: int = 100_000,
+                 episode_steps: int = 100,
+                 learning_steps: int = 1_000,
                  verbose: int = 2,
                  offline: bool = False,
                  project_name=""):
@@ -46,6 +47,7 @@ class Experiment:
             name: Name of the experiment.
             tags: Tags of the experiment.
             offline: Whether to run offline.
+            project_name: Name of the project.
 
         properties:
             config: Configuration of the experiment.
@@ -89,7 +91,7 @@ class Experiment:
         self.env = self.get_environment()
         self.algo = self.get_algorithm()
 
-    def learn(self, name=None, tags=None):
+    def learn(self, name=None, tags=None, wandb_config={}, wandb_kwargs={}):
         """Learn the experiment."""
         if self.verbose > 0:
             pprint(self.config.asdict)
@@ -101,11 +103,12 @@ class Experiment:
         # Start wandb
         run = wandb.init(
             project=self.project_name,
-            config=self.config.asdict,
+            config=self.config.asdict | wandb_config,
             sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
             save_code=True,  # optional
             name=name,
             tags=tags,
+            **wandb_kwargs,
         )
 
         self.wandb_run = run
@@ -127,16 +130,19 @@ class Experiment:
             model_save_path=f"{self.MODELS_PATH / run_name}",
             verbose=2)
 
+        # Tensorboard callback
+        tensorboard_callback = TensorboardCallback(verbose=2)
+
         # Create model
         model = algo("MlpPolicy",
                      env,
                      verbose=self.verbose,
                      tensorboard_log=self.LOGS_PATH,
-                     seed=self.config.seed,)
+                     seed=self.config.seed, )
 
         # Learn model
         model.learn(total_timesteps=self.config.learning_steps,
-                    callback=[wandb_callback],
+                    callback=[wandb_callback, tensorboard_callback],
                     log_interval=2,
                     tb_log_name=run_name,
                     progress_bar=True)
@@ -202,6 +208,11 @@ class Experiment:
         ax[0].plot(env.reference, '--')
         ax[1].plot(env.actions)
         plt.show()
+
+    def finish_wandb(self):
+        """Finish the wandb logging."""
+        if wandb.run is not None:
+            self.wandb_run.finish()
 
 
 if __name__ == "__main__":

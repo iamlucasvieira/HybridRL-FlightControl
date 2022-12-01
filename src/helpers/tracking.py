@@ -3,6 +3,8 @@ from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.callbacks import BaseCallback
 import numpy as np
 import os
+import time
+import sys
 
 
 class SaveOnBestTrainingRewardCallback(BaseCallback):
@@ -51,5 +53,22 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
                     if self.verbose > 0:
                         print("Saving new best model to {}".format(self.save_path))
                     self.model.save(self.save_path)
+
+        return True
+
+
+class TensorboardCallback(BaseCallback):
+    """
+    Custom callback for plotting additional values in tensorboard.
+    """
+
+    def __init__(self, verbose=0):
+        super(TensorboardCallback, self).__init__(verbose)
+
+    def _on_step(self) -> bool:
+        time_elapsed = max((time.time_ns() - self.model.start_time) / 1e9, sys.float_info.epsilon)
+
+        self.logger.record("time/time_elapsed", time_elapsed)
+        self.logger.record("time/episodes", self.model._episode_num)
 
         return True
