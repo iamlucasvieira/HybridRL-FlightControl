@@ -29,7 +29,9 @@ class LinearTasks:
         del action  # unused
 
         reference = 0.1
-        aoa = observation[1]
+
+        aoa_idx = env.aircraft.ss.x_names.index("alpha")
+        aoa = observation[aoa_idx]
 
         done = False
         reward = - (reference - aoa) ** 2
@@ -59,7 +61,9 @@ class LinearTasks:
         amplitude = 0.1
 
         reference = amplitude * np.sin(period * env.current_time / length)
-        aoa = observation[1]
+
+        aoa_idx = env.aircraft.ss.x_names.index("alpha")
+        aoa = observation[aoa_idx]
 
         done = False
         reward = - (reference - aoa) ** 2

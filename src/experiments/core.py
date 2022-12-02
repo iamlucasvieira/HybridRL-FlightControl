@@ -23,6 +23,8 @@ class Experiment:
     def __init__(self,
                  algorithm_name: str = "SAC",
                  env_name: str = "citation",
+                 filename: str = "citation.yaml",
+                 configuration: str = "symmetric",
                  task_name="aoa",
                  seed: Optional[int] = None,
                  dt: float = 0.1,
@@ -71,6 +73,8 @@ class Experiment:
         self.config = ConfigLinearAircraft(
             algorithm=algorithm_name,
             env_name=env_name,
+            filename=filename,
+            configuration=configuration,
             seed=seed,
             dt=dt,
             episode_steps=episode_steps,

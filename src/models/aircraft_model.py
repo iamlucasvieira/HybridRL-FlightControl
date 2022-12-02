@@ -75,7 +75,7 @@ class Aircraft:
     def __rich_repr__(self) -> rich.repr.Result:
         """Representation of the state space model."""
         yield "Aircraft", self.filename
-        yield "Symmetric" if self.configuration else "Asymmetric"
+        yield "Configuration", self.configuration
 
 
 class StateSpace(ct.StateSpace):
