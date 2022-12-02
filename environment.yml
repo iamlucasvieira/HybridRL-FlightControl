@@ -21,6 +21,8 @@ dependencies:
     - flask
     - boto3
     - ipykernel
+    - slycot
+    - control
     - pip:
         - bayesian-optimization
         - gym
