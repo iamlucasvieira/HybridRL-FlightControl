@@ -116,7 +116,7 @@ class Symmetric(StateSpace):
 
     def get_names(self):
         """Get state and input names."""
-        x_names = ['u_hat', 'alpha', 'theta', 'q_cv']
+        x_names = ['u_hat', 'alpha', 'theta', 'q']
         u_names = ['de']
         return x_names, u_names
 
@@ -161,6 +161,11 @@ class Symmetric(StateSpace):
             [mu, ma, mt, mq]
         ])
 
+        # unormalize qc/v by doing multiplying the last row by v_c
+        a[3, :] *= v_c
+        a[:, 3] /= v_c
+
+
         return a
 
     @staticmethod
@@ -191,6 +196,9 @@ class Symmetric(StateSpace):
             [0],
             [m_de]
         ])
+
+        # unormalize qcv
+        b[3, :] *= v_c
 
         return b
 

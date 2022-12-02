@@ -32,7 +32,7 @@ class AircraftEnv(gym.Env):
         self.actions = []
         self.sq_error = []
 
-        self.action_space = spaces.Box(low=-0.5, high=0.5,
+        self.action_space = spaces.Box(low=-0.3, high=0.3,
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
 
         obs_shape = self._get_obs_shape()

@@ -34,7 +34,8 @@ class LinearTasks:
         aoa = observation[aoa_idx]
 
         done = False
-        reward = - (reference - aoa) ** 2
+        sq_error = (reference - aoa) ** 2
+        reward = - sq_error
         info = {}
 
         if abs(aoa) > 0.5:
@@ -46,7 +47,7 @@ class LinearTasks:
 
         env.reference.append(reference)
         env.track.append(aoa)
-        env.sq_error.append((reference - aoa) ** 2)
+        env.sq_error.append(sq_error)
 
         return observation, reward, done, info,
 
