@@ -17,8 +17,13 @@ class AircraftEnv(gym.Env):
         self.episode_steps = config.episode_steps
         self.episode_length = self.episode_steps * self.dt
         self.task = get_task(config.task)
+        self.configuration = config.configuration
 
-        self.aircraft = Aircraft(*args, dt=self.dt, **kwargs)
+        self.aircraft = Aircraft(*args,
+                                 filename=config.filename,
+                                 dt=self.dt,
+                                 configuration=self.configuration,
+                                 **kwargs)
         self.current_states = None
 
         self.current_time = 0
@@ -81,3 +86,18 @@ class AircraftEnv(gym.Env):
     def _get_obs_shape(self):
         """Returns the shape of the observation."""
         return (self.aircraft.ss.nstates + 2,)
+
+
+class AircraftIncrementalEnv(AircraftEnv):
+    """Incremental model of the Aircraft"""
+    metadata = {"render.modes": ["human"]}
+
+    def __init__(self, config, *args, **kwargs):
+        super(AircraftIncrementalEnv, self).__init__(config, *args, **kwargs)
+
+        self.action_space = spaces.Box(low=-0.5, high=0.5,
+                                       shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
+
+        obs_shape = self._get_obs_shape()
+        self.observation_space = spaces.Box(low=-1, high=1,
+                                            shape=obs_shape, dtype=np.float32)

@@ -11,6 +11,8 @@ class ConfigLinearAircraft:
 
     policy_type: str = "MlpPolicy"
     env_name: str = "citation"
+    filename: str = "citation.yaml"
+    configuration: str = "symmetric"
     algorithm: str = ""
     seed: int = 1  # Random seed
     dt: float = 0.1  # Time step

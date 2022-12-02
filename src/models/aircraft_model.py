@@ -8,21 +8,24 @@ from data.load_aircraft_data import load_aircraft, AircraftData
 
 @rich.repr.auto
 class Aircraft:
+    """Class that creates the LTI aircraft state space model."""
 
-    def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, symmetric: bool = True,
+    CONFIGURATIONS = ['symmetric', 'sp', 'asymmetric']  # Available aircraft configurations
+
+    def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, configuration: str = "symmetric",
                  dt: float = 0.01) -> None:
         """Initialize aircraft model.
 
         Args:
             filename (str): Aircraft data filename.
             auto_build (bool, optional): Automatically build state space model. Defaults to True.
-            symmetric (bool, optional): Use symmetric model. Defaults to True.
+            configuration (str, optional): Aircraft configuration. Defaults to symmetric.
             dt (float, optional): Time step. Defaults to 1e-3.
 
         """
         self.filename = filename
         self.data = load_aircraft(filename)
-        self.symmetric = symmetric
+        self.configuration = configuration
         self.dt = dt
         self.ss = None
         self.current_state = None
@@ -35,16 +38,22 @@ class Aircraft:
         has_symmetric_data = self.data.symmetric is not None
         has_asymmetric_data = self.data.asymmetric is not None
 
-        if self.symmetric and has_symmetric_data:
+        # Aircraft configuration
+        configuration = self.configuration.lower()
+
+        if configuration not in self.CONFIGURATIONS:
+            raise ValueError(f"Invalid configuration: {configuration}")
+
+        if configuration == 'symmetric' and has_symmetric_data:
             self.ss = Symmetric(self.data)
-        elif not self.symmetric and has_asymmetric_data:
+        elif configuration == 'sp' and has_symmetric_data:
+            self.ss = SymmetricShortPeriod(self.data)
+        elif configuration == 'asymmetric' and has_asymmetric_data:
             self.ss = Asymmetric(self.data)
         else:
-            raise ValueError(f"No {'symmetric' if self.symmetric else 'asymmetric'} "
-                             f"data provided in file {self.filename}.")
+            raise ValueError(f"No data available for {self.configuration} configuration")
 
         self.current_state = np.zeros((self.ss.nstates, 1))
-
 
     def response(self, u: np.ndarray, x: np.ndarray = None) -> np.ndarray:
         """Return the response of the aircraft model to the input u."""
@@ -66,7 +75,7 @@ class Aircraft:
     def __rich_repr__(self) -> rich.repr.Result:
         """Representation of the state space model."""
         yield "Aircraft", self.filename
-        yield "Symmetric" if self.symmetric else "Asymmetric"
+        yield "Symmetric" if self.configuration else "Asymmetric"
 
 
 class StateSpace(ct.StateSpace):
@@ -99,12 +108,17 @@ class Symmetric(StateSpace):
         args:
             data: AircraftData object
         """
-        x_names = ['u_hat', 'alpha', 'theta', 'q_cv']
-        u_names = ['de']
+        x_names, u_names = self.get_names()
         a = self.build_a(data)
         b = self.build_b(data)
 
         super(Symmetric, self).__init__(a, b, x_names, u_names)
+
+    def get_names(self):
+        """Get state and input names."""
+        x_names = ['u_hat', 'alpha', 'theta', 'q_cv']
+        u_names = ['de']
+        return x_names, u_names
 
     @staticmethod
     def build_a(data: AircraftData) -> np.ndarray:
@@ -275,3 +289,41 @@ class Asymmetric(StateSpace):
         ])
 
         return b
+
+
+class SymmetricShortPeriod(Symmetric):
+    """Creates the short period symmetric aircraft."""
+
+    @staticmethod
+    def mask_a(a: np.ndarray) -> np.ndarray:
+        """mask matrix A for short period."""
+        masked_a = np.zeros((2, 2))
+        masked_a[0, 0] = a[1, 1]  # za
+        masked_a[0, 1] = a[1, 3]  # zq
+        masked_a[1, 0] = a[3, 1]  # ma
+        masked_a[1, 1] = a[3, 3]  # mq
+        return masked_a
+
+    @staticmethod
+    def mask_b(b: np.ndarray) -> np.ndarray:
+        """mask matrix B for short period."""
+        masked_b = np.zeros((2, 1))
+        masked_b[0, 0] = b[1, 0]  # zde
+        masked_b[1, 0] = b[3, 0]  # mde
+        return masked_b
+
+    def get_names(self):
+        """Get names of states and inputs."""
+        x_names = ['alpha', 'q']
+        u_names = ['de']
+        return x_names, u_names
+
+    def build_a(self, data: AircraftData) -> np.ndarray:
+        """Builds A matrix for short period"""
+        a = super().build_a(data)
+        return self.mask_a(a)
+
+    def build_b(self, data: AircraftData) -> np.ndarray:
+        """Builds B matrix for short period"""
+        b = super().build_b(data)
+        return self.mask_b(b)
