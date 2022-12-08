@@ -2,6 +2,7 @@
 import click
 import os
 from experiments.core import Experiment
+from collections import OrderedDict
 
 
 @click.group(context_settings={'show_default': True})
@@ -14,40 +15,71 @@ def main(ctx, no_log):
     ctx.obj['no_log'] = no_log
 
 
-@main.command()
-@click.option('--algo', '-a', default='SAC', help='Algorithm to use.')
-@click.option('--env', '-e', default='citation', help='Environment to use.')
-@click.option('--task', '-t', default='aoa', help='Task to use.')
-@click.option('--seed', '-s', default=1, help='Random seed.')
-@click.option('--dt', '-dt', default=0.1, help='Time step.')
-@click.option('--episode-steps', '-es', default=100, help='Number of steps in an episode.')
-@click.option('--global-steps', '-gs', default=1_000, help='Number of total learning steps.')
-@click.option('--offline', '-off', default=False, is_flag=True, help='Disable wandb sync.')
-@click.option('--verbose', '-v', default=1, help='Verbosity level.')
-@click.option("--plot", "-p", default=False, is_flag=True, help="Plot results.")
-@click.option("--name", "-n", default=None, help="Name of the run.")
-@click.option("--tags", "-tg", default=None, help="Tags of the run.")
-@click.option("--config", "-c", default="symmetric", help="Configuration of the aircraft.")
-@click.option("--project", "-pr", default="thesis-pilot", help="Name of the project.")
-@click.option("--run", "-r", default=1, help="Number of times to run the environment after learning.")
+
+class ConfigCommands(click.core.Command):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.params.insert(0, click.core.Option(('--algo', '-a'), default="SAC", help='Algorithm to use.'))
+        self.params.insert(0, click.core.Option(('--env', '-e'), default="citation", help='Environment to use.'))
+        self.params.insert(0, click.core.Option(('--task', '-t'), default="aoa_sin", help='Task to use.'))
+        self.params.insert(0, click.core.Option(('--seed', '-s'), default=None, help='Seed to use.'))
+        self.params.insert(0, click.core.Option(('--dt', '-dt'), default=0.1, help='Time step to use.'))
+        self.params.insert(0, click.core.Option(('--episode-steps', '-es'), default=100, help='Number of steps to use.'))
+        self.params.insert(0, click.core.Option(('--learning-steps', '-ls'), default=1000, help='Number of learning steps to use.'))
+        self.params.insert(0, click.core.Option(('--offline', '-o'), default=False, is_flag=True, help='Whether to run offline.'))
+        self.params.insert(0, click.core.Option(('--project-name', '-pn'), default="", help='Name of the project.'))
+        self.params.insert(0, click.core.Option(('--name', '-n'), default="", help='Name of the run.'))
+        self.params.insert(0, click.core.Option(('--verbose', '-v'), default=2, help='Verbosity level.'))
+        self.params.insert(0, click.core.Option(('--config', '-c'), default="sp", help='Configuration to use.'))
+        self.params.insert(0, click.core.Option(('--run', '-r'), default=0, help='Number of runs to use.'))
+        self.params.insert(0, click.core.Option(('--tags', '-tg'), default=None, help='Tags to use.'))
+
+@main.command(cls=ConfigCommands)
 @click.pass_context
-def learn(ctx, algo: str, env: str, task: str, seed: int, dt: float, episode_steps: int, global_steps: int,
-          offline: bool, verbose: int, plot: bool, name: str, tags: str, config: str, project: str, run: int):
-    exp = Experiment(algorithm_name=algo,
-                     env_name=env,
-                     task_name=task,
-                     seed=seed,
-                     dt=dt,
-                     episode_steps=episode_steps,
-                     learning_steps=global_steps,
-                     verbose=verbose,
-                     offline=offline,
-                     configuration=config,
-                     project_name=project,
-                     run=run,
+@click.option('--exp', '-e', default=None, help='Name of the experiment to run.')
+@click.option('--number', '-n', default=None, help='Number of the experiment to run.')
+def experiment(ctx, exp: str, number: int, **kwargs):
+    """Run an experiment."""
+    from experiments import exp_best_algo
+
+    exp_dict = OrderedDict()
+    exp_dict["best_algo"] = exp_best_algo.main
+
+    if exp is not None:
+        exp_name = exp
+    elif number is not None:
+        exp_name = list(exp_dict.items())[int(number)][0]
+    else:
+        for i, exp_name in enumerate(exp_dict):
+            print(f"{i}: {exp_name}")
+        exp_name = None
+
+    if exp_name == 'best_algo':
+        exp_dict[exp_name](
+            episode_steps=kwargs['episode_steps'],
+            learning_steps=kwargs['learning_steps'],
+            run=kwargs['run']
+        )
+
+@main.command(cls=ConfigCommands)
+@click.pass_context
+def learn(ctx, **kwargs):
+    """Learn a task."""
+    exp = Experiment(algorithm_name=kwargs['algo'],
+                     env_name=kwargs['env'],
+                     task_name=kwargs['task'],
+                     seed=kwargs['seed'],
+                     dt=kwargs['dt'],
+                     episode_steps=kwargs['episode_steps'],
+                     learning_steps=kwargs['learning_steps'],
+                     verbose=kwargs['verbose'],
+                     offline=kwargs['offline'],
+                     configuration=kwargs['config'],
+                     project_name=kwargs['project_name'],
+                     run=kwargs['run'],
                      )
 
-    exp.learn(name=name, tags=tags)
+    exp.learn(name=kwargs['name'], tags=kwargs['tags'])
 
 
 if __name__ == '__main__':
