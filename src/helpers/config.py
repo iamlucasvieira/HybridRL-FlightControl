@@ -11,7 +11,7 @@ class ConfigLinearAircraft(BaseModel):
     filename: Optional[str] = "citation.yaml"
     configuration: Optional[str] = "symmetric"
     algorithm: Optional[str] = ""
-    seed: Optional[int] = np.random.randint(1_000)  # Random seed
+    seed: Optional[int] = None  # Random seed
     dt: Optional[float] = 0.1  # Time step
     episode_steps: Optional[int] = 100  # Number of steps
     learning_steps: Optional[int] = 1000  # Number of total learning steps
@@ -33,3 +33,10 @@ class ConfigLinearAircraft(BaseModel):
             raise ValueError(f"Task must be in {TASKS}")
 
         return task
+
+    @validator('seed')
+    def check_seed(cls, seed):
+        if seed is None:
+            seed = np.random.randint(1_000)
+
+        return seed
