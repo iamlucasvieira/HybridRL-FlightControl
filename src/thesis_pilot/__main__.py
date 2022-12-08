@@ -28,9 +28,10 @@ def main(ctx, no_log):
 @click.option("--name", "-n", default=None, help="Name of the run.")
 @click.option("--tags", "-tg", default=None, help="Tags of the run.")
 @click.option("--config", "-c", default="symmetric", help="Configuration of the aircraft.")
+@click.option("--project", "-pr", default="thesis-pilot", help="Name of the project.")
 @click.pass_context
 def learn(ctx, algo: str, env: str, task: str, seed: int, dt: float, episode_steps: int, global_steps: int,
-          offline: bool, verbose: int, plot: bool, name: str, tags: str, config: str):
+          offline: bool, verbose: int, plot: bool, name: str, tags: str, config: str, project: str):
     exp = Experiment(algorithm_name=algo,
                      env_name=env,
                      task_name=task,
@@ -41,6 +42,7 @@ def learn(ctx, algo: str, env: str, task: str, seed: int, dt: float, episode_ste
                      verbose=verbose,
                      offline=offline,
                      configuration=config,
+                     project_name=project,
                      )
 
     exp.learn(name=name, tags=tags)

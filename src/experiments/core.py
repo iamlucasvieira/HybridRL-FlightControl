@@ -21,6 +21,7 @@ class Experiment:
     """Class that builds an experiment."""
 
     def __init__(self,
+                 config: Optional[ConfigLinearAircraft] = None,
                  algorithm_name: str = "SAC",
                  env_name: str = "citation",
                  filename: str = "citation.yaml",
@@ -70,17 +71,20 @@ class Experiment:
         # Set the wandb log path
         set_wandb_path()
 
-        self.config = ConfigLinearAircraft(
-            algorithm=algorithm_name,
-            env_name=env_name,
-            filename=filename,
-            configuration=configuration,
-            seed=seed,
-            dt=dt,
-            episode_steps=episode_steps,
-            learning_steps=learning_steps,
-            task=task_name,
-        )
+        if config is None:
+            self.config = ConfigLinearAircraft(
+                algorithm=algorithm_name,
+                env_name=env_name,
+                filename=filename,
+                configuration=configuration,
+                seed=seed,
+                dt=dt,
+                episode_steps=episode_steps,
+                learning_steps=learning_steps,
+                task=task_name,
+            )
+        else:
+            self.config = config
 
         self.verbose = verbose
         self.offline = offline
@@ -98,7 +102,7 @@ class Experiment:
     def learn(self, name=None, tags=None, wandb_config={}, wandb_kwargs={}):
         """Learn the experiment."""
         if self.verbose > 0:
-            pprint(self.config.asdict)
+            pprint(self.config.dict())
 
         # Get the environment and algorithm
         env = self.env
@@ -107,7 +111,7 @@ class Experiment:
         # Start wandb
         run = wandb.init(
             project=self.project_name,
-            config=self.config.asdict | wandb_config,
+            config=self.config.dict() | wandb_config,
             sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
             save_code=True,  # optional
             name=name,
