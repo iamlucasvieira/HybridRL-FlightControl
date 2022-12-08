@@ -6,6 +6,7 @@ import numpy as np
 seed = None
 project_name = "citation-SAC-observations"
 learning_steps = 5_000
+configuration = "sp"
 
 # Exp 1: Observation = all states + reference + tracking error
 for _ in range(5):
@@ -13,6 +14,7 @@ for _ in range(5):
         project_name=project_name,
         seed=seed,
         learning_steps=learning_steps,
+        configuration=configuration,
     )
 
     exp_1.learn(wandb_config={"obs": "all-states"})
@@ -24,7 +26,7 @@ for _ in range(5):
         project_name=project_name,
         seed=seed,
         learning_steps=learning_steps,
-
+        configuration=configuration,
     )
 
     env_2 = exp_2.env
