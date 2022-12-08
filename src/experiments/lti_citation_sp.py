@@ -1,15 +1,16 @@
-"""Experiment to learn using wandb while using the citation model."""
+"""Experiment to learn using wandb while using the citation model in sp mode."""
 
 from experiments.core import Experiment
 
 
 def main(algorithm_name: str = "SAC",
          env_name: str = "citation",
-         task_name="aoa",
+         configuration: str = "sp",
+         task_name="aoa_sin",
          seed: int = 1,
          dt: float = 0.1,
          episode_steps: int = 100,
-         learning_steps: int = 30_000,
+         learning_steps: int = 10_000,
          verbose: int = 2,
          name=None,
          tags=None,
@@ -25,6 +26,7 @@ def main(algorithm_name: str = "SAC",
 
     exp = Experiment(algorithm_name=algorithm_name,
                      env_name=env_name,
+                     configuration=configuration,
                      task_name=task_name,
                      seed=seed,
                      dt=dt,
