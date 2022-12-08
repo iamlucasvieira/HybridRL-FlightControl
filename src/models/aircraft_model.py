@@ -1,5 +1,4 @@
 """Class that creates LTI aircraft model."""
-import control as ct
 import numpy as np
 import rich.repr
 
@@ -78,7 +77,7 @@ class Aircraft:
         yield "Configuration", self.configuration
 
 
-class StateSpace(ct.StateSpace):
+class StateSpace:
     a: np.ndarray
     b: np.ndarray
     x_names: list[str]
@@ -86,17 +85,16 @@ class StateSpace(ct.StateSpace):
 
     def __init__(self, a: np.ndarray, b: np.ndarray, x_names: list[str], u_names: list[str]) -> None:
         """Initialize state space model."""
-        self.a = a
-        self.b = b
+        self.A = a
+        self.B = b
         self.x_names = x_names
         self.u_names = u_names
 
-        c = np.eye(a.shape[0])
-        d = np.zeros((a.shape[0], b.shape[1]))
-        super().__init__(a, b, c, d)
-        self.set_inputs(u_names)
-        self.set_outputs(x_names)
-        self.set_states(x_names)
+        self.C = np.eye(a.shape[0])
+        self.D = np.zeros((a.shape[0], b.shape[1]))
+
+        self.nstates = a.shape[1]
+        self.ninputs = b.shape[1]
 
 
 class Symmetric(StateSpace):
