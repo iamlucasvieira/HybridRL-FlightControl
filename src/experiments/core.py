@@ -6,7 +6,7 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import wandb
 from rich.pretty import pprint
-from stable_baselines3 import SAC
+from stable_baselines3 import SAC, TD3
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 
@@ -34,7 +34,7 @@ class Experiment:
                  verbose: int = 2,
                  offline: bool = False,
                  project_name="",
-                 run=0,):
+                 run=0, ):
         """Initiates the experiment.
 
         args:
@@ -178,6 +178,8 @@ class Experiment:
         """Get the algorithm."""
         if self.config.algorithm.lower() == "sac":
             algo = SAC
+        elif self.config.algorithm.lower() == "td3":
+            algo = TD3
         else:
             raise ValueError(f"Algorithm {self.config.algorithm} not implemented.")
         return algo
@@ -227,6 +229,6 @@ class Experiment:
         if wandb.run is not None:
             self.wandb_run.finish()
 
-
-if __name__ == "__main__":
-    main(TO_PLOT=True)
+    def __del__(self):
+        """Finish the wandb logging."""
+        self.finish_wandb()
