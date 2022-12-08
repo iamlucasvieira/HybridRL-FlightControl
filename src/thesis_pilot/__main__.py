@@ -31,7 +31,7 @@ class ConfigCommands(click.core.Command):
         self.params.insert(0, click.core.Option(('--name', '-n'), default="", help='Name of the run.'))
         self.params.insert(0, click.core.Option(('--verbose', '-v'), default=2, help='Verbosity level.'))
         self.params.insert(0, click.core.Option(('--config', '-c'), default="sp", help='Configuration to use.'))
-        self.params.insert(0, click.core.Option(('--run', '-r'), default=0, help='Number of runs to use.'))
+        self.params.insert(0, click.core.Option(('--run', '-r'), default=1, help='Number of runs to use.'))
         self.params.insert(0, click.core.Option(('--tags', '-tg'), default=None, help='Tags to use.'))
 
 @main.command(cls=ConfigCommands)
