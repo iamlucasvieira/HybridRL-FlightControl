@@ -16,6 +16,7 @@ class ConfigLinearAircraft(BaseModel):
     episode_steps: Optional[int] = 100  # Number of steps
     learning_steps: Optional[int] = 1000  # Number of total learning steps
     task: Optional[str] = "aoa"
+    run: int = 0  # Number of times to run the environment after learning
 
     @validator('configuration')
     def check_config(cls, configuration):

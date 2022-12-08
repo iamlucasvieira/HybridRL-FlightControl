@@ -33,7 +33,8 @@ class Experiment:
                  learning_steps: int = 1_000,
                  verbose: int = 2,
                  offline: bool = False,
-                 project_name=""):
+                 project_name="",
+                 run=0,):
         """Initiates the experiment.
 
         args:
@@ -51,6 +52,7 @@ class Experiment:
             tags: Tags of the experiment.
             offline: Whether to run offline.
             project_name: Name of the project.
+            run: Number of times to run the environment after learning.
 
         properties:
             config: Configuration of the experiment.
@@ -82,6 +84,7 @@ class Experiment:
                 episode_steps=episode_steps,
                 learning_steps=learning_steps,
                 task=task_name,
+                run=run,
             )
         else:
             self.config = config
@@ -159,6 +162,8 @@ class Experiment:
         model.save(f"{self.MODELS_PATH}/latest-model")
 
         self.model = model
+
+        self.run(self.config.run)
 
     def get_environment(self):
         """Get environment."""
