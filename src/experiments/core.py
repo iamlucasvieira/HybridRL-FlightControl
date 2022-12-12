@@ -207,6 +207,9 @@ class Experiment:
                     wandb.log({f"reward": reward})
                     wandb.log({f"reference": env.reference[-1]})
                     wandb.log({f"state": env.track[-1]})
+                    wandb.log({f"action": action})
+                    wandb.log({"tracking_error": env.sq_error[-1]})
+                    wandb.log({"run_step": i})
 
                 if done:
                     print(f"finished at {i}")
