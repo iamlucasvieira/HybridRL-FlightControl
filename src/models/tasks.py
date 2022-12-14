@@ -11,6 +11,8 @@ def get_task(task_name):
     task_dict = {
         "aoa": linear_tasks.track_aoa,
         "aoa_sin": linear_tasks.track_aoa_sin,
+        "q": linear_tasks.track_q,
+        "q_sin": linear_tasks.track_q_sin,
     }
 
     if task_name not in task_dict:
@@ -24,21 +26,37 @@ class LinearTasks:
 
     @staticmethod
     def track_aoa(observation, action, env):
+        return LinearTasks.track(observation, action, env, state="alpha")
+
+    @staticmethod
+    def track_q(observation, action, env):
+        return LinearTasks.track(observation, action, env, state="q")
+
+    @staticmethod
+    def track_aoa_sin(observation, action, env):
+        return LinearTasks.track_sin(observation, action, env, state="alpha")
+
+    @staticmethod
+    def track_q_sin(observation, action, env):
+        return LinearTasks.track_sin(observation, action, env, state="q")
+
+    @staticmethod
+    def track(observation, action, env, state="alpha"):
         """Task to track angle of attack."""
 
         del action  # unused
 
         reference = 0.1
 
-        aoa_idx = env.aircraft.ss.x_names.index("alpha")
-        aoa = observation[aoa_idx]
+        state_idx = env.aircraft.ss.x_names.index(state)
+        state_value = observation[state_idx]
 
         done = False
-        sq_error = (reference - aoa) ** 2
+        sq_error = (reference - state_value) ** 2
         reward = - sq_error
         info = {}
 
-        if abs(aoa) > 0.5:
+        if abs(state_value) > 0.5:
             reward *= 100
             done = True
 
@@ -46,13 +64,13 @@ class LinearTasks:
             done = True
 
         env.reference.append(reference)
-        env.track.append(aoa)
+        env.track.append(state_value)
         env.sq_error.append(sq_error)
 
         return observation, reward, done, info,
 
     @staticmethod
-    def track_aoa_sin(observation, action, env):
+    def track_sin(observation, action, env, state="alpha"):
         """Task to track angle of attack."""
 
         del action
@@ -63,14 +81,14 @@ class LinearTasks:
 
         reference = amplitude * np.sin(period * env.current_time / length)
 
-        aoa_idx = env.aircraft.ss.x_names.index("alpha")
-        aoa = observation[aoa_idx]
+        state_idx = env.aircraft.ss.x_names.index(state)
+        state_value = observation[state_idx]
 
         done = False
-        reward = - (reference - aoa) ** 2
+        reward = - (reference - state_value) ** 2
         info = {}
 
-        if abs(aoa) > 0.5:
+        if abs(state_value) > 0.5:
             reward *= 100
             done = True
 
@@ -78,7 +96,7 @@ class LinearTasks:
             done = True
 
         env.reference.append(reference)
-        env.track.append(aoa)
-        env.sq_error.append((reference - aoa) ** 2)
+        env.track.append(state_value)
+        env.sq_error.append((reference - state_value) ** 2)
 
         return observation, reward, done, info,
