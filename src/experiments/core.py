@@ -204,12 +204,15 @@ class Experiment:
                 env.render()
 
                 if wandb.run is not None:
-                    wandb.log({f"reward": reward})
-                    wandb.log({f"reference": env.reference[-1]})
-                    wandb.log({f"state": env.track[-1]})
-                    wandb.log({f"action": action})
-                    wandb.log({"tracking_error": env.sq_error[-1]})
-                    wandb.log({"run_step": i})
+                    wandb.log({"reward": reward,
+                               "episode_step": i})
+                    wandb.log({"reference": env.reference[-1],
+                               "state": env.track[-1],
+                               "episode_step": i})
+                    wandb.log({"action": action,
+                               "episode_step": i, })
+                    wandb.log({"tracking_error": env.sq_error[-1],
+                               "episode_step": i})
 
                 if done:
                     print(f"finished at {i}")
