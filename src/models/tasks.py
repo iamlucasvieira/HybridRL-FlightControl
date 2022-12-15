@@ -49,7 +49,7 @@ class LinearTasks:
         reference = 0.1
 
         state_idx = env.aircraft.ss.x_names.index(state)
-        state_value = observation[state_idx]
+        state_value = env.aircraft.current_state.flatten()[state_idx]
 
         done = False
         sq_error = (reference - state_value) ** 2
@@ -82,7 +82,7 @@ class LinearTasks:
         reference = amplitude * np.sin(period * env.current_time / length)
 
         state_idx = env.aircraft.ss.x_names.index(state)
-        state_value = observation[state_idx]
+        state_value = env.aircraft.current_state.flatten()[state_idx]
 
         done = False
         reward = - (reference - state_value) ** 2

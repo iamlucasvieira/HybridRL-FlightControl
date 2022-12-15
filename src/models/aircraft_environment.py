@@ -51,6 +51,10 @@ class AircraftEnv(gym.Env):
 
         return observation, reward, done, info
 
+    def update_observation_space(self):
+        """Updates the observation space."""
+        self.observation_space = spaces.Box(low=-1, high=1,
+                                            shape=self._get_obs_shape(), dtype=np.float32)
     def reset(self):
         self.current_time = 0
         self.reference = []
@@ -85,7 +89,7 @@ class AircraftEnv(gym.Env):
 
     def _get_obs_shape(self):
         """Returns the shape of the observation."""
-        return (self.aircraft.ss.nstates + 2,)
+        return self._get_obs().shape
 
 
 class AircraftIncrementalEnv(AircraftEnv):

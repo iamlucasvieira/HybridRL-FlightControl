@@ -3,36 +3,57 @@
 from experiments.core import Experiment
 import numpy as np
 
-seed = None
-project_name = "citation-SAC-observations"
-learning_steps = 5_000
-configuration = "sp"
+experiment_kwargs = dict(
+    project_name="citation-SAC-observations",
+    seed=None,
+    learning_steps=15_000,
+    configuration="sp",
+    task_name="q_sin"
+)
+# 1: States + Reference + Error
+# 2: Error
+# 3: State + Reference[
+# 4: States
+# 3: State + Error
+def get_value(item):
+    return 0 if not item else item[-1]
 
-# Exp 1: Observation = all states + reference + tracking error
-for _ in range(5):
-    exp_1 = Experiment(
-        project_name=project_name,
-        seed=seed,
-        learning_steps=learning_steps,
-        configuration=configuration,
-    )
+for _ in range(15):
 
-    exp_1.learn(wandb_config={"obs": "all-states"})
-
+    # Exp 1: Observation = all states + reference + tracking error
+    exp_1 = Experiment(**experiment_kwargs)
+    exp_1.learn(wandb_config={"obs": "states + ref + error"})
     exp_1.finish_wandb()
 
     # Exp 2: Observation = tracking error
-    exp_2 = Experiment(
-        project_name=project_name,
-        seed=seed,
-        learning_steps=learning_steps,
-        configuration=configuration,
-    )
-
+    exp_2 = Experiment(**experiment_kwargs)
     env_2 = exp_2.env
-    # exp_2.env._get_obs_shape = lambda self: (1,)
-    env_2._get_obs = lambda: np.array([0 if not env_2.sq_error else env_2.sq_error[-1]]).astype(np.float32)
-
-    exp_2.learn(wandb_config={"obs": "tracking-error"})
-
+    env_2._get_obs = lambda: np.array([get_value(env_2.sq_error)]).astype(np.float32)
+    env_2.update_observation_space()
+    exp_2.learn(wandb_config={"obs": "error"})
     exp_2.finish_wandb()
+
+    # Exp 3: Observation = reference + state
+    exp_3 = Experiment(**experiment_kwargs)
+    env_3 = exp_3.env
+    env_3._get_obs = lambda: np.array([get_value(env_3.reference), get_value(env_3.track)]).astype(np.float32)
+    env_3.update_observation_space()
+    exp_3.learn(wandb_config={"obs": "ref + state"})
+    exp_3.finish_wandb()
+
+    # Exp 4: Observation = all states
+    exp_4 = Experiment(**experiment_kwargs)
+    env_4 = exp_4.env
+    env_4._get_obs = lambda: np.array(env_4.aircraft.current_state).astype(np.float32)
+    env_4.update_observation_space()
+    exp_4.learn(wandb_config={"obs": "states"})
+    exp_4.finish_wandb()
+
+    # Exp 5: Observation = state + error
+    exp_5 = Experiment(**experiment_kwargs)
+    env_5 = exp_5.env
+    env_5._get_obs = lambda: np.array([get_value(env_3.track), get_value(env_2.sq_error)]).astype(np.float32)
+    env_5.update_observation_space()
+    exp_5.learn(wandb_config={"obs": "state + error"})
+    exp_5.finish_wandb()
+
