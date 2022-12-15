@@ -17,6 +17,7 @@ class ConfigLinearAircraft(BaseModel):
     learning_steps: Optional[int] = 1000  # Number of total learning steps
     task: Optional[str] = "aoa"
     run: int = 0  # Number of times to run the environment after learning
+    reward_scale: float = 1.0  # Reward scale
 
     @validator('configuration')
     def check_config(cls, configuration):
@@ -31,12 +32,10 @@ class ConfigLinearAircraft(BaseModel):
         TASKS = ['aoa', 'aoa_sin', 'q', 'q_sin']  # Available tasks
         if task not in TASKS:
             raise ValueError(f"Task must be in {TASKS}")
-
         return task
 
     @validator('seed')
     def check_seed(cls, seed):
         if seed is None:
             seed = np.random.randint(1_000)
-
         return seed

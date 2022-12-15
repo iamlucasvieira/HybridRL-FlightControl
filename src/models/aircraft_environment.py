@@ -18,6 +18,7 @@ class AircraftEnv(gym.Env):
         self.episode_length = self.episode_steps * self.dt
         self.task = get_task(config.task)
         self.configuration = config.configuration
+        self.reward_scale = config.reward_scale
 
         self.aircraft = Aircraft(*args,
                                  filename=config.filename,
@@ -91,6 +92,9 @@ class AircraftEnv(gym.Env):
         """Returns the shape of the observation."""
         return self._get_obs().shape
 
+    def _get_reward(self, state_value, reference_value):
+        """Returns the squared error reward."""
+        return - self.reward_scale * (state_value - reference_value) ** 2
 
 class AircraftIncrementalEnv(AircraftEnv):
     """Incremental model of the Aircraft"""

@@ -95,7 +95,7 @@ class Experiment:
         self.wandb_run = None
 
         # Define project name and paths
-        self.project_name = project_name if project_name else f"{env_name}-{algorithm_name}-{task_name}"
+        self.project_name = project_name if project_name else f"{config.env_name}-{config.algorithm}-{config.task}"
         self.MODELS_PATH = Path.models / self.project_name
         self.LOGS_PATH = Path.logs / self.project_name
 
