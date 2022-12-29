@@ -4,6 +4,7 @@ from helpers.config import ConfigLinearAircraft
 from models.aircraft_environment import AircraftEnv
 import numpy as np
 import wandb
+import torch
 
 
 def torchify(x: np.ndarray) -> torch.Tensor:
