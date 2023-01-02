@@ -134,7 +134,7 @@ class DSAC:
             print(text)
 
     def predict(self, observation, state=None, mask=None, deterministic=False):
-        return self.agent.act(observation)
+        return self.agent.act(observation), observation
 
     def save(self, file_path):
         self.agent.save_to_file(file_path)

@@ -241,8 +241,3 @@ class Experiment:
     def __del__(self):
         """Finish the wandb logging."""
         self.finish_wandb()
-
-
-a = Experiment(algorithm_name="DSAC")
-a.learn()
-a.finish_wandb()
