@@ -35,6 +35,7 @@ class Experiment:
                  verbose: int = 2,
                  offline: bool = False,
                  project_name="",
+                 log_interval: int = 1,
                  run=0, ):
         """Initiates the experiment.
 
@@ -86,6 +87,7 @@ class Experiment:
                 learning_steps=learning_steps,
                 task=task_name,
                 run=run,
+                log_interval=log_interval,
             )
         else:
             self.config = config
@@ -155,7 +157,7 @@ class Experiment:
         # Learn model
         model.learn(total_timesteps=self.config.learning_steps,
                     callback=[wandb_callback, tensorboard_callback],
-                    log_interval=2,
+                    log_interval=self.config.log_interval,
                     tb_log_name=run_name,
                     progress_bar=True)
 
