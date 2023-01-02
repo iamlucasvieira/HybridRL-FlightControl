@@ -3,7 +3,8 @@
 from experiments.core import Experiment
 
 
-def main(task="q_sin", project_name="best_algo", episode_steps=100, learning_steps=10_000, run=1, iterations=1):
+def main(task="q_sin", configuration="sp", project_name="best_algo", episode_steps=100, learning_steps=10_000, run=1,
+         iterations=1):
     """Run the experiment."""
     for _ in range(iterations):
 
@@ -12,6 +13,7 @@ def main(task="q_sin", project_name="best_algo", episode_steps=100, learning_ste
                 project_name=project_name,
                 algorithm_name=algo,
                 task_name=task,
+                configuration=configuration,
                 episode_steps=episode_steps,
                 learning_steps=learning_steps,
                 run=run,
