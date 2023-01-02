@@ -31,11 +31,11 @@ class DSAC:
         "risk_measure": -0.5
     }
 
-    def __init__(self, env, config, project_name='DASC'):
-
+    def __init__(self, policy, env, verbose=0, **kwargs):
+        self.policy = policy
         self.env = env
-        self.config = config
-        self.project_name = project_name
+        self.verbose = verbose
+
         self.agent = DSACAgent(
             config=DSAC.agent_config,
             device="cpu",
@@ -43,38 +43,39 @@ class DSAC:
             action_dim=env.action_space.shape[0],
         )
 
-    def train(self, log_freq: int = 2):
+    def learn(self, total_timesteps: int = 1000, callback=None, log_interval: int = 1, tb_log_name="run",
+              progress_bar=False, **kwargs):
         """Train the agent through n_steps."""
 
-        config = self.config
-        n_steps = config.learning_steps
+        n_steps = total_timesteps
 
         # Reward stats:
-        rewards = []
-        mean_rewards = []
+        rewards, episode_length = [], []
+        mean_rewards, mean_length = [], []
         total_steps = 0
-
-        run = wandb.init(
-            project=self.project_name,
-            config=config.dict(),
-        )
 
         # Iterate through episodes:
         while total_steps < n_steps:
             total_reward, steps = self.train_single_episode()
             total_steps += steps
 
-            # Save rewards:
+            # Save rewards and lengths:
             rewards.append(total_reward)
+            episode_length.append(steps)
 
-            if len(rewards) % log_freq == 0:
-                mean_rewards.append(np.mean(rewards[-log_freq:]))
-                wandb.log({"rollout/ep_rew_mean": mean_rewards[-1],
-                           "global_step": total_steps})
-            print(f"Total steps: {total_steps}, reward: {total_reward}")
-        print(f"Mean reward: {mean_rewards}")
+            if len(rewards) % log_interval == 0:
+                mean_rewards.append(np.mean(rewards[-log_interval:]))
+                mean_length.append(np.mean(episode_length[-log_interval:]))
 
-        run.finish()
+                if wandb.run is not None:
+                    wandb.log({"rollout/ep_rew_mean": mean_rewards[-1],
+                               "global_step": total_steps})
+
+                    wandb.log({"rollout/ep_len_mean": mean_length[-1],
+                               "global_step": total_steps})
+
+            self.print(f"Total steps: {total_steps}, reward: {total_reward}")
+        self.print(f"Mean reward: {mean_rewards}")
 
     def train_single_episode(self):
         """Returns the (episode data object, end-of-episode return, wall-clock training time)"""
@@ -128,13 +129,26 @@ class DSAC:
 
         return total_reward, n_steps
 
+    def print(self, text):
+        if self.verbose > 0:
+            print(text)
+
+    def predict(self, observation, state=None, mask=None, deterministic=False):
+        return self.agent.act(observation)
+
+    def save(self, file_path):
+        self.agent.save_to_file(file_path)
+
+    def load(self, file_path):
+        self.agent = self.agent.load(file_path=file_path,
+                                     config=DSAC.agent_config,
+                                     device="cpu",
+                                     obs_dim=self.env.observation_space.shape[0],
+                                     action_dim=self.env.action_space.shape[0], )
+
 
 def main():
-    config = ConfigLinearAircraft()
-    env = AircraftEnv(config)
-
-    dsac = DSAC(env, config)
-    dsac.train(n_steps=1000)
+    pass
 
 
 if __name__ == "__main__":

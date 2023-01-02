@@ -15,6 +15,7 @@ from helpers.tracking import TensorboardCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
 from models.aircraft_environment import AircraftEnv
+from agents.seres_dsac import DSAC
 
 
 class Experiment:
@@ -95,7 +96,7 @@ class Experiment:
         self.wandb_run = None
 
         # Define project name and paths
-        self.project_name = project_name if project_name else f"{config.env_name}-{config.algorithm}-{config.task}"
+        self.project_name = project_name if project_name else f"{self.config.env_name}-{self.config.algorithm}-{self.config.task}"
         self.MODELS_PATH = Path.models / self.project_name
         self.LOGS_PATH = Path.logs / self.project_name
 
@@ -180,13 +181,15 @@ class Experiment:
             algo = SAC
         elif self.config.algorithm.lower() == "td3":
             algo = TD3
+        elif self.config.algorithm.lower() == "dsac":
+            algo = DSAC
         else:
             raise ValueError(f"Algorithm {self.config.algorithm} not implemented.")
         return algo
 
     def load_model(self, model_name="olive-sun-4"):
         """Load a model file."""
-        model = SAC.load(Path.models / self.project_name / model_name / "model.zip")
+        model = self.algo.load(Path.models / self.project_name / model_name / "model.zip")
         self.model = model
 
     def run(self, n_times=1):
@@ -238,3 +241,8 @@ class Experiment:
     def __del__(self):
         """Finish the wandb logging."""
         self.finish_wandb()
+
+
+a = Experiment(algorithm_name="DSAC")
+a.learn()
+a.finish_wandb()
