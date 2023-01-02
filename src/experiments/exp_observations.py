@@ -6,7 +6,7 @@ import numpy as np
 experiment_kwargs = dict(
     project_name="citation-best-observation",
     seed=None,
-    learning_steps=15_000,
+    learning_steps=10_000,
     configuration="sp",
     task_name="q_sin",
     algorithm_name=None,
@@ -22,7 +22,7 @@ def get_value(item):
     return 0 if not item else item[-1]
 
 
-for _ in range(15):
+for _ in range(10):
 
     for algo in ["SAC", "TD3", "DSAC"]:
         experiment_kwargs["algorithm_name"] = algo
@@ -59,7 +59,8 @@ for _ in range(15):
         # Exp 5: Observation = state + error
         exp_5 = Experiment(**experiment_kwargs)
         env_5 = exp_5.env
-        env_5._get_obs = lambda: np.array([get_value(env_3.track), get_value(env_2.sq_error)]).astype(np.float32)
+        env_5._get_obs = lambda: np.array([get_value(env_5.track), get_value(env_5.sq_error)]).astype(np.float32)
         env_5.update_observation_space()
         exp_5.learn(wandb_config={"obs": "state + error"})
         exp_5.finish_wandb()
+
