@@ -5,7 +5,7 @@ from models.aircraft_environment import AircraftEnv
 import numpy as np
 import wandb
 import torch
-
+import random
 
 def torchify(x: np.ndarray) -> torch.Tensor:
     """Turn a single dimensional numpy array to a tensor of size [B, N]"""
@@ -31,10 +31,16 @@ class DSAC:
         "risk_measure": -0.5
     }
 
-    def __init__(self, policy, env, verbose=0, **kwargs):
+    def __init__(self, policy, env, verbose=0, seed=None, **kwargs):
         self.policy = policy
         self.env = env
         self.verbose = verbose
+
+        if seed is not None:
+            # Seed python RNG
+            random.seed(seed)
+            # Seed numpy RNG
+            np.random.seed(seed)
 
         self.agent = DSACAgent(
             config=DSAC.agent_config,
