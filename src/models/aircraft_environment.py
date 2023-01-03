@@ -46,9 +46,21 @@ class AircraftEnv(gym.Env):
 
         self.current_states = self.aircraft.response(action).flatten()
 
-        _, reward, done, info = self.task(self.current_states, action, self)
+        state_value, reference = self.task(self)
+
+        done = False
+
+        reward = self._get_reward(state_value, reference)
+
+        if abs(state_value) > 0.5:
+            reward *= 100
+            done = True
+
+        if self.current_time > self.episode_length:
+            done = True
 
         observation = self._get_obs()
+        info = {}
 
         return observation, reward, done, info
 
@@ -94,7 +106,8 @@ class AircraftEnv(gym.Env):
 
     def _get_reward(self, state_value, reference_value):
         """Returns the squared error reward."""
-        return - self.reward_scale * (state_value - reference_value) ** 2
+        reward = - self.reward_scale * (state_value - reference_value) ** 2
+        return reward
 
 class AircraftIncrementalEnv(AircraftEnv):
     """Incremental model of the Aircraft"""

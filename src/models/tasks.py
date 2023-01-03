@@ -25,56 +25,38 @@ class LinearTasks:
     """Class that defines task functions for the LTI aircraft."""
 
     @staticmethod
-    def track_aoa(observation, action, env):
-        return LinearTasks.track(observation, action, env, state="alpha")
+    def track_aoa(env):
+        return LinearTasks.track(env, state="alpha")
 
     @staticmethod
-    def track_q(observation, action, env):
-        return LinearTasks.track(observation, action, env, state="q")
+    def track_q(env):
+        return LinearTasks.track(env, state="q")
 
     @staticmethod
-    def track_aoa_sin(observation, action, env):
-        return LinearTasks.track_sin(observation, action, env, state="alpha")
+    def track_aoa_sin(env):
+        return LinearTasks.track_sin(env, state="alpha")
 
     @staticmethod
-    def track_q_sin(observation, action, env):
-        return LinearTasks.track_sin(observation, action, env, state="q")
+    def track_q_sin(env):
+        return LinearTasks.track_sin(env, state="q")
 
     @staticmethod
-    def track(observation, action, env, state="alpha"):
+    def track(env, state="alpha"):
         """Task to track angle of attack."""
-
-        del action  # unused
-
         reference = 0.1
 
         state_idx = env.aircraft.ss.x_names.index(state)
         state_value = env.aircraft.current_state.flatten()[state_idx]
 
-        done = False
-        sq_error = (reference - state_value) ** 2
-        reward = - sq_error
-        info = {}
-
-        if abs(state_value) > 0.5:
-            reward *= 100
-            done = True
-
-        if env.current_time > env.episode_length:
-            done = True
-
         env.reference.append(reference)
         env.track.append(state_value)
-        env.sq_error.append(sq_error)
+        env.sq_error.append((reference - state_value) ** 2)
 
-        return observation, reward, done, info,
+        return state_value, reference
 
     @staticmethod
-    def track_sin(observation, action, env, state="alpha"):
+    def track_sin(env, state="alpha"):
         """Task to track angle of attack."""
-
-        del action
-
         period = 4 * np.pi
         length = env.episode_length
         amplitude = 0.1
@@ -84,19 +66,8 @@ class LinearTasks:
         state_idx = env.aircraft.ss.x_names.index(state)
         state_value = env.aircraft.current_state.flatten()[state_idx]
 
-        done = False
-        reward = - (reference - state_value) ** 2
-        info = {}
-
-        if abs(state_value) > 0.5:
-            reward *= 100
-            done = True
-
-        if env.current_time > env.episode_length:
-            done = True
-
         env.reference.append(reference)
         env.track.append(state_value)
         env.sq_error.append((reference - state_value) ** 2)
 
-        return observation, reward, done, info,
+        return state_value, reference
