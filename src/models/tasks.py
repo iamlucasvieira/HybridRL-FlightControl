@@ -48,10 +48,6 @@ class LinearTasks:
         state_idx = env.aircraft.ss.x_names.index(state)
         state_value = env.aircraft.current_state.flatten()[state_idx]
 
-        env.reference.append(reference)
-        env.track.append(state_value)
-        env.sq_error.append((reference - state_value) ** 2)
-
         return state_value, reference
 
     @staticmethod
@@ -65,9 +61,5 @@ class LinearTasks:
 
         state_idx = env.aircraft.ss.x_names.index(state)
         state_value = env.aircraft.current_state.flatten()[state_idx]
-
-        env.reference.append(reference)
-        env.track.append(state_value)
-        env.sq_error.append((reference - state_value) ** 2)
 
         return state_value, reference

@@ -36,6 +36,7 @@ class Experiment:
                  offline: bool = False,
                  project_name="",
                  log_interval: int = 1,
+                 reward_type: str = "sq_error",
                  run=0, ):
         """Initiates the experiment.
 
@@ -77,7 +78,7 @@ class Experiment:
 
         if config is None:
             self.config = ConfigLinearAircraft(
-                algorithm=algorithm_name,
+                algorithm=algorithm_name.upper(),
                 env_name=env_name,
                 filename=filename,
                 configuration=configuration,
@@ -86,6 +87,7 @@ class Experiment:
                 episode_steps=episode_steps,
                 learning_steps=learning_steps,
                 task=task_name,
+                reward_type=reward_type,
                 run=run,
                 log_interval=log_interval,
             )

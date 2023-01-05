@@ -5,7 +5,7 @@ import numpy as np
 
 from models.aircraft_model import Aircraft
 from models.tasks import get_task
-
+from models.rewards import get_reward
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""
@@ -16,7 +16,10 @@ class AircraftEnv(gym.Env):
         self.dt = config.dt
         self.episode_steps = config.episode_steps
         self.episode_length = self.episode_steps * self.dt
+
         self.task = get_task(config.task)
+        self._get_reward = get_reward(config.reward_type)
+
         self.configuration = config.configuration
         self.reward_scale = config.reward_scale
 
@@ -41,16 +44,22 @@ class AircraftEnv(gym.Env):
                                             shape=obs_shape, dtype=np.float32)
 
     def step(self, action):
+        # Advance time
         self.current_time += self.dt
-        self.actions.append(action)
 
+        # Get aircraft response and the task results
         self.current_states = self.aircraft.response(action).flatten()
-
         state_value, reference = self.task(self)
+
+        # Store values
+        self.actions.append(action)
+        self.reference.append(reference)
+        self.track.append(state_value)
+        self.sq_error.append((reference - state_value) ** 2)
 
         done = False
 
-        reward = self._get_reward(state_value, reference)
+        reward = self._get_reward(self)
 
         if abs(state_value) > 0.5:
             reward *= 100
@@ -103,11 +112,6 @@ class AircraftEnv(gym.Env):
     def _get_obs_shape(self):
         """Returns the shape of the observation."""
         return self._get_obs().shape
-
-    def _get_reward(self, state_value, reference_value):
-        """Returns the squared error reward."""
-        reward = - self.reward_scale * (state_value - reference_value) ** 2
-        return reward
 
 class AircraftIncrementalEnv(AircraftEnv):
     """Incremental model of the Aircraft"""

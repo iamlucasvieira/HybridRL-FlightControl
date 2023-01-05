@@ -19,6 +19,7 @@ class ConfigLinearAircraft(BaseModel):
     run: int = 0  # Number of times to run the environment after learning
     reward_scale: float = 1.0  # Reward scale
     log_interval: int = 1  # Log interval
+    reward_type: str = "sq_error"
 
     @validator('configuration')
     def check_config(cls, configuration):
