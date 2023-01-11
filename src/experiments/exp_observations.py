@@ -22,24 +22,23 @@ experiment_kwargs = dict(
 def get_value(item):
     return 0 if not item else item[-1]
 
+
 observation_dict = {
     "states + ref + error": None,
-    # "error": lambda env: np.array([get_value(env.sq_error)]).astype(np.float32),
+    "error": lambda env: np.array([get_value(env.sq_error)]).astype(np.float32),
     "ref + state": lambda env: np.array([get_value(env.reference), get_value(env.track)]).astype(np.float32),
-    "states": lambda env: np.array(env.aircraft.current_state).astype(np.float32),
+    # "states": lambda env: np.array(env.aircraft.current_state).astype(np.float32),
     "state + error": lambda env: np.array([get_value(env.track), get_value(env.sq_error)]).astype(np.float32)
 }
 
 np.random.seed(1)
 
-
-for _ in range(10):
+for _ in range(15):
 
     for algo in ["SAC", "TD3", "DSAC"]:
 
         experiment_kwargs["algorithm_name"] = algo
-        experiment_kwargs["seed"] = np.random.randint(0,9e3)
-
+        experiment_kwargs["seed"] = np.random.randint(0, 9e3)
 
         for obs, obs_function in observation_dict.items():
 
