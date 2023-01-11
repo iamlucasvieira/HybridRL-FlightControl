@@ -4,19 +4,21 @@ from experiments.core import Experiment
 import numpy as np
 from helpers.config import ConfigLinearAircraft
 
-project_name = "citation-SAC-rewards"
+project_name = "best_reward"
 experiment_config = ConfigLinearAircraft(
-    algorithm="SAC",
+    algorithm="TD3",
     configuration="sp",
     task="q_sin",
-    seed=None,
     learning_steps=10_000,
+    run=1
 )
 
-for _ in range(1):
+for _ in range(6):
+    for reward_type in ["sq_error", "sq_error_da", "sq_error_da_a"]:
+        experiment_config.reward_type = reward_type
 
-    for reward_scale in np.linspace(0.1, 1, 10):
-        exp = Experiment(config=experiment_config, project_name=project_name)
-        exp.env.reward_scale = reward_scale
-        exp.learn(wandb_config={"reward_scale": reward_scale})
+        exp = Experiment(config=experiment_config,
+                         project_name=project_name)
+
+        exp.learn()
         exp.finish_wandb()

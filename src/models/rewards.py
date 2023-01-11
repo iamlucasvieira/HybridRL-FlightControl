@@ -9,6 +9,8 @@ def get_reward(reward_type):
         return Rewards.sq_error
     elif reward_type == "sq_error_da":
         return Rewards.sq_error_da
+    elif reward_type == "sq_error_da_a":
+        return Rewards.sq_error_da_a
     else:
         raise ValueError(f"Reward type {reward_type} not found")
 
@@ -23,4 +25,9 @@ class Rewards:
     @staticmethod
     def sq_error_da(self):
         """Returns the squared error between the reference and the state."""
-        return -(self.sq_error[-1] + np.sum(np.diff(self.actions[-2:], axis=0) ** 2))
+        return -(self.sq_error[-1] + 0.1*np.sum(np.abs(np.diff(self.actions[-2:], axis=0))))
+
+    @staticmethod
+    def sq_error_da_a(self):
+        """Returns the squared error, the action difference and the action"""
+        return -(self.sq_error[-1] + 0.1*np.sum(np.abs(np.diff(self.actions[-2:], axis=0))) + 0.1*np.sum(np.abs(self.actions[-1])))

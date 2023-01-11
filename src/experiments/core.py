@@ -27,7 +27,7 @@ class Experiment:
                  env_name: str = "citation",
                  filename: str = "citation.yaml",
                  configuration: str = "symmetric",
-                 task_name="aoa",
+                 task_name="q_sin",
                  seed: Optional[int] = None,
                  dt: float = 0.1,
                  episode_steps: int = 100,
@@ -160,8 +160,7 @@ class Experiment:
         model.learn(total_timesteps=self.config.learning_steps,
                     callback=[wandb_callback, tensorboard_callback],
                     log_interval=self.config.log_interval,
-                    tb_log_name=run_name,
-                    progress_bar=True)
+                    tb_log_name=run_name)
 
         # Replace previous latest-model with the new model
         model.save(f"{self.MODELS_PATH}/latest-model")
