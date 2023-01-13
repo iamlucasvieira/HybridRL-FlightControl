@@ -1,30 +1,39 @@
-import wandb
-
-api = wandb.Api()
-
-# Project is specified by <entity/project-name>
-runs = api.runs("lucasv/best_algo")
-summary_list = []
-config_list = []
-name_list = []
-for run in runs:
-    # run.summary are the output key/values like accuracy.
-    # We call ._json_dict to omit large files
-    summary_list.append(run.summary._json_dict)
-
-    # run.config is the input metrics.
-    # We remove special values that start with _.
-    config = {k: v for k, v in run.config.items() if not k.startswith('_')}
-    config_list.append(config)
-
-    # run.name is the name of the run.
-    name_list.append(run.name)
-
 import pandas as pd
+from helpers.paths import Path
 
-summary_df = pd.DataFrame.from_records(summary_list)
-config_df = pd.DataFrame.from_records(config_list)
-name_df = pd.DataFrame({'name': name_list})
-all_df = pd.concat([name_df, config_df, summary_df], axis=1)
+file_path = Path.data / "best_algo.csv"
 
-all_df.to_csv("project.csv")
+
+def get_wandb_data():
+    """Downlaod the wandb data for the best_algo project"""
+    import wandb
+    api = wandb.Api()
+
+    runs = api.runs("lucasv/best_algo_v2")
+    df = pd.DataFrame()
+
+    for run in runs:
+        history = run.history()
+        for k, v in run.config.items():
+            if not k.startswith('_'):
+                history[k] = v
+        history['run'] = run.name
+
+        df = pd.concat([df, history])
+
+    df.to_csv(file_path)
+
+def columns_without_nan(df, column):
+    return df[~df[column].isna()]
+
+# get_wandb_data()
+df = pd.read_csv(file_path)
+print(1)
+import matplotlib.pyplot as plt
+
+for run in df['run'].unique():
+    df_run = df[df.run == run]
+
+    df_clean = columns_without_nan(df_run, 'rollout/ep_len_mean')
+    plt.plot(df['global_step'], df['rollout/ep_len_mean'])
+plt.show()
