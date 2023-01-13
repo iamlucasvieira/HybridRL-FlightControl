@@ -11,8 +11,11 @@ def get_task(task_name):
     task_dict = {
         "aoa": linear_tasks.track_aoa,
         "aoa_sin": linear_tasks.track_aoa_sin,
+        "aoa_rect": linear_tasks.track_aoa_rect,
         "q": linear_tasks.track_q,
         "q_sin": linear_tasks.track_q_sin,
+        "q_rect": linear_tasks.track_q_rect,
+
     }
 
     if task_name not in task_dict:
@@ -41,6 +44,14 @@ class LinearTasks:
         return LinearTasks.track_sin(env, state="q")
 
     @staticmethod
+    def track_aoa_rect(env):
+        return LinearTasks.track_rectangle(env, state="alpha")
+
+    @staticmethod
+    def track_q_rect(env):
+        return LinearTasks.track_rectangle(env, state="q")
+
+    @staticmethod
     def track(env, state="alpha"):
         """Task to track angle of attack."""
         reference = 0.1
@@ -58,6 +69,21 @@ class LinearTasks:
         amplitude = 0.1
 
         reference = amplitude * np.sin(period * env.current_time / length)
+
+        state_idx = env.aircraft.ss.x_names.index(state)
+        state_value = env.aircraft.current_state.flatten()[state_idx]
+
+        return state_value, reference
+
+    @staticmethod
+    def track_rectangle(env, state="alpha"):
+        """Task to track a rectangle signal."""
+        reference = 0.1
+        length = env.episode_length
+        rectangle_length = length / 4
+
+        if env.current_time < rectangle_length or env.current_time > (length - rectangle_length):
+            reference = 0
 
         state_idx = env.aircraft.ss.x_names.index(state)
         state_value = env.aircraft.current_state.flatten()[state_idx]

@@ -31,7 +31,7 @@ class ConfigLinearAircraft(BaseModel):
 
     @validator('task')
     def check_task(cls, task):
-        TASKS = ['aoa', 'aoa_sin', 'q', 'q_sin']  # Available tasks
+        TASKS = ['aoa', 'aoa_sin', 'a_rect', 'q', 'q_sin', 'q_rect']  # Available tasks
         if task not in TASKS:
             raise ValueError(f"Task must be in {TASKS}")
         return task
