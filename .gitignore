@@ -91,5 +91,3 @@ target/
 # Log files
 logs/
 models/
-
-/src/data/*.csv
