@@ -34,5 +34,6 @@ dependencies:
         - bayesian-optimization
         - gym == 0.21
         - kaggle
+        - seaborn
         - stable-baselines3[extra]
-        - -e .
+#        - -e .
