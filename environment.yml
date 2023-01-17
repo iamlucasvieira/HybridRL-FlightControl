@@ -33,4 +33,4 @@ dependencies:
   - pip:
       - opencv-python  # SB3 extra
       - stable-baselines3>=1.6
-#        - -e .
+        - -e .
