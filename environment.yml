@@ -30,6 +30,8 @@ dependencies:
   - seaborn=0.12
   - tensorboard>=2.9
   - psutil  # SB3 extra
+  - jupyterlab>=3.5
+  - ipympl>=0.9  # Jupyter notebook plotting
   - pip:
       - opencv-python  # SB3 extra
       - stable-baselines3>=1.6
