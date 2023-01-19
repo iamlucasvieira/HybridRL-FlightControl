@@ -43,6 +43,8 @@ def get_wandb_data(project_name):
                 df["algorithm"] = run.config["algorithm"].upper()
                 df["reward_type"] = run.config["reward_type"]
                 df["run"] = run.name
+                if "obs" in run.config:
+                    df["observation"] = run.config["obs"]
 
             df_all_episode = pd.concat([df_all_episode, df_episode])
             df_all_learning = pd.concat([df_all_learning, df_learning])
@@ -53,4 +55,4 @@ def get_wandb_data(project_name):
         print(f"Saved {file_path_episode} and {file_path_learning}")
 
 
-get_wandb_data("best_reward_square")
+get_wandb_data("best_algo")
