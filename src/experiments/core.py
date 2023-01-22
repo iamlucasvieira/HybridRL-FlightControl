@@ -285,7 +285,7 @@ class Experiment:
 
         for sweep in itertools.product(*self.sweeps_config.values()):
             sweep_config = ConfigLinearAircraft(**dict(self.base_config, **dict(zip(keys, sweep))))
-            self.sweeps.append(Sweep(config=sweep_config))
+            self.sweeps.append(Sweep(config=sweep_config, project_name=self.project_name, offline=self.offline))
 
     def learn(self):
         print(f"Running {len(self.sweeps)} sweeps {self.n_learning} times each.")

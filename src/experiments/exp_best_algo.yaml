@@ -1,6 +1,6 @@
 ---
 project_name: "best_algo"
-n_learning: 2
+n_learning: 1
 config:
   learning_steps: 10_000
   configuration: "sp"
