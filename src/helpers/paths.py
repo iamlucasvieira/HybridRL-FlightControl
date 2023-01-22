@@ -13,7 +13,7 @@ DATA = SRC / pl.Path("data")
 AIRCRAFT_DATA = DATA / pl.Path("aircraft")
 MODELS = ROOT / pl.Path("models")
 LOGS = ROOT / pl.Path("logs")
-
+EXP = SRC/ pl.Path("experiments")
 
 @dataclass
 class Path:
@@ -24,6 +24,7 @@ class Path:
     aircraft_data: pl.Path = AIRCRAFT_DATA
     models: pl.Path = MODELS
     logs: pl.Path = LOGS
+    exp: pl.Path = EXP
 
 
 def set_wandb_path():

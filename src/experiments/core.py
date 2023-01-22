@@ -2,6 +2,8 @@
 import os
 import pathlib as pl
 from typing import Optional
+import yaml
+import itertools
 
 import matplotlib.pyplot as plt
 import wandb
@@ -10,7 +12,7 @@ from stable_baselines3 import SAC, TD3
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 
-from helpers.config import ConfigLinearAircraft
+from helpers.config import ConfigLinearAircraft, ConfigExperiment
 from helpers.tracking import TensorboardCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
@@ -18,7 +20,7 @@ from models.aircraft_environment import AircraftEnv
 from agents.seres_dsac import DSAC
 
 
-class Experiment:
+class Sweep:
     """Class that builds an experiment."""
 
     def __init__(self,
@@ -37,7 +39,7 @@ class Experiment:
                  project_name="",
                  log_interval: int = 1,
                  reward_type: str = "sq_error",
-                 run=0, ):
+                 evaluate=0, ):
         """Initiates the experiment.
 
         args:
@@ -55,7 +57,7 @@ class Experiment:
             tags: Tags of the experiment.
             offline: Whether to run offline.
             project_name: Name of the project.
-            run: Number of times to run the environment after learning.
+            evaluate: Number of times to run the environment after learning.
 
         properties:
             config: Configuration of the experiment.
@@ -88,7 +90,7 @@ class Experiment:
                 learning_steps=learning_steps,
                 task=task_name,
                 reward_type=reward_type,
-                run=run,
+                evaluat=evaluate,
                 log_interval=log_interval,
             )
         else:
@@ -167,7 +169,7 @@ class Experiment:
 
         self.model = model
 
-        self.run(self.config.run)
+        self.evaluate(self.config.evaluate)
 
     def get_environment(self):
         """Get environment."""
@@ -195,7 +197,7 @@ class Experiment:
         model = self.algo.load(Path.models / self.project_name / model_name / "model.zip")
         self.model = model
 
-    def run(self, n_times=1):
+    def evaluate(self, n_times=1):
         """Run the experiment n times."""
         env = self.env
 
@@ -244,3 +246,49 @@ class Experiment:
     def __del__(self):
         """Finish the wandb logging."""
         self.finish_wandb()
+
+
+class Experiment:
+    """An experiment that contains multiple sweeps"""
+
+    def __init__(self, filename: str, file_path: str = None, offline=None):
+        self.file_path = pl.Path(file_path) if file_path else Path.exp
+        self.filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
+        self.sweeps = []
+
+        # Extract data from dict config
+        config_data = self.load_config()
+
+        self.base_config = config_data.pop("config")
+        self.project_name = config_data.pop("project_name")
+        self.offline = offline if offline is not None else config_data.pop("offline")
+        self.n_learning = config_data.pop("n_learning")
+        self.sweeps_config = config_data
+        self.build_sweeps()
+
+    def load_config(self):
+        """Load the config file."""
+        file = self.file_path / self.filename
+        if not file.exists():
+            raise FileNotFoundError(f"File {file} not found.")
+        with open(file) as f:
+            return ConfigExperiment(**yaml.load(f, Loader=yaml.SafeLoader)).dict()
+
+    def build_sweeps(self):
+        self.sweeps = []
+
+        for parameter in ["algorithm", "reward_type"]:
+            if not self.sweeps_config[parameter]:
+                self.sweeps_config[parameter] = [self.base_config[parameter]]
+
+        keys = self.sweeps_config.keys()
+
+        for sweep in itertools.product(*self.sweeps_config.values()):
+            sweep_config = ConfigLinearAircraft(**dict(self.base_config, **dict(zip(keys, sweep))))
+            self.sweeps.append(Sweep(config=sweep_config))
+
+    def learn(self):
+        print(f"Running {len(self.sweeps)} sweeps {self.n_learning} times each.")
+        for _ in range(self.n_learning):
+            for sweep in self.sweeps:
+                sweep.learn()

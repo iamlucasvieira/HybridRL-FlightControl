@@ -1,6 +1,6 @@
 """Experiment to learn using wandb while using the citation model in sp mode."""
 
-from experiments.core import Experiment
+from experiments.core import Sweep
 
 
 def main(algorithm_name: str = "SAC",
@@ -24,23 +24,23 @@ def main(algorithm_name: str = "SAC",
 
     """
 
-    exp = Experiment(algorithm_name=algorithm_name,
-                     env_name=env_name,
-                     configuration=configuration,
-                     task_name=task_name,
-                     seed=seed,
-                     dt=dt,
-                     episode_steps=episode_steps,
-                     learning_steps=learning_steps,
-                     verbose=verbose,
-                     offline=offline
-                     )
+    exp = Sweep(algorithm_name=algorithm_name,
+                env_name=env_name,
+                configuration=configuration,
+                task_name=task_name,
+                seed=seed,
+                dt=dt,
+                episode_steps=episode_steps,
+                learning_steps=learning_steps,
+                verbose=verbose,
+                offline=offline
+                )
 
     # Learn the model
     exp.learn(name=name, tags=tags)
 
     # Run the model
-    exp.run()
+    exp.evaluate()
 
     # Plot results
     if TO_PLOT:

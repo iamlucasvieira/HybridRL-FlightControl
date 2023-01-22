@@ -1,23 +1,10 @@
 """Defines the RL tasks functions."""
-from dataclasses import dataclass
 
 import numpy as np
 
 
 def get_task(task_name):
     """Returns the task function."""
-    linear_tasks = LinearTasks()
-
-    task_dict = {
-        "aoa": linear_tasks.track_aoa,
-        "aoa_sin": linear_tasks.track_aoa_sin,
-        "aoa_rect": linear_tasks.track_aoa_rect,
-        "q": linear_tasks.track_q,
-        "q_sin": linear_tasks.track_q_sin,
-        "q_rect": linear_tasks.track_q_rect,
-
-    }
-
     if task_name not in task_dict:
         raise ValueError(f"Task {task_name} not found.")
     else:
@@ -89,3 +76,16 @@ class LinearTasks:
         state_value = env.aircraft.current_state.flatten()[state_idx]
 
         return state_value, reference
+
+
+task_dict = {
+    "aoa": LinearTasks.track_aoa,
+    "aoa_sin": LinearTasks.track_aoa_sin,
+    "aoa_rect": LinearTasks.track_aoa_rect,
+    "q": LinearTasks.track_q,
+    "q_sin": LinearTasks.track_q_sin,
+    "q_rect": LinearTasks.track_q_rect,
+
+}
+
+AVAILABLE_TASKS = list(task_dict.keys())

@@ -1,0 +1,11 @@
+---
+project_name: "best_algo"
+n_learning: 2
+config:
+  learning_steps: 10_000
+  configuration: "sp"
+  task: "q_sin"
+algorithm:
+  - "SAC"
+  - "DSAC"
+  - "TD3"
