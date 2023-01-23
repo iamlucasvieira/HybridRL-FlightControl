@@ -6,6 +6,7 @@ import numpy as np
 from models.aircraft_model import Aircraft
 from models.tasks import get_task
 from models.rewards import get_reward
+from models.observations import get_observation
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""
@@ -19,6 +20,7 @@ class AircraftEnv(gym.Env):
 
         self.task = get_task(config.task)
         self._get_reward = get_reward(config.reward_type)
+        self._get_obs = get_observation(config.observation_type)
 
         self.configuration = config.configuration
         self.reward_scale = config.reward_scale
@@ -68,7 +70,7 @@ class AircraftEnv(gym.Env):
         if self.current_time > self.episode_length:
             done = True
 
-        observation = self._get_obs()
+        observation = self._get_obs(self)
         info = {}
 
         return observation, reward, done, info
@@ -91,7 +93,7 @@ class AircraftEnv(gym.Env):
         states = self.aircraft.current_state.flatten()
         self.current_states = self.aircraft.current_state.flatten()
 
-        observation = self._get_obs()
+        observation = self._get_obs(self)
 
         return observation  # reward, done, info can't be included
 
@@ -102,16 +104,9 @@ class AircraftEnv(gym.Env):
     def close(self):
         pass
 
-    def _get_obs(self):
-        """Returns the current observation."""
-        states = self.aircraft.current_state
-        reference = 0 if not self.reference else self.reference[-1]
-        tracking_error = 0 if not self.sq_error else self.sq_error[-1]
-        return np.append(states, [reference, tracking_error]).astype(np.float32)
-
     def _get_obs_shape(self):
         """Returns the shape of the observation."""
-        return self._get_obs().shape
+        return self._get_obs(self).shape
 
 class AircraftIncrementalEnv(AircraftEnv):
     """Incremental model of the Aircraft"""

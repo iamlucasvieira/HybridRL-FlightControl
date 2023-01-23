@@ -1,0 +1,18 @@
+---
+project_name: "best_observation"
+n_learning: 1
+config:
+  learning_steps: 10_000
+  configuration: "sp"
+  task: "q_sin"
+
+algorithm:
+  - "SAC"
+  - "DSAC"
+  - "TD3"
+
+observation_type:
+  - "states + ref + error"
+  - "error"
+  - "ref + state"
+  - "state + error"

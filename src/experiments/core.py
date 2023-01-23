@@ -39,24 +39,26 @@ class Sweep:
                  project_name="",
                  log_interval: int = 1,
                  reward_type: str = "sq_error",
-                 evaluate=0, ):
+                 observation_type: str = "error",
+                 evaluate: int =1, ):
         """Initiates the experiment.
 
         args:
+            config: configuration of the experiment
             algorithm_name: Name of the algorithm used.
             env_name: Environment to use.
+            filename: Name of the file to load the aircraft configuration from.
             task_name: Task to perform.
             seed: Random seed.
             dt: Time step.
             episode_steps: Number of steps.
             learning_steps: Number of total learning steps.
-            TO_TRAIN: Whether to train the model.
-            TO_PLOT: Whether to plot the results.
             verbose: Verbosity level.
-            name: Name of the experiment.
-            tags: Tags of the experiment.
             offline: Whether to run offline.
             project_name: Name of the project.
+            log_interval: Interval to log.
+            reward_type: Type of reward.
+            observation_type: Type of observation.
             evaluate: Number of times to run the environment after learning.
 
         properties:
@@ -90,6 +92,7 @@ class Sweep:
                 learning_steps=learning_steps,
                 task=task_name,
                 reward_type=reward_type,
+                observation_type=observation_type,
                 evaluat=evaluate,
                 log_interval=log_interval,
             )
@@ -277,7 +280,7 @@ class Experiment:
     def build_sweeps(self):
         self.sweeps = []
 
-        for parameter in ["algorithm", "reward_type"]:
+        for parameter in ["algorithm", "reward_type", "observation_type"]:
             if not self.sweeps_config[parameter]:
                 self.sweeps_config[parameter] = [self.base_config[parameter]]
 
