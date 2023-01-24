@@ -1,16 +1,34 @@
-Thesis pilot
+Thesis pilot: Adaptive Flight Controller using Reinforcement Learning
 ==============================
 
+This repository contains the code and documentation for a thesis research project that aims to advance the state-of-the-art in adaptive flight control through Reinforcement Learning.
+
+Aircraft control systems are crucial for safety and must always keep the aircraft controllable, regardless of any environment or system disruptions. One way to improve flight safety and stability is through adaptive flight controllers, which can adjust their behaviour in response to changing circumstances. Reinforcement learning is a promising technique for designing these controllers.
+
+## Research Aim 🛩️🤖
+The research aims to develop a cascaded flight controller that uses a hybrid offline and online learning approach to provide robustness and adaptiveness to aircraft control. The goal is to create a controller that can still function effectively under failure and adverse conditions.
 Preliminary work for my control systems with RL MSc thesis
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/iamlucassantos/thesis_pilot/HEAD)
-## Installation
+
+
+## Setup Instructions 🛠️
+To run the code in this repository, you will need to create a Python environment as follows:
 1. Create a conda environment \
 ```conda env create -f environmnet.yml -n thesis-pilot``` 
 2. Activate the environment\
 ```conda activate thesis-pilot```
 3. Add the conda environment to Jupiter kernel \
 ```python3 -m ipykernel install --user --name tesis-pilot --display-name "Python 3.9 (thesis_pilot)```
+
+
+## Repository contents 📚
+The repository contains the following:
+
+- Code for the cascaded flight controller and reinforcement learning algorithms used in the research
+- Data and results from simulations and experiments
+- Thesis document (in PDF format)
+- Presentation slides used for thesis defense
 
 Project Organization
 ------------
@@ -62,5 +80,8 @@ Project Organization
 
 
 --------
+
+## Contact 📞 
+If you have any questions or need help with the code or research, please contact me at [lucas6eng@gmail.com](mailto:lucas6eng@gmail.com).
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
