@@ -1,5 +1,6 @@
 Thesis pilot: Adaptive Flight Controller using Reinforcement Learning
 ==============================
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/iamlucassantos/thesis_pilot/HEAD)
 
 This repository contains the code and documentation for a thesis research project that aims to advance the state-of-the-art in adaptive flight control through Reinforcement Learning.
 
@@ -9,7 +10,6 @@ Aircraft control systems are crucial for safety and must always keep the aircraf
 The research aims to develop a cascaded flight controller that uses a hybrid offline and online learning approach to provide robustness and adaptiveness to aircraft control. The goal is to create a controller that can still function effectively under failure and adverse conditions.
 Preliminary work for my control systems with RL MSc thesis
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/iamlucassantos/thesis_pilot/HEAD)
 
 
 ## Setup Instructions 🛠️
