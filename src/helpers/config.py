@@ -34,7 +34,7 @@ class ConfigLinearAircraft(BaseModel):
         return configuration
 
     @validator('task_type')
-    def check_task_type(cls, task):
+    def check_task_type(cls, task_type):
         if task_type not in AVAILABLE_TASKS:
             raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
         return task_type
