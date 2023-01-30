@@ -1,9 +1,8 @@
 ---
-project_name: "best_reward_square"
+project_name: "tasks"
 n_learning: 2
 
 config:
-  task: "rect_q"
   learning_steps: 10_000
   configuration: "sp"
 
@@ -12,7 +11,7 @@ algorithm:
   - "DSAC"
   - "TD3"
 
-reward_type:
-  - "sq_error"
-  - "sq_error_da"
-  - "sq_error_da_a"
+task:
+  - "step_q"
+  - "sin_q"
+  - "square_q"

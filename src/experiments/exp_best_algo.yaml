@@ -4,7 +4,7 @@ n_learning: 1
 config:
   learning_steps: 10_000
   configuration: "sp"
-  task: "q_sin"
+  task: "square_q"
 algorithm:
   - "SAC"
   - "DSAC"

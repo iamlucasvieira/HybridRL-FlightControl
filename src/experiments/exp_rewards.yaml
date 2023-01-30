@@ -3,7 +3,7 @@ project_name: "best_reward"
 n_learning: 2
 
 config:
-  task: "q_sin"
+  task: "sin_q"
   learning_steps: 10_000
   configuration: "sp"
 

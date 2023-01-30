@@ -7,6 +7,7 @@ from models.tasks import AVAILABLE_TASKS
 from models.rewards import AVAILABLE_REWARDS
 from models.observations import AVAILABLE_OBSERVATIONS
 
+
 class ConfigLinearAircraft(BaseModel):
     """Symmetric derivatives."""
     policy_type: Optional[str] = "MlpPolicy"
@@ -18,7 +19,7 @@ class ConfigLinearAircraft(BaseModel):
     dt: Optional[float] = 0.1  # Time step
     episode_steps: Optional[int] = 100  # Number of steps
     learning_steps: Optional[int] = 1_000  # Number of total learning steps
-    task: Optional[str] = "q_sin"
+    task: Optional[str] = "sin_q"
     evaluate: Optional[int] = 1  # Number of times to run the environment after learning
     reward_scale: Optional[float] = 1.0  # Reward scale
     log_interval: Optional[int] = 1  # Log interval
@@ -49,6 +50,7 @@ class ConfigLinearAircraft(BaseModel):
         if observation_type not in AVAILABLE_OBSERVATIONS:
             raise ValueError(f"Observation must be in {AVAILABLE_OBSERVATIONS}")
         return observation_type
+
     @validator('seed')
     def check_seed(cls, seed):
         if seed is None:
@@ -65,6 +67,3 @@ class ConfigExperiment(BaseModel):
     algorithm: Optional[List[str]] = []
     reward_type: Optional[List[str]] = []
     observation_type: Optional[List[str]] = []
-
-
-

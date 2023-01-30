@@ -29,7 +29,7 @@ class Sweep:
                  env_name: str = "citation",
                  filename: str = "citation.yaml",
                  configuration: str = "symmetric",
-                 task_name="q_sin",
+                 task_name="sin_q",
                  seed: Optional[int] = None,
                  dt: float = 0.1,
                  episode_steps: int = 100,
