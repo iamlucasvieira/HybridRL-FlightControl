@@ -1,5 +1,5 @@
 ---
-project_name: "best_observation"
+project_name: "Observations"
 n_learning: 1
 config:
   learning_steps: 10_000

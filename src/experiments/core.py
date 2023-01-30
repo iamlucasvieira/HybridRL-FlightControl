@@ -29,7 +29,7 @@ class Sweep:
                  env_name: str = "citation",
                  filename: str = "citation.yaml",
                  configuration: str = "symmetric",
-                 task_name="sin_q",
+                 task_type="sin_q",
                  seed: Optional[int] = None,
                  dt: float = 0.1,
                  episode_steps: int = 100,
@@ -48,7 +48,7 @@ class Sweep:
             algorithm_name: Name of the algorithm used.
             env_name: Environment to use.
             filename: Name of the file to load the aircraft configuration from.
-            task_name: Task to perform.
+            task_type: Task to perform.
             seed: Random seed.
             dt: Time step.
             episode_steps: Number of steps.
@@ -90,7 +90,7 @@ class Sweep:
                 dt=dt,
                 episode_steps=episode_steps,
                 learning_steps=learning_steps,
-                task=task_name,
+                task_type=task_type,
                 reward_type=reward_type,
                 observation_type=observation_type,
                 evaluat=evaluate,
@@ -105,7 +105,7 @@ class Sweep:
         self.wandb_run = None
 
         # Define project name and paths
-        self.project_name = project_name if project_name else f"{self.config.env_name}-{self.config.algorithm}-{self.config.task}"
+        self.project_name = project_name if project_name else f"{self.config.env_name}-{self.config.algorithm}-{self.config.task_type}"
         self.MODELS_PATH = Path.models / self.project_name
         self.LOGS_PATH = Path.logs / self.project_name
 

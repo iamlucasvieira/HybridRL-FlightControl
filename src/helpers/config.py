@@ -19,7 +19,7 @@ class ConfigLinearAircraft(BaseModel):
     dt: Optional[float] = 0.1  # Time step
     episode_steps: Optional[int] = 100  # Number of steps
     learning_steps: Optional[int] = 1_000  # Number of total learning steps
-    task: Optional[str] = "sin_q"
+    task_type: Optional[str] = "sin_q"
     evaluate: Optional[int] = 1  # Number of times to run the environment after learning
     reward_scale: Optional[float] = 1.0  # Reward scale
     log_interval: Optional[int] = 1  # Log interval
@@ -33,11 +33,11 @@ class ConfigLinearAircraft(BaseModel):
             raise ValueError(f"Configuration must be in {CONFIGURATIONS}")
         return configuration
 
-    @validator('task')
-    def check_task(cls, task):
-        if task not in AVAILABLE_TASKS:
+    @validator('task_type')
+    def check_task_type(cls, task):
+        if task_type not in AVAILABLE_TASKS:
             raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
-        return task
+        return task_type
 
     @validator('reward_type')
     def check_reward_type(cls, reward_type):
