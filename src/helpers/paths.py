@@ -13,7 +13,9 @@ DATA = SRC / pl.Path("data")
 AIRCRAFT_DATA = DATA / pl.Path("aircraft")
 MODELS = ROOT / pl.Path("models")
 LOGS = ROOT / pl.Path("logs")
-EXP = SRC/ pl.Path("experiments")
+EXP = SRC / pl.Path("experiments")
+FIGURES = ROOT / pl.Path("reports/figures")
+
 
 @dataclass
 class Path:
@@ -25,6 +27,9 @@ class Path:
     models: pl.Path = MODELS
     logs: pl.Path = LOGS
     exp: pl.Path = EXP
+    figures: pl.Path = FIGURES
+    paper_figures: pl.Path = pl.Path(
+        "/Users/lucas/Documents/Thesis Writing/LiteratureReview/figures")  # Path to report figures
 
 
 def set_wandb_path():
