@@ -23,7 +23,7 @@ class ConfigLinearAircraft(BaseModel):
     reward_scale: Optional[float] = 1.0  # Reward scale
     log_interval: Optional[int] = 1  # Log interval
     reward_type: Optional[str] = "sq_error"
-    observation_type: Optional[str] = "error"
+    observation_type: Optional[str] = "states + ref + error"
 
     @validator('configuration')
     def check_config(cls, configuration):
