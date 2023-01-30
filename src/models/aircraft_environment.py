@@ -18,7 +18,7 @@ class AircraftEnv(gym.Env):
         self.episode_steps = config.episode_steps
         self.episode_length = self.episode_steps * self.dt
 
-        self.task = get_task(config.task)
+        self.task = get_task(config.task_type)
         self._get_reward = get_reward(config.reward_type)
         self._get_obs = get_observation(config.observation_type)
 
