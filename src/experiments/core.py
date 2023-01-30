@@ -40,7 +40,7 @@ class Sweep:
                  log_interval: int = 1,
                  reward_type: str = "sq_error",
                  observation_type: str = "error",
-                 evaluate: int =1, ):
+                 evaluate: int = 1, ):
         """Initiates the experiment.
 
         args:
@@ -286,12 +286,16 @@ class Experiment:
 
         keys = self.sweeps_config.keys()
 
-        for sweep in itertools.product(*self.sweeps_config.values()):
-            sweep_config = ConfigLinearAircraft(**dict(self.base_config, **dict(zip(keys, sweep))))
-            self.sweeps.append(Sweep(config=sweep_config, project_name=self.project_name, offline=self.offline))
+        experiment_configurations = list(itertools.product(*self.sweeps_config.values()))
+
+        # Create different seeds for each configuration to run
+        for i in range(self.n_learning):
+            # Create a sweep for each configuration
+            for sweep in experiment_configurations:
+                sweep_config = ConfigLinearAircraft(**dict(self.base_config, **dict(zip(keys, sweep))))
+                self.sweeps.append(Sweep(config=sweep_config, project_name=self.project_name, offline=self.offline))
 
     def learn(self):
         print(f"Running {len(self.sweeps)} sweeps {self.n_learning} times each.")
-        for _ in range(self.n_learning):
-            for sweep in self.sweeps:
-                sweep.learn()
+        for sweep in self.sweeps:
+            sweep.learn()
