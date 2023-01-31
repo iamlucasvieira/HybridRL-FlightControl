@@ -1,6 +1,6 @@
 ---
 project_name: "Tasks"
-n_learning: 2
+n_learning: 10
 
 config:
   learning_steps: 10_000
@@ -11,7 +11,7 @@ algorithm:
   - "DSAC"
   - "TD3"
 
-task:
+task_type:
   - "step_q"
-  - "sin_q"
+#  - "sin_q"
   - "square_q"

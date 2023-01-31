@@ -67,3 +67,4 @@ class ConfigExperiment(BaseModel):
     algorithm: Optional[List[str]] = []
     reward_type: Optional[List[str]] = []
     observation_type: Optional[List[str]] = []
+    task_type: Optional[List[str]] = []

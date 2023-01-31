@@ -280,7 +280,7 @@ class Experiment:
     def build_sweeps(self):
         self.sweeps = []
 
-        for parameter in ["algorithm", "reward_type", "observation_type"]:
+        for parameter in ["algorithm", "reward_type", "observation_type", "task_type"]:
             if not self.sweeps_config[parameter]:
                 self.sweeps_config[parameter] = [self.base_config[parameter]]
 
