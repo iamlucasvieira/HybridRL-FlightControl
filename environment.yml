@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - plotly
 dependencies:
-  - python=3.9
+  - python=3.10
   - pip>=19.0
   - pytorch
   - torchvision
@@ -17,7 +17,6 @@ dependencies:
   - pybullet = 3.21
   - wandb = 0.13
   - protobuf = 3.20
-  - gym = 0.21
   - jupyter
   - scikit-learn=1.2
   - scipy=1.9
@@ -34,5 +33,6 @@ dependencies:
   - ipympl>=0.9  # Jupyter notebook plotting
   - pip:
       - opencv-python  # SB3 extra
+      - gym == 0.21
       - stable-baselines3>=1.6
       - -e .
