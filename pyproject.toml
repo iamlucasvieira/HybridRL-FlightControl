@@ -6,8 +6,6 @@ description = "Preliminary work for my control systems with RL MSc thesis"
 authors = ["lucas <lucas6eng@gmail.com>"]
 license = "MIT"
 include = [
-    { path = "data", format = "sdist" },
-    { path = "models", format = "sdist" }
 ]
 
 [tool.poetry.dependencies]
@@ -18,10 +16,8 @@ pydantic = "^1.10.2"
 nox = "^2022.8.7"
 PyYAML = "^6.0"
 rich = "^12.6.0"
-pybullet = "^3.2.5"
 wandb = "^0.13.5"
 protobuf = "3.20"
-gym = "0.21"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^5.0.4"

@@ -33,6 +33,5 @@ dependencies:
   - ipympl>=0.9  # Jupyter notebook plotting
   - pip:
       - opencv-python  # SB3 extra
-      - gym == 0.21
-      - stable-baselines3>=1.6
+      - stable-baselines3
       - -e .
