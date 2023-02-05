@@ -19,7 +19,7 @@ class ConfigCommands(click.core.Command):
         super().__init__(*args, **kwargs)
         self.params.insert(0, click.core.Option(('--algo', '-a'), default="SAC", help='Algorithm to use.'))
         self.params.insert(0, click.core.Option(('--env', '-e'), default="citation", help='Environment to use.'))
-        self.params.insert(0, click.core.Option(('--task', '-t'), default="q_sin", help='Task to use.'))
+        self.params.insert(0, click.core.Option(('--task', '-t'), default="sin_q", help='Task to use.'))
         self.params.insert(0, click.core.Option(('--seed', '-s'), default=None, help='Seed to use.'))
         self.params.insert(0, click.core.Option(('--dt', '-dt'), default=0.1, help='Time step to use.'))
         self.params.insert(0,
@@ -60,7 +60,7 @@ def learn(ctx, **kwargs):
     exp = Sweep(algorithm_name=kwargs['algo'],
                 env_name=kwargs['env'],
                 configuration=kwargs['config'],
-                task_name=kwargs['task'],
+                task_type=kwargs['task'],
                 seed=kwargs['seed'],
                 dt=kwargs['dt'],
                 episode_steps=kwargs['episode_steps'],
