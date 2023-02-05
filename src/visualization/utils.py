@@ -19,7 +19,7 @@ def make_smooth(_df, step=100, on=None, columns=[], info=[], group="run"):
         step: Number of steps to average over.
         on: Column to count the steps on.
         columns: Columns to smooth.
-        info: Columns with data about the group.
+        info: Columns with _data about the group.
         group: Column to group by.
         """
     start = _df[on].min()

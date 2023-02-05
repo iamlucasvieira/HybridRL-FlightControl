@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def get_wandb_data(project_name):
-    """Function that gathers the episode and learning data from wandb."""
+    """Function that gathers the episode and learning _data from wandb."""
 
     def get_columns(_run, keys):
         """Return a dataframe with the passed_keys"""
@@ -20,7 +20,7 @@ def get_wandb_data(project_name):
         runs = api.runs(f"lucasv/{project_name}")
         df_all_episode, df_all_learning = pd.DataFrame(), pd.DataFrame()
         for run in runs:
-            # Episode data
+            # Episode _data
             episode_data_list = [
                 get_columns(run, ["episode_step", "tracking_error"]),
                 get_columns(run, ["episode_step", "state", "reference"]),
@@ -30,7 +30,7 @@ def get_wandb_data(project_name):
 
             df_episode = pd.concat([df.set_index('episode_step') for df in episode_data_list], axis=1).reset_index()
 
-            # Training data
+            # Training _data
             learning_data_list = [
                 get_columns(run, ["rollout/ep_len_mean", "global_step"]),
                 get_columns(run, ["rollout/ep_rew_mean", "global_step"])
@@ -38,10 +38,11 @@ def get_wandb_data(project_name):
 
             df_learning = pd.concat([df.set_index('global_step') for df in learning_data_list], axis=1).reset_index()
 
-            # Add information to data
+            # Add information to _data
             for df in [df_episode, df_learning]:
                 df["algorithm"] = run.config["algorithm"].upper()
                 df["reward_type"] = run.config["reward_type"]
+                df["task_type"] = run.config["task_type"]
                 df["run"] = run.name
                 if "obs" in run.config:
                     df["observation"] = run.config["obs"]
@@ -55,4 +56,4 @@ def get_wandb_data(project_name):
         print(f"Saved {file_path_episode} and {file_path_learning}")
 
 
-get_wandb_data("best_algo")
+get_wandb_data("Tasks")

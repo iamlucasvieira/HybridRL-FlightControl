@@ -84,7 +84,7 @@ class DSAC:
         self.print(f"Mean reward: {mean_rewards}")
 
     def train_single_episode(self):
-        """Returns the (episode data object, end-of-episode return, wall-clock training time)"""
+        """Returns the (episode _data object, end-of-episode return, wall-clock training time)"""
 
         env = self.env
         agent = self.agent

@@ -2,7 +2,7 @@
 import numpy as np
 import rich.repr
 
-from data.load_aircraft_data import load_aircraft, AircraftData
+from _data.load_aircraft_data import load_aircraft, AircraftData
 
 
 @rich.repr.auto

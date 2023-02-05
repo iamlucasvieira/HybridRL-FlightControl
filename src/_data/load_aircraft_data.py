@@ -66,7 +66,7 @@ class AssymmetricData(BaseModel):
 
 
 class AircraftData(BaseModel):
-    """Aircraft data validation."""
+    """Aircraft _data validation."""
     name: str
     v: float
     m: float
@@ -87,7 +87,7 @@ class AircraftData(BaseModel):
 
 
 def load_aircraft(filename: str) -> AircraftData:
-    """Load aircraft data from YAML file, validate, and return data object."""
+    """Load aircraft _data from YAML file, validate, and return _data object."""
 
     with open(Path.aircraft_data / filename) as f:
         aircraft = yaml.safe_load(f)

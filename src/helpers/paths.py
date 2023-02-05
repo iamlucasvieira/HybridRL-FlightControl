@@ -9,7 +9,7 @@ ROOT = pl.Path(__file__).resolve().parents[2]
 
 # Data paths
 SRC = ROOT / pl.Path("src")
-DATA = SRC / pl.Path("data")
+DATA = SRC / pl.Path("_data")
 AIRCRAFT_DATA = DATA / pl.Path("aircraft")
 MODELS = ROOT / pl.Path("models")
 LOGS = ROOT / pl.Path("logs")
