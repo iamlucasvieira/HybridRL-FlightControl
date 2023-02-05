@@ -37,6 +37,7 @@ class AircraftEnv(gym.Env):
         self.track = []
         self.actions = []
         self.sq_error = []
+        self.error = []
 
         self.action_space = spaces.Box(low=-0.3, high=0.3,
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
@@ -58,6 +59,7 @@ class AircraftEnv(gym.Env):
         self.reference.append(reference)
         self.track.append(state_value)
         self.sq_error.append((reference - state_value) ** 2)
+        self.error.append(reference - state_value)
 
         done = False
 
@@ -85,6 +87,7 @@ class AircraftEnv(gym.Env):
         self.track = []
         self.actions = []
         self.sq_error = []
+        self.error = []
 
         # Reset the state of the environment to an initial state
         self.aircraft.build_state_space()
