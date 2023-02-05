@@ -1,4 +1,4 @@
-name: ci
+name: Docker CI
 
 on:
   push:
@@ -27,3 +27,4 @@ jobs:
         with:
           push: true
           tags: lucas6eng/tp:latest
+          platforms: linux/amd64, linux/arm64/v8 
