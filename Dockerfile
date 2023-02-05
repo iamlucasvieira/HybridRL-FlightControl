@@ -15,4 +15,5 @@ RUN pip install stable-baselines3
 RUN echo "Make sure Gym is installed:"
 RUN python -c "import gym"
 
-ENTRYPOINT ["bin/bash"]
+WORKDIR /
+ENTRYPOINT ["/bin/bash"]
