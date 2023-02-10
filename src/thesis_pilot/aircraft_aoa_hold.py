@@ -1,4 +1,4 @@
-from models.aircraft_environment import AircraftEnv
+from envs.lti_citation.aircraft_environment import AircraftEnv
 from stable_baselines3 import SAC
 # from stable_baselines3.common.env_checker import check_env
 import matplotlib.pyplot as plt

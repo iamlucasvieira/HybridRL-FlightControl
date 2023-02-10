@@ -3,10 +3,10 @@ import gym
 from gym import spaces
 import numpy as np
 
-from models.aircraft_model import Aircraft
-from models.tasks import get_task
-from models.rewards import get_reward
-from models.observations import get_observation
+from envs.lti_citation.lti_model import Aircraft
+from envs.lti_citation.tasks import get_task
+from envs.lti_citation.rewards import get_reward
+from envs.lti_citation.observations import get_observation
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""

@@ -10,7 +10,7 @@ import numpy as np
 from src.helpers.paths import Path
 from src.helpers.misc import get_device
 
-MODELS_PATH = Path.root / "models"
+MODELS_PATH = Path.root / "envs"
 TEMP_PATH = MODELS_PATH / "custom_sac"
 
 

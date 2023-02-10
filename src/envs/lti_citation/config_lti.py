@@ -1,6 +1,4 @@
 from pydantic import BaseModel, validator, Extra
-import yaml
-from helpers.paths import Path
 from typing import Optional
 
 
@@ -84,11 +82,3 @@ class AircraftData(BaseModel):
         if not values.get('symmetric') and not v:
             raise ValueError('Either symmetric or asymmetric must be provided.')
         return v
-
-
-def load_aircraft(filename: str) -> AircraftData:
-    """Load aircraft _data from YAML file, validate, and return _data object."""
-
-    with open(Path.aircraft_data / filename) as f:
-        aircraft = yaml.safe_load(f)
-    return AircraftData(**aircraft)

@@ -1,8 +1,10 @@
 """Class that creates LTI aircraft model."""
 import numpy as np
 import rich.repr
+import yaml
+from pathlib import Path
 
-from _data.load_aircraft_data import load_aircraft, AircraftData
+from envs.lti_citation.config_lti import AircraftData
 
 
 @rich.repr.auto
@@ -23,7 +25,7 @@ class Aircraft:
 
         """
         self.filename = filename
-        self.data = load_aircraft(filename)
+        self.data = self.load_aircraft()
         self.configuration = configuration
         self.dt = dt
         self.ss = None
@@ -31,6 +33,13 @@ class Aircraft:
 
         if auto_build:
             self.build_state_space()
+
+    def load_aircraft(self) -> AircraftData:
+        """Load aircraft _data from YAML file, validate, and return _data object."""
+
+        with open(Path(__file__).parent / self.filename) as f:
+            aircraft = yaml.safe_load(f)
+        return AircraftData(**aircraft)
 
     def build_state_space(self) -> None:
         """Build state space model."""
@@ -162,7 +171,6 @@ class Symmetric(StateSpace):
         # unormalize qc/v by doing multiplying the last row by v_c
         a[3, :] *= v_c
         a[:, 3] /= v_c
-
 
         return a
 

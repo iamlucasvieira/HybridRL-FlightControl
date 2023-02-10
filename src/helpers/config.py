@@ -3,9 +3,9 @@ from pydantic import BaseModel, validator
 import numpy as np
 from typing import Optional, List
 
-from models.tasks import AVAILABLE_TASKS
-from models.rewards import AVAILABLE_REWARDS
-from models.observations import AVAILABLE_OBSERVATIONS
+from envs.lti_citation.tasks import AVAILABLE_TASKS
+from envs.lti_citation.rewards import AVAILABLE_REWARDS
+from envs.lti_citation.observations import AVAILABLE_OBSERVATIONS
 
 
 class ConfigLinearAircraft(BaseModel):

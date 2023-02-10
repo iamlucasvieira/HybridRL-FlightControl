@@ -14,7 +14,7 @@ class BaseNetwork(nn.Module, ABC):
                  input_dims=(2,),
                  hidden_dims=256, output_dims=(1,),
                  name='base',
-                 chkpt_dir='models',
+                 chkpt_dir='envs',
                  device=None):
         """Initialize network.
 
@@ -62,7 +62,7 @@ class BaseNetwork(nn.Module, ABC):
 class CriticNetwork(BaseNetwork):
     """Creates the critic neural network."""
 
-    def __init__(self, input_dims=(2,), hidden_dims=256, output_dims=(1,), name='critic', chkpt_dir='models'):
+    def __init__(self, input_dims=(2,), hidden_dims=256, output_dims=(1,), name='critic', chkpt_dir='envs'):
         """Initialize critic network.
 
         args:
@@ -94,7 +94,7 @@ class CriticNetwork(BaseNetwork):
 class ActorNetwork(BaseNetwork):
     """Creates the actor network."""
 
-    def __init__(self, input_dims=(2,), hidden_dims=256, output_dims=(1,), name='actor', chkpt_dir='models'):
+    def __init__(self, input_dims=(2,), hidden_dims=256, output_dims=(1,), name='actor', chkpt_dir='envs'):
         """Initialize actor network.
 
         args:

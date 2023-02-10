@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import control as ct
 import numpy as np
 
-from models.aircraft_model import Aircraft
+from envs.lti_citation.lti_model import Aircraft
 dt =0.1
 acft = Aircraft('citation.yaml', dt=dt)
 lst = []

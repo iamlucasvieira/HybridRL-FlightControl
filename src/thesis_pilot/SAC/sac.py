@@ -1,7 +1,6 @@
-import gym
 import numpy as np
 from sac_torch import Agent
-from src.models.aircraft_environment import AircraftEnv
+from envs.lti_citation.aircraft_environment import AircraftEnv
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':

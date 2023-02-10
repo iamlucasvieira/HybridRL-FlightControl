@@ -16,7 +16,7 @@ from helpers.config import ConfigLinearAircraft, ConfigExperiment
 from helpers.tracking import TensorboardCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
-from models.aircraft_environment import AircraftEnv
+from envs.lti_citation.aircraft_environment import AircraftEnv
 from agents.seres_dsac import DSAC
 
 
@@ -69,7 +69,7 @@ class Sweep:
             algo: Algorithm of the experiment.
             model: Model of the experiment.
             project_name: Name of the project.
-            MODELS_PATH: Path to the models.
+            MODELS_PATH: Path to the envs.
             LOGS_PATH: Path to the logs.
             wandb_run: Wandb run.
         """

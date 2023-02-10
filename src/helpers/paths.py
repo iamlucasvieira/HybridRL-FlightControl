@@ -10,8 +10,7 @@ ROOT = pl.Path(__file__).resolve().parents[2]
 # Data paths
 SRC = ROOT / pl.Path("src")
 DATA = SRC / pl.Path("_data")
-AIRCRAFT_DATA = DATA / pl.Path("aircraft")
-MODELS = ROOT / pl.Path("models")
+MODELS = ROOT / pl.Path("envs")
 LOGS = ROOT / pl.Path("logs")
 EXP = SRC / pl.Path("experiments")
 FIGURES = ROOT / pl.Path("reports/figures")
@@ -23,7 +22,6 @@ class Path:
     root: pl.Path = ROOT
     src: pl.Path = SRC
     data: pl.Path = DATA
-    aircraft_data: pl.Path = AIRCRAFT_DATA
     models: pl.Path = MODELS
     logs: pl.Path = LOGS
     exp: pl.Path = EXP
