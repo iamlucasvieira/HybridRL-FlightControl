@@ -34,4 +34,5 @@ dependencies:
   - pip:
       - opencv-python  # SB3 extra
       - stable-baselines3
+      - flake8 >= 5.0
       - -e .
