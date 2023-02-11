@@ -1,11 +1,15 @@
 ---
-project_name: "best_algo"
-n_learning: 1
-config:
-  learning_steps: 10_000
-  configuration: "sp"
-  task: "square_q"
-algorithm:
-  - "SAC"
-  - "DSAC"
-  - "TD3"
+name: "best_algo_new_config"
+n_learning: 10
+learning_steps: 1_000
+env:
+  name: "LTI"
+  config:
+    reward_type: "sq_error_da"
+    task_type: "square_q"
+
+agent:
+  - name: "SAC"
+  - name: "TD3"
+  - name: "DSAC"
+seed: 1
