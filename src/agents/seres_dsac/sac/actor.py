@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.distributions import Independent, Normal
-from agents.mlp import make_mlp
+from agents.seres_dsac.mlp import make_mlp
 
 LOG_STD_MAX = 2
 LOG_STD_MIN = -20
@@ -11,7 +11,7 @@ class NormalPolicyNet(nn.Module):
     """Outputs a distribution with parameters learnable by gradient descent."""
 
     def __init__(
-        self, obs_dim: int, action_dim: int, n_hidden_layers: int, n_hidden_units: int
+            self, obs_dim: int, action_dim: int, n_hidden_layers: int, n_hidden_units: int
     ):
         super().__init__()
         self.shared_net = make_mlp(

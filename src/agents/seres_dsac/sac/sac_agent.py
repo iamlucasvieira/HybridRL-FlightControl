@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 from torch import optim
 import torch.nn.functional as F
-from agents.base_agent import BaseAgent
-from agents.sac.critic import QNet
-from agents.sac.actor import NormalPolicyNet
-from agents.experience_replay import Batch, ReplayBuffer, Transition
+from agents.seres_dsac.base_agent import BaseAgent
+from agents.seres_dsac.sac.critic import QNet
+from agents.seres_dsac.sac.actor import NormalPolicyNet
+from agents.seres_dsac.experience_replay import Batch, ReplayBuffer, Transition
 
 CLIP_GRAD = 1.0
 CAPS_STD = 0.05
@@ -17,7 +17,7 @@ CAPS_STD = 0.05
 
 class SACAgent(BaseAgent):
     def __init__(
-        self, device: torch.device, config: dict, obs_dim: int, action_dim: int
+            self, device: torch.device, config: dict, obs_dim: int, action_dim: int
     ):
         super().__init__(
             device=device, config=config, obs_dim=obs_dim, action_dim=action_dim
@@ -118,7 +118,7 @@ class SACAgent(BaseAgent):
         return self.log_eta.exp()
 
     def sample(
-        self, state: torch.tensor, reparameterize: bool
+            self, state: torch.tensor, reparameterize: bool
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Stochastic action: sample from the gaussian and calculate log probs."""
 
@@ -151,11 +151,11 @@ class SACAgent(BaseAgent):
         with torch.no_grad():
             next_action, next_log_pi = self.sample(next_state, reparameterize=False)
             targets = r + self.gamma * (1 - d) * (
-                torch.min(
-                    self.Q1_target(next_state, next_action),
-                    self.Q2_target(next_state, next_action),
-                )
-                - eta * next_log_pi
+                    torch.min(
+                        self.Q1_target(next_state, next_action),
+                        self.Q2_target(next_state, next_action),
+                    )
+                    - eta * next_log_pi
             )
 
         # Critic Loss 1
@@ -284,11 +284,11 @@ class SACAgent(BaseAgent):
 
     @staticmethod
     def load_from_file(
-        file_path: str,
-        config: dict,
-        device: torch.device,
-        obs_dim: int,
-        action_dim: int,
+            file_path: str,
+            config: dict,
+            device: torch.device,
+            obs_dim: int,
+            action_dim: int,
     ) -> SACAgent:
 
         # Load the saved network parameters

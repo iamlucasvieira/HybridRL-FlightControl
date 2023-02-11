@@ -5,11 +5,11 @@ import torch
 import torch.nn as nn
 from torch import optim
 import torch.nn.functional as F
-from agents.dsac.critic import ZNet
-from agents.dsac.risk_distortions import DistortionFn, distortion_functions
-from agents.base_agent import BaseAgent
-from agents.sac.actor import NormalPolicyNet
-from agents.experience_replay import Batch, ReplayBuffer, Transition
+from agents.seres_dsac.dsac.critic import ZNet
+from agents.seres_dsac.dsac.risk_distortions import DistortionFn, distortion_functions
+from agents.seres_dsac.base_agent import BaseAgent
+from agents.seres_dsac.sac.actor import NormalPolicyNet
+from agents.seres_dsac.experience_replay import Batch, ReplayBuffer, Transition
 
 CLIP_GRAD = 1.0
 CAPS_STD = 0.05
@@ -27,12 +27,11 @@ def calculate_huber_loss(td_error: torch.Tensor, k: float = 1.0) -> torch.Tensor
 
 
 def quantile_huber_loss(
-    target: torch.Tensor,
-    prediction: torch.Tensor,
-    taus: torch.Tensor,
-    kappa: float = 1.0,
+        target: torch.Tensor,
+        prediction: torch.Tensor,
+        taus: torch.Tensor,
+        kappa: float = 1.0,
 ):
-
     # TD-error
     td_error = target - prediction  # Shape (B, N)
 
@@ -48,7 +47,7 @@ def quantile_huber_loss(
 
 class DSACAgent(BaseAgent):
     def __init__(
-        self, device: torch.device, config: dict, obs_dim: int, action_dim: int
+            self, device: torch.device, config: dict, obs_dim: int, action_dim: int
     ):
         super().__init__(
             device=device, config=config, obs_dim=obs_dim, action_dim=action_dim
@@ -350,11 +349,11 @@ class DSACAgent(BaseAgent):
 
     @staticmethod
     def load_from_file(
-        file_path: str,
-        config: dict,
-        device: torch.device,
-        obs_dim: int,
-        action_dim: int,
+            file_path: str,
+            config: dict,
+            device: torch.device,
+            obs_dim: int,
+            action_dim: int,
     ) -> DSACAgent:
 
         # Load the saved network parameters

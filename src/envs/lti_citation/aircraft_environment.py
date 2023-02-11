@@ -7,13 +7,19 @@ from envs.lti_citation.lti_model import Aircraft
 from envs.lti_citation.tasks import get_task
 from envs.lti_citation.rewards import get_reward
 from envs.lti_citation.observations import get_observation
+from envs.lti_citation.config_lti_env import ConfigLTIBase
+
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, config, *args, **kwargs):
+    def __init__(self, config=None, **kwargs):
         super(AircraftEnv, self).__init__()
+
+        if config is None:
+            config = ConfigLTIBase(**kwargs)
+
         self.dt = config.dt
         self.episode_steps = config.episode_steps
         self.episode_length = self.episode_steps * self.dt
@@ -22,14 +28,11 @@ class AircraftEnv(gym.Env):
         self._get_reward = get_reward(config.reward_type)
         self._get_obs = get_observation(config.observation_type)
 
-        self.configuration = config.configuration
         self.reward_scale = config.reward_scale
 
-        self.aircraft = Aircraft(*args,
-                                 filename=config.filename,
+        self.aircraft = Aircraft(filename=config.filename,
                                  dt=self.dt,
-                                 configuration=self.configuration,
-                                 **kwargs)
+                                 configuration=config.configuration)
         self.current_states = None
 
         self.current_time = 0
@@ -81,6 +84,7 @@ class AircraftEnv(gym.Env):
         """Updates the observation space."""
         self.observation_space = spaces.Box(low=-1, high=1,
                                             shape=self._get_obs_shape(), dtype=np.float32)
+
     def reset(self):
         self.current_time = 0
         self.reference = []
@@ -110,6 +114,7 @@ class AircraftEnv(gym.Env):
     def _get_obs_shape(self):
         """Returns the shape of the observation."""
         return self._get_obs(self).shape
+
 
 class AircraftIncrementalEnv(AircraftEnv):
     """Incremental model of the Aircraft"""

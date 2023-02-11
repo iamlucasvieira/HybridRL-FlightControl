@@ -13,7 +13,7 @@ class BaseAgent(ABC):
     """Interface for Agents."""
 
     def __init__(
-        self, device: torch.device, config: dict, obs_dim: int, action_dim: int
+            self, device: torch.device, config: dict, obs_dim: int, action_dim: int
     ):
         self.device = device
         self.config = config
@@ -57,11 +57,11 @@ class BaseAgent(ABC):
     @staticmethod
     @abstractmethod
     def load_from_file(
-        file_path: str,
-        config: dict,
-        device: torch.device,
-        obs_dim: int,
-        action_dim: int,
+            file_path: str,
+            config: dict,
+            device: torch.device,
+            obs_dim: int,
+            action_dim: int,
     ) -> BaseAgent:
         """Implement how to load the agent. Usually from .pth."""
         pass

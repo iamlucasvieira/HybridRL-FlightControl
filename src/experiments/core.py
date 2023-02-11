@@ -4,6 +4,7 @@ import pathlib as pl
 from typing import Optional
 import yaml
 import itertools
+import random
 
 import matplotlib.pyplot as plt
 import wandb
@@ -12,35 +13,18 @@ from stable_baselines3 import SAC, TD3
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 
-from helpers.config import ConfigLinearAircraft, ConfigExperiment
+from thesis_pilot.config import ConfigExperiment
 from helpers.tracking import TensorboardCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
-from envs.lti_citation.aircraft_environment import AircraftEnv
-from agents.seres_dsac import DSAC
+
+from agents.seres_dsac.seres_dsac_agent import DSAC
 
 
 class Sweep:
     """Class that builds an experiment."""
 
-    def __init__(self,
-                 config: Optional[ConfigLinearAircraft] = None,
-                 algorithm_name: str = "SAC",
-                 env_name: str = "citation",
-                 filename: str = "citation.yaml",
-                 configuration: str = "symmetric",
-                 task_type="sin_q",
-                 seed: Optional[int] = None,
-                 dt: float = 0.1,
-                 episode_steps: int = 100,
-                 learning_steps: int = 1_000,
-                 verbose: int = 2,
-                 offline: bool = False,
-                 project_name="",
-                 log_interval: int = 1,
-                 reward_type: str = "sq_error",
-                 observation_type: str = "error",
-                 evaluate: int = 1, ):
+    def __init__(self, config: ConfigExperiment = None, **kwargs):
         """Initiates the experiment.
 
         args:
@@ -74,47 +58,36 @@ class Sweep:
             wandb_run: Wandb run.
         """
 
-        if offline:
+        if config is None:
+            self.config = ConfigExperiment(**kwargs)
+        else:
+            self.config = config
+
+        if self.config.offline:
             os.environ["WANDB_MODE"] = "offline"
 
         # Set the wandb log path
         set_wandb_path()
 
-        if config is None:
-            self.config = ConfigLinearAircraft(
-                algorithm=algorithm_name.upper(),
-                env_name=env_name,
-                filename=filename,
-                configuration=configuration,
-                seed=seed,
-                dt=dt,
-                episode_steps=episode_steps,
-                learning_steps=learning_steps,
-                task_type=task_type,
-                reward_type=reward_type,
-                observation_type=observation_type,
-                evaluat=evaluate,
-                log_interval=log_interval,
-            )
-        else:
-            self.config = config
-
-        self.verbose = verbose
-        self.offline = offline
         self.model = None
         self.wandb_run = None
 
         # Define project name and paths
-        self.project_name = project_name if project_name else f"{self.config.env_name}-{self.config.algorithm}-{self.config.task_type}"
-        self.MODELS_PATH = Path.models / self.project_name
-        self.LOGS_PATH = Path.logs / self.project_name
+        if self.config.name is None:
+            agent_name = self.config.agent.__root__.name
+            env_name = self.config.env.name
+            task_type = self.config.env.config.task_type
+            self.config.name = f"{agent_name}-{env_name}-{task_type}"
 
-        self.env = self.get_environment()
-        self.algo = self.get_algorithm()
+        self.MODELS_PATH = Path.models / self.config.name
+        self.LOGS_PATH = Path.logs / self.config.name
+
+        self.env = self.config.env.object(config=self.config.env.config)
+        self.algo = self.config.agent.__root__.object
 
     def learn(self, name=None, tags=None, wandb_config={}, wandb_kwargs={}):
         """Learn the experiment."""
-        if self.verbose > 0:
+        if self.config.verbose > 0:
             pprint(self.config.dict())
 
         # Get the environment and algorithm
@@ -123,7 +96,7 @@ class Sweep:
 
         # Start wandb
         run = wandb.init(
-            project=self.project_name,
+            project=self.config.name,
             config=self.config.dict() | wandb_config,
             sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
             save_code=True,  # optional
@@ -135,7 +108,7 @@ class Sweep:
         self.wandb_run = run
 
         # If online, get the run name provided by wandb
-        run_name = get_name([self.config.env_name, self.config.algorithm]) if self.offline else run.name
+        run_name = get_name([self.config.name, self.config.agent.__root__.name]) if self.config.offline else run.name
 
         # Create directories
         pl.Path.mkdir(self.MODELS_PATH / run_name, parents=True, exist_ok=True)
@@ -155,11 +128,14 @@ class Sweep:
         tensorboard_callback = TensorboardCallback(verbose=2)
 
         # Create model
-        model = algo("MlpPolicy",
-                     env,
-                     verbose=self.verbose,
-                     tensorboard_log=self.LOGS_PATH,
-                     seed=self.config.seed, )
+        algo_kwargs = self.config.agent.__root__.config.dict()
+        model = algo(
+            algo_kwargs.pop("policy"),
+            env,
+            verbose=self.config.verbose,
+            tensorboard_log=self.LOGS_PATH,
+            seed=self.config.seed,
+            **algo_kwargs, )
 
         # Learn model
         model.learn(total_timesteps=self.config.learning_steps,
@@ -174,27 +150,6 @@ class Sweep:
 
         self.evaluate(self.config.evaluate)
 
-    def get_environment(self):
-        """Get environment."""
-        if self.config.env_name == "citation":
-            env = AircraftEnv(self.config)
-        else:
-            raise ValueError(f"Environment {self.config.env_name} not implemented.")
-
-        return env
-
-    def get_algorithm(self):
-        """Get the algorithm."""
-        if self.config.algorithm.lower() == "sac":
-            algo = SAC
-        elif self.config.algorithm.lower() == "td3":
-            algo = TD3
-        elif self.config.algorithm.lower() == "dsac":
-            algo = DSAC
-        else:
-            raise ValueError(f"Algorithm {self.config.algorithm} not implemented.")
-        return algo
-
     def load_model(self, model_name="olive-sun-4"):
         """Load a model file."""
         model = self.algo.load(Path.models / self.project_name / model_name / "model.zip")
@@ -207,7 +162,7 @@ class Sweep:
         for _ in range(n_times):
             obs = env.reset()
 
-            for i in range(self.config.episode_steps):
+            for i in range(self.config.env.config.episode_steps):
                 action, _states = self.model.predict(obs, deterministic=True)
 
                 obs, reward, done, info = env.step(action)
@@ -252,21 +207,17 @@ class Sweep:
 
 
 class Experiment:
-    """An experiment that contains multiple sweeps"""
+    """Class that builds an experiment from a config."""
 
     def __init__(self, filename: str, file_path: str = None, offline=None):
+
         self.file_path = pl.Path(file_path) if file_path else Path.exp
         self.filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
         self.sweeps = []
 
         # Extract data from dict config
-        config_data = self.load_config()
+        self.config = self.load_config()
 
-        self.base_config = config_data.pop("config")
-        self.project_name = config_data.pop("project_name")
-        self.offline = offline if offline is not None else config_data.pop("offline")
-        self.n_learning = config_data.pop("n_learning")
-        self.sweeps_config = config_data
         self.build_sweeps()
 
     def load_config(self):
@@ -275,27 +226,44 @@ class Experiment:
         if not file.exists():
             raise FileNotFoundError(f"File {file} not found.")
         with open(file) as f:
-            return ConfigExperiment(**yaml.load(f, Loader=yaml.SafeLoader)).dict()
+            return ConfigExperiment(**yaml.load(f, Loader=yaml.SafeLoader))
 
     def build_sweeps(self):
         self.sweeps = []
 
-        for parameter in ["algorithm", "reward_type", "observation_type", "task_type"]:
-            if not self.sweeps_config[parameter]:
-                self.sweeps_config[parameter] = [self.base_config[parameter]]
+        # Get list of agents
+        agent_list = self.config.agent if isinstance(self.config.agent, list) else [self.config.agent]
 
-        keys = self.sweeps_config.keys()
+        # Give default values for items that have no sweep set.
+        for sweep_option, sweep_value in self.config.env.sweep.dict().items():
+            if len(sweep_value) == 0:
+                getattr(self.config.env.sweep, sweep_option).append(getattr(self.config.env.config, sweep_option))
 
-        experiment_configurations = list(itertools.product(*self.sweeps_config.values()))
+        for agent in agent_list:
 
-        # Create different seeds for each configuration to run
-        for i in range(self.n_learning):
-            # Create a sweep for each configuration
-            for sweep in experiment_configurations:
-                sweep_config = ConfigLinearAircraft(**dict(self.base_config, **dict(zip(keys, sweep))))
-                self.sweeps.append(Sweep(config=sweep_config, project_name=self.project_name, offline=self.offline))
+            sweep_configurations = list(itertools.product(*self.config.env.sweep.dict().values()))
+
+            for _ in range(self.config.n_learning):
+                for sweep_config in sweep_configurations:
+                    config = self.config.copy(deep=True)
+                    config.agent = agent
+                    sweep_config_dict = dict(zip(config.env.sweep.dict().keys(), sweep_config))
+                    config.env.config.__dict__.update(sweep_config_dict)
+
+                    self.sweeps.append(Sweep(config=config))
+
+            # If multiple sweeps generate seeds
+            if self.config.seed is not None:
+                random.seed(self.config.seed)
+
+            for sweep in self.sweeps:
+                sweep.config.seed = self.get_random_seed()
 
     def learn(self):
-        print(f"Running {len(self.sweeps)} sweeps {self.n_learning} times each.")
+        print(f"Running {len(self.sweeps)} sweeps")
         for sweep in self.sweeps:
             sweep.learn()
+
+    def get_random_seed(self):
+        """Get a random seed."""
+        return random.randint(0, 2 ** 32 - 1)

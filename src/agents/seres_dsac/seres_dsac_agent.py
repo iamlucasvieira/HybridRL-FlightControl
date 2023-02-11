@@ -1,11 +1,10 @@
-from agents.dsac.dsac_agent import DSACAgent
+from agents.seres_dsac.dsac.dsac_agent import DSACAgent
 
-from helpers.config import ConfigLinearAircraft
-from models.aircraft_environment import AircraftEnv
 import numpy as np
 import wandb
 import torch
 import random
+
 
 def torchify(x: np.ndarray) -> torch.Tensor:
     """Turn a single dimensional numpy array to a tensor of size [B, N]"""

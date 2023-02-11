@@ -1,6 +1,6 @@
-"""Module that define configuration of algorithms."""
-from pydantic import BaseModel, validator
+"""Module that configures the LTI environment."""
 import numpy as np
+from pydantic import BaseModel, validator, Extra
 from typing import Optional, List
 
 from envs.lti_citation.tasks import AVAILABLE_TASKS
@@ -8,21 +8,24 @@ from envs.lti_citation.rewards import AVAILABLE_REWARDS
 from envs.lti_citation.observations import AVAILABLE_OBSERVATIONS
 
 
-class ConfigLinearAircraft(BaseModel):
-    """Symmetric derivatives."""
-    policy_type: Optional[str] = "MlpPolicy"
-    env_name: Optional[str] = "citation"
+class ConfigLTISweep(BaseModel):
+    """Class that makes it possible to built multiple sweep configurations."""
+    reward_type: Optional[List[str]] = []
+    observation_type: Optional[List[str]] = []
+    task_type: Optional[List[str]] = []
+
+    class Config:
+        extra = Extra.forbid
+
+
+class ConfigLTIBase(BaseModel):
+    """Base configuration which is passed to the gym environment."""
     filename: Optional[str] = "citation.yaml"
-    configuration: Optional[str] = "symmetric"
-    algorithm: Optional[str] = ""
-    seed: Optional[int] = None  # Random seed
+    configuration: Optional[str] = "sp"
     dt: Optional[float] = 0.1  # Time step
     episode_steps: Optional[int] = 100  # Number of steps
-    learning_steps: Optional[int] = 1_000  # Number of total learning steps
     task_type: Optional[str] = "sin_q"
-    evaluate: Optional[int] = 1  # Number of times to run the environment after learning
     reward_scale: Optional[float] = 1.0  # Reward scale
-    log_interval: Optional[int] = 1  # Log interval
     reward_type: Optional[str] = "sq_error"
     observation_type: Optional[str] = "states + ref + error"
 
@@ -51,20 +54,5 @@ class ConfigLinearAircraft(BaseModel):
             raise ValueError(f"Observation must be in {AVAILABLE_OBSERVATIONS}")
         return observation_type
 
-    @validator('seed')
-    def check_seed(cls, seed):
-        if seed is None:
-            seed = np.random.randint(1_000)
-        return seed
-
-
-class ConfigExperiment(BaseModel):
-    """Class that defines the configuration of the sweep."""
-    project_name: Optional[str]
-    offline: Optional[bool] = False
-    n_learning: Optional[int] = 1
-    config: Optional[ConfigLinearAircraft] = ConfigLinearAircraft()
-    algorithm: Optional[List[str]] = []
-    reward_type: Optional[List[str]] = []
-    observation_type: Optional[List[str]] = []
-    task_type: Optional[List[str]] = []
+    class Config:
+        extra = Extra.forbid

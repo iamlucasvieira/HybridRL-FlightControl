@@ -1,6 +1,6 @@
 import torch
 from torch import nn as nn
-from agents.mlp import make_mlp
+from agents.seres_dsac.mlp import make_mlp
 
 
 class QNet(nn.Module):
