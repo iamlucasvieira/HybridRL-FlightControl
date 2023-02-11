@@ -1,24 +1,20 @@
 """File that defines the core of the experiments."""
+import itertools
 import os
 import pathlib as pl
-from typing import Optional
-import yaml
-import itertools
 import random
 
 import matplotlib.pyplot as plt
 import wandb
+import yaml
 from rich.pretty import pprint
-from stable_baselines3 import SAC, TD3
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 
-from thesis_pilot.config import ConfigExperiment
-from helpers.tracking import TensorboardCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
-
-from agents.seres_dsac.seres_dsac_agent import DSAC
+from helpers.tracking import TensorboardCallback
+from thesis_pilot.config import ConfigExperiment
 
 
 class Sweep:

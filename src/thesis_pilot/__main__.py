@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import click
-import os
-from experiments.core import Sweep, Experiment
+from thesis_pilot.core import Sweep, Experiment
 
 
 @click.group(context_settings={'show_default': True})
@@ -37,7 +36,8 @@ class ConfigCommands(click.core.Command):
         self.params.insert(0, click.core.Option(('--tags', '-tg'), default=None, help='Tags to use.'))
         self.params.insert(0, click.core.Option(('--reward-type', '-rt'), default="sq_error",
                                                 help='Type of the reward function'))
-        self.params.insert(0, click.core.Option(('--observation-type', '-ot'), default="error", help='Type of the observation'))
+        self.params.insert(0, click.core.Option(('--observation-type', '-ot'), default="error",
+                                                help='Type of the observation'))
 
 
 @main.command()

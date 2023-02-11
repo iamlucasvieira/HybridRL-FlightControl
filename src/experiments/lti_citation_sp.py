@@ -1,6 +1,6 @@
 """Experiment to learn using wandb while using the citation model in sp mode."""
 
-from experiments.core import Sweep
+from thesis_pilot.core import Sweep
 
 
 def main(algorithm_name: str = "SAC",
