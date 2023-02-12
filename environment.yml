@@ -8,12 +8,11 @@ dependencies:
   - pip>=19.0
   - pytorch
   - torchvision
-  - click = 8.1
   - matplotlib = 3.6
   - pydantic = 1.10
   - nox
   - PyYAML = 6.0
-  - rich = 12.6
+  - rich >= 12.6cond
   - pybullet = 3.21
   - wandb = 0.13
   - protobuf = 3.20
@@ -31,8 +30,10 @@ dependencies:
   - psutil  # SB3 extra
   - jupyterlab>=3.5
   - ipympl>=0.9  # Jupyter notebook plotting
+  - typer >= 0.7
+  - flake8 >= 5.0
   - pip:
       - opencv-python  # SB3 extra
       - stable-baselines3
-      - flake8 >= 5.0
+      - gym == 0.21
       - -e .

@@ -1,80 +1,55 @@
 # -*- coding: utf-8 -*-
-import click
-from thesis_pilot.core import Sweep, Experiment
+import typer
+from thesis_pilot.core import Experiment
+from typing import Optional
+import pathlib as pl
+from helpers.paths import Path
+from rich import print
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.prompt import IntPrompt, Confirm
+
+app = typer.Typer()
+console = Console()
 
 
-@click.group(context_settings={'show_default': True})
-@click.option('--no-log', '-nl', default=True, is_flag=True, help='Enable logging.')
-@click.pass_context
-def main(ctx, no_log):
-    """Main CLI entrypoint."""
-    ctx.ensure_object(dict)
-
-    ctx.obj['no_log'] = no_log
+def available_experiment_files():
+    """Returns a list of available experiment files."""
+    return [f.name for f in Path.exp.iterdir() if f.is_file() and f.suffix == ".yaml"]
 
 
-class ConfigCommands(click.core.Command):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.params.insert(0, click.core.Option(('--algo', '-a'), default="SAC", help='Algorithm to use.'))
-        self.params.insert(0, click.core.Option(('--env', '-e'), default="citation", help='Environment to use.'))
-        self.params.insert(0, click.core.Option(('--task', '-t'), default="sin_q", help='Task to use.'))
-        self.params.insert(0, click.core.Option(('--seed', '-s'), default=None, help='Seed to use.'))
-        self.params.insert(0, click.core.Option(('--dt', '-dt'), default=0.1, help='Time step to use.'))
-        self.params.insert(0,
-                           click.core.Option(('--episode-steps', '-es'), default=100, help='Number of steps to use.'))
-        self.params.insert(0, click.core.Option(('--learning-steps', '-ls'), default=1000,
-                                                help='Number of learning steps to use.'))
-        self.params.insert(0, click.core.Option(('--offline', '-o'), default=False, is_flag=True,
-                                                help='Whether to run offline.'))
-        self.params.insert(0, click.core.Option(('--project-name', '-pn'), default="", help='Name of the project.'))
-        self.params.insert(0, click.core.Option(('--name', '-n'), default="", help='Name of the run.'))
-        self.params.insert(0, click.core.Option(('--verbose', '-v'), default=2, help='Verbosity level.'))
-        self.params.insert(0, click.core.Option(('--config', '-c'), default="sp", help='Configuration to use.'))
-        self.params.insert(0, click.core.Option(('--evaluate', '-ev'), default=1,
-                                                help='Number of evaluations to perform.'))
-        self.params.insert(0, click.core.Option(('--tags', '-tg'), default=None, help='Tags to use.'))
-        self.params.insert(0, click.core.Option(('--reward-type', '-rt'), default="sq_error",
-                                                help='Type of the reward function'))
-        self.params.insert(0, click.core.Option(('--observation-type', '-ot'), default="error",
-                                                help='Type of the observation'))
+@app.command()
+def main(filename: Optional[str] = typer.Argument(None, help="Experiment file name"),
+         filepath: Optional[pl.Path] = typer.Argument(Path.exp, help="Experiment file path"),
+         offline: Optional[bool] = typer.Option(False, help="Run experiment offline"), ):
+    """Runs an experiment from a config file."""
+    if filename is None:
+        table = Table(header_style="bold magenta")
+        table.add_column("Id", justify="left", style="green", no_wrap=True)
+        table.add_column("Experiment", justify="left", style="green")
+        experiments = available_experiment_files()
+        for idx, file in enumerate(experiments):
+            table.add_row(str(idx + 1), file)
 
+        panel = Panel(table, title="Available experiments to run", title_align="center", border_style="magenta",
+                      expand=False)
+        console.print(panel)
 
-@main.command()
-@click.argument('name')
-@click.option('--offline', '-o', default=None, is_flag=True, help='Whether to run offline.')
-def experiment(name: str, offline: bool):
-    """Run an experiment."""
+        if Confirm.ask("Do you want to run an experiment?"):
+            idx = IntPrompt.ask("Select an experiment", choices=[str(i) for i in range(1, len(experiments) + 1)])
+            filename = experiments[idx - 1]
+        else:
+            raise typer.Exit()
+    filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
+    file = filepath / filename
+    if not file.exists():
+        print(f"File {file} does not exist.")
+        raise typer.Abort()
 
-    exp_args = {}
-    if offline is not None:
-        exp_args = {'offline': offline}
-    exp = Experiment(name, *exp_args)
+    exp = Experiment(filename, file_path=filepath, offline=offline)
     exp.learn()
 
 
-@main.command(cls=ConfigCommands)
-@click.pass_context
-def learn(ctx, **kwargs):
-    """Learn a task."""
-    exp = Sweep(algorithm_name=kwargs['algo'],
-                env_name=kwargs['env'],
-                configuration=kwargs['config'],
-                task_type=kwargs['task'],
-                seed=kwargs['seed'],
-                dt=kwargs['dt'],
-                episode_steps=kwargs['episode_steps'],
-                learning_steps=kwargs['learning_steps'],
-                verbose=kwargs['verbose'],
-                offline=kwargs['offline'],
-                project_name=kwargs['project_name'],
-                reward_type=kwargs['reward_type'],
-                observation_type=kwargs['observation_type'],
-                evaluate=kwargs['evaluate'],
-                )
-
-    exp.learn(name=kwargs['name'], tags=kwargs['tags'])
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    typer.run(main)

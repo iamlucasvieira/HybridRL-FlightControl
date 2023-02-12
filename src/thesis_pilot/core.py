@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import wandb
 import yaml
 from rich.pretty import pprint
+from rich.progress import track
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 
@@ -257,7 +258,7 @@ class Experiment:
 
     def learn(self):
         print(f"Running {len(self.sweeps)} sweeps")
-        for sweep in self.sweeps:
+        for sweep in track(self.sweeps, description="Learning..."):
             sweep.learn()
 
     def get_random_seed(self):
