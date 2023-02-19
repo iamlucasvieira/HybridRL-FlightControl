@@ -22,7 +22,7 @@ class Observations:
         """Returns the all states, the reference state, and the tracking error."""
         return np.append(
             self.x_t,
-            [self.x_t_r,
+            [np.array([self.x_t_r]),
              get_value(self.sq_error)]).astype(np.float32)
 
     @staticmethod

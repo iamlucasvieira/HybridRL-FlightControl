@@ -115,9 +115,9 @@ class AircraftEnv(gym.Env):
     def initialize(self):
         """Initializes the environment."""
         self.current_time = 0
-        self.actions = [0]
-        self.sq_error = [0]
-        self.error = [0]
+        self.actions = [np.zeros(self.action_space.shape[0])]
+        self.error = [np.zeros([np.sum(self.tracked_state_mask)])]
+        self.sq_error = self.error.copy()
 
         # Reset the state of the environment to an initial state
         self.aircraft.build_state_space()
