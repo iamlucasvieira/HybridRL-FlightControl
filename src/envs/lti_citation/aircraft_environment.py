@@ -24,15 +24,13 @@ class AircraftEnv(gym.Env):
         self.episode_steps = config.episode_steps
         self.episode_length = self.episode_steps * self.dt
 
-        self.task = get_task(config.task_type)
-        self._get_reward = get_reward(config.reward_type)
-        self._get_obs = get_observation(config.observation_type)
-
+        self.get_reference = get_task(config.task_type)
         self.reward_scale = config.reward_scale
 
         self.aircraft = Aircraft(filename=config.filename,
                                  dt=self.dt,
-                                 configuration=config.configuration)
+                                 configuration=config.configuration,
+                                 task_type=config.task_type)
         self.current_states = None
 
         self.current_time = 0
@@ -45,38 +43,62 @@ class AircraftEnv(gym.Env):
         self.action_space = spaces.Box(low=-0.3, high=0.3,
                                        shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
 
-        obs_shape = self._get_obs_shape()
-        self.observation_space = spaces.Box(low=-1, high=1,
-                                            shape=obs_shape, dtype=np.float32)
+        self.x_t = None  # Aircraft state at current time
+        self.x_t_r = None  # Aircraft state reference at current time
+        self.tracked_x_t = None
+        self.tracked_state_mask = self.aircraft.tracked_state_map.flatten()  # Mask to select the tracked state
+        self.initialize()
+
+        self._get_reward = None
+        self._get_obs = None
+        self.set_reward_function(config.reward_type)
+        self.set_observation_function(config.observation_type)
 
     def step(self, action):
+
+        info = {}
+
         # Advance time
         self.current_time += self.dt
 
-        # Get aircraft response and the task results
-        self.current_states = self.aircraft.response(action).flatten()
-        state_value, reference = self.task(self)
+        # Get aircraft next state after action and the reference value for the next state
+        x_t_1 = self.aircraft.response(action).flatten()
+        tracked_x_t_1 = x_t_1[self.tracked_state_mask]
+        x_t_r_1 = self.get_reference(self)
+
+        # Tracking error
+        e = tracked_x_t_1 - self.x_t_r
+        e_2 = e ** 2
 
         # Store values
         self.actions.append(action)
-        self.reference.append(reference)
-        self.track.append(state_value)
-        self.sq_error.append((reference - state_value) ** 2)
-        self.error.append(reference - state_value)
+        self.reference.append(self.x_t_r)
+        self.track.append(tracked_x_t_1)
+        self.error.append(e)
+        self.sq_error.append(e_2)
+
+        self.x_t = x_t_1
+        self.x_t_r = x_t_r_1
+        self.tracked_x_t = tracked_x_t_1
 
         done = False
 
         reward = self._get_reward(self)
 
-        if abs(state_value) > 0.5:
+        if abs(x_t_r_1) > 0.5:
             reward *= 100
             done = True
+            info = {"message": f"Reference too large: {x_t_r_1} > 0.5"}
 
-        if self.current_time > self.episode_length:
+        if self.current_time + self.dt > self.episode_length:
             done = True
+            info = {"message": f"Episode length exceeded: {self.current_time} = {self.episode_length}"}
+
+        # Make sure reward is not an array
+        if isinstance(reward, np.ndarray):
+            reward = reward.item()
 
         observation = self._get_obs(self)
-        info = {}
 
         return observation, reward, done, info
 
@@ -86,23 +108,27 @@ class AircraftEnv(gym.Env):
                                             shape=self._get_obs_shape(), dtype=np.float32)
 
     def reset(self):
+        self.initialize()
+        observation = self._get_obs(self)
+        return observation  # reward, done, info can't be included
+
+    def initialize(self):
+        """Initializes the environment."""
         self.current_time = 0
-        self.reference = []
-        self.track = []
-        self.actions = []
-        self.sq_error = []
-        self.error = []
+        self.actions = [0]
+        self.sq_error = [0]
+        self.error = [0]
 
         # Reset the state of the environment to an initial state
         self.aircraft.build_state_space()
 
         #  Get initial state
-        states = self.aircraft.current_state.flatten()
-        self.current_states = self.aircraft.current_state.flatten()
+        self.x_t = self.aircraft.current_state.flatten()
+        self.x_t_r = self.get_reference(self)
+        self.tracked_x_t = self.x_t[self.tracked_state_mask]
 
-        observation = self._get_obs(self)
-
-        return observation  # reward, done, info can't be included
+        self.reference = [0]
+        self.track = [self.tracked_x_t]
 
     def render(self, mode="human"):
         # print("i")
@@ -114,6 +140,16 @@ class AircraftEnv(gym.Env):
     def _get_obs_shape(self):
         """Returns the shape of the observation."""
         return self._get_obs(self).shape
+
+    def set_reward_function(self, reward_type: str) -> None:
+        self._get_reward = get_reward(reward_type)
+
+    def set_observation_function(self, observation_type: str) -> None:
+        self._get_obs = get_observation(observation_type)
+        self.update_observation_space()
+        obs_shape = self._get_obs_shape()
+        self.observation_space = spaces.Box(low=-1, high=1,
+                                            shape=obs_shape, dtype=np.float32)
 
 
 class AircraftIncrementalEnv(AircraftEnv):

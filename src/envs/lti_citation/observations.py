@@ -21,8 +21,8 @@ class Observations:
     def states_ref_error(self):
         """Returns the all states, the reference state, and the tracking error."""
         return np.append(
-            self.aircraft.current_state,
-            [get_value(self.reference),
+            self.x_t,
+            [self.x_t_r,
              get_value(self.sq_error)]).astype(np.float32)
 
     @staticmethod
@@ -33,12 +33,24 @@ class Observations:
     @staticmethod
     def ref_state(self):
         """Returns the reference and the value of the tracked state"""
-        return np.array([get_value(self.reference), get_value(self.track)]).astype(np.float32)
+        return np.array([self.x_t_r, get_value(self.track)]).astype(np.float32)
 
     @staticmethod
     def state_error(self):
         """Returns the tracked state and the tracking error"""
         return np.array([get_value(self.track), get_value(self.sq_error)]).astype(np.float32)
+
+    @staticmethod
+    def states(self):
+        """Returns the all states"""
+        return np.array(self.x_t).astype(np.float32)
+
+    @staticmethod
+    def states_ref(self):
+        """Returns the all states and the reference state"""
+        return np.append(
+            self.x_t,
+            [self.x_t_r]).astype(np.float32)
 
 
 observations_dict = {
@@ -46,6 +58,8 @@ observations_dict = {
     "error": Observations.error,
     "ref + state": Observations.ref_state,
     "state + error": Observations.state_error,
+    "states": Observations.states,
+    "states + ref": Observations.states_ref,
 }
 
 AVAILABLE_OBSERVATIONS = list(observations_dict.keys())
