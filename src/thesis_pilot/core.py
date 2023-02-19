@@ -3,11 +3,12 @@ import itertools
 import os
 import pathlib as pl
 import random
+import torch
 
 import matplotlib.pyplot as plt
 import wandb
 import yaml
-from rich.pretty import pprint
+from rich import print
 from rich.progress import track
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
@@ -85,7 +86,8 @@ class Sweep:
     def learn(self, name=None, tags=None, wandb_config={}, wandb_kwargs={}):
         """Learn the experiment."""
         if self.config.verbose > 0:
-            pprint(self.config.dict())
+            print(f"Starting experiment {self.config.name}")
+            print(self.config.dict())
 
         # Get the environment and algorithm
         env = self.env
@@ -141,7 +143,7 @@ class Sweep:
                     tb_log_name=run_name)
 
         # Replace previous latest-model with the new model
-        model.save(f"{self.MODELS_PATH}/latest-model")
+        # model.save(f"{self.MODELS_PATH}/latest-model")
 
         self.model = model
 
@@ -161,6 +163,10 @@ class Sweep:
 
             for i in range(self.config.env.config.episode_steps):
                 action, _states = self.model.predict(obs, deterministic=True)
+
+                # Transform action into numpy if it is a tensor
+                if isinstance(action, torch.Tensor):
+                    action = action.detach().numpy()
 
                 obs, reward, done, info = env.step(action)
 
@@ -257,8 +263,10 @@ class Experiment:
                 sweep.config.seed = self.get_random_seed()
 
     def learn(self):
-        print(f"Running {len(self.sweeps)} sweeps")
-        for sweep in track(self.sweeps, description="Learning..."):
+        """Run the experiment."""
+        if self.config.verbose > 0:
+            print(f"Running {len(self.sweeps)} sweeps")
+        for sweep in track(self.sweeps, description=":brain: Learning..."):
             sweep.learn()
 
     def get_random_seed(self):

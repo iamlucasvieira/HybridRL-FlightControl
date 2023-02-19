@@ -5,6 +5,7 @@ import numpy as np
 
 def get_task(task_name):
     """Returns the task function."""
+
     if task_name not in task_dict:
         raise ValueError(f"Task {task_name} not found.")
     else:
@@ -59,10 +60,7 @@ class LinearTasks:
         """Task to track a step reference signal."""
         reference = 0.1
 
-        state_idx = env.aircraft.ss.x_names.index(state)
-        state_value = env.aircraft.current_state.flatten()[state_idx]
-
-        return state_value, reference
+        return reference
 
     @staticmethod
     def track_sin(env, state="q"):
@@ -73,10 +71,7 @@ class LinearTasks:
 
         reference = amplitude * np.sin(period * env.current_time / length)
 
-        state_idx = env.aircraft.ss.x_names.index(state)
-        state_value = env.aircraft.current_state.flatten()[state_idx]
-
-        return state_value, reference
+        return reference
 
     @staticmethod
     def track_rectangle(env, state="q"):
@@ -88,10 +83,7 @@ class LinearTasks:
         if env.current_time < rectangle_length or env.current_time > (length - rectangle_length):
             reference = 0
 
-        state_idx = env.aircraft.ss.x_names.index(state)
-        state_value = env.aircraft.current_state.flatten()[state_idx]
-
-        return state_value, reference
+        return reference
 
     @staticmethod
     def track_square_wave(env, state="q"):
@@ -104,10 +96,7 @@ class LinearTasks:
                 (env.current_time > 2 * square_length) and env.current_time <= 3 * square_length):
             reference = 0.1
 
-        state_idx = env.aircraft.ss.x_names.index(state)
-        state_value = env.aircraft.current_state.flatten()[state_idx]
-
-        return state_value, reference
+        return reference
 
 
 task_dict = {

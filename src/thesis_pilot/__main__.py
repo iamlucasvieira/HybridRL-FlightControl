@@ -36,18 +36,20 @@ def main(filename: Optional[str] = typer.Argument(None, help="Experiment file na
                       expand=False)
         console.print(panel)
 
-        if Confirm.ask("Do you want to run an experiment?"):
-            idx = IntPrompt.ask("Select an experiment", choices=[str(i) for i in range(1, len(experiments) + 1)])
+        if Confirm.ask("Do you want to run an experiment? :test_tube:"):
+            idx = IntPrompt.ask("Select an experiment :robot:",
+                                choices=[str(i) for i in range(1, len(experiments) + 1)])
             filename = experiments[idx - 1]
         else:
             raise typer.Exit()
     filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
     file = filepath / filename
     if not file.exists():
-        print(f"File {file} does not exist.")
+        print(f"File {file} does not exist :sweat:")
         raise typer.Abort()
 
     exp = Experiment(filename, file_path=filepath, offline=offline)
+
     exp.learn()
 
 

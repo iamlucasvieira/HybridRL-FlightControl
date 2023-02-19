@@ -14,7 +14,7 @@ class Aircraft:
     CONFIGURATIONS = ['symmetric', 'sp', 'asymmetric']  # Available aircraft configurations
 
     def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, configuration: str = "symmetric",
-                 dt: float = 0.01) -> None:
+                 dt: float = 0.01, task_type="") -> None:
         """Initialize aircraft model.
 
         Args:
@@ -30,9 +30,11 @@ class Aircraft:
         self.dt = dt
         self.ss = None
         self.current_state = None
+        self.tracked_state_map = None
 
         if auto_build:
             self.build_state_space()
+            self.get_tracked_state_map(task_type)
 
     def load_aircraft(self) -> AircraftData:
         """Load aircraft _data from YAML file, validate, and return _data object."""
@@ -84,6 +86,15 @@ class Aircraft:
         """Representation of the state space model."""
         yield "Aircraft", self.filename
         yield "Configuration", self.configuration
+
+    def get_tracked_state_map(self, task_type) -> None:
+        """Remove the state being tracked based in a task name."""
+        track_map = np.zeros((self.ss.nstates, 1))
+        states = task_type.split("_")[1:]
+        for state in states:
+            state_idx = self.ss.x_names.index(state)
+            track_map[state_idx] = 1
+        self.tracked_state_map = track_map.astype(bool)
 
 
 class StateSpace:

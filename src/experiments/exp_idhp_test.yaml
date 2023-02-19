@@ -1,0 +1,9 @@
+name: IDHP_test
+offline: false
+n_learning: 5
+agent:
+  name: IDHP
+env:
+  name: "LTI"
+  config:
+    episode_steps: 1_000

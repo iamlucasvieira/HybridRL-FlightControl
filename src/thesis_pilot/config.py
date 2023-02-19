@@ -11,6 +11,8 @@ from agents.sac.config_sac import ConfigSACBase, ConfigSACSweep
 from agents.td3.config_td3 import ConfigTD3Base, ConfigTD3Sweep
 from agents.seres_dsac.config_seres_dsac import ConfigSDSACBase, ConfigSDSACSweep
 from agents.seres_dsac.seres_dsac_agent import DSAC
+from agents.idhp.config_idhp import ConfigIDHPBase, ConfigIDHPSweep
+from agents.idhp import IDHP
 
 
 # Configuration of Environments
@@ -59,12 +61,15 @@ class ConfigDSAC(BaseModel):
         extra = Extra.forbid
 
 
+class ConfigIDHP(BaseModel):
+    name: Optional[Literal['IDHP']] = "IDHP"
+    config: Optional[ConfigIDHPBase] = ConfigIDHPBase()
+    sweep: Optional[ConfigIDHPSweep] = ConfigIDHPSweep()
+    object: BaseAlgorithm = IDHP
+
+
 class Config6DOF(BaseModel):
     name: Literal['6DOF']
-
-
-class ConfigIDHP(BaseModel):
-    name: Optional[Literal['IDHP']]
 
 
 class ConfigAgent(BaseModel):
