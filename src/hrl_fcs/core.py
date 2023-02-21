@@ -15,7 +15,7 @@ from wandb.integration.sb3 import WandbCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
 from helpers.tracking import TensorboardCallback
-from thesis_pilot.config import ConfigExperiment
+from hrl_fcs.config import ConfigExperiment
 
 
 class Sweep:

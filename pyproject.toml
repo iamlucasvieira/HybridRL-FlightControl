@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "thesis_pilot"
+name = "HRL-FCS"
 version = "0.1.0"
 description = "Preliminary work for my control systems with RL MSc thesis"
 authors = ["lucas <lucas6eng@gmail.com>"]
@@ -44,4 +44,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-tp = "thesis_pilot.__main__:app"
+hrl = "hrl_fcs.__main__:app"
