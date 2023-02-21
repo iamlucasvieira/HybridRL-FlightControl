@@ -1,12 +1,13 @@
-Thesis pilot: Adaptive Flight Controller using Reinforcement Learning
+HybridRL-FlightControl
 ==============================
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/iamlucassantos/thesis_pilot/HEAD)
 
-This repository contains the code and documentation for a thesis research project that aims to advance the state-of-the-art in adaptive flight control through Reinforcement Learning.
+This repository contains code for the flight controller developed as part of the thesis *"Robust, Responsive and Reliable control: Fault-tolerant flight control system using Hybrid Reinforcement Learning with DSAC and IDHP"*. The controller uses a hybrid reinforcement learning approach with two algorithms, Distributional Soft-Actor Critic (DSAC)[^1] and Incremental Dual Heuristic Programming (IDHP)[^2]. The objective is to develop an adaptive system that can track an aircraft's attitude even in adverse conditions, such as system failure and environment disturbances.
+
+## Overview 🛩️
 
 Aircraft control systems are crucial for safety and must always keep the aircraft controllable, regardless of any environment or system disruptions. One way to improve flight safety and stability is through adaptive flight controllers, which can adjust their behaviour in response to changing circumstances. Reinforcement learning is a promising technique for designing these controllers.
 
-## Research Aim 🛩️🤖
 The research aims to develop a cascaded flight controller that uses a hybrid offline and online learning approach to provide robustness and adaptiveness to aircraft control. The goal is to create a controller that can still function effectively under failure and adverse conditions.
 Preliminary work for my control systems with RL MSc thesis
 
@@ -30,7 +31,7 @@ The repository contains the following:
 - Thesis document (in PDF format)
 - Presentation slides used for thesis defense
 
-Project Organization
+Project Organization 🌳
 ------------
 
     ├── LICENSE
@@ -84,4 +85,11 @@ Project Organization
 ## Contact 📞 
 If you have any questions or need help with the code or research, please contact me at [lucas6eng@gmail.com](mailto:lucas6eng@gmail.com).
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+## References and Acknowledgements 🔗
+
+- Repository and code structure based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>.
+
+[^1]: Ma, X., Xia, L., Zhou, Z., Yang, J., & Zhao, Q. (2020). DSAC: Distributional Soft Actor Critic for Risk-Sensitive Reinforcement Learning (arXiv:2004.14547). arXiv. https://doi.org/10.48550/arXiv.2004.14547
+[^2]: Zhou, Y., van Kampen, E.-J., & Chu, Q. P. (2018). Incremental model based online dual heuristic programming for nonlinear adaptive control. Control Engineering Practice, 73, 13–25. https://doi.org/10.1016/j.conengprac.2017.12.011
+
+
