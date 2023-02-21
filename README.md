@@ -16,9 +16,9 @@ Preliminary work for my control systems with RL MSc thesis
 ## Setup Instructions 🛠️
 To run the code in this repository, you will need to create a Python environment as follows:
 1. Create a conda environment \
-```conda env create -f environmnet.yml -n thesis-pilot``` 
+```conda env create -f environmnet.yml -n HRL-FC``` 
 2. Activate the environment\
-```conda activate thesis-pilot```
+```conda activate HRL-FC```
 3. Add the conda environment to Jupiter kernel \
 ```python3 -m ipykernel install --user --name tesis-pilot --display-name "Python 3.9 (thesis_pilot)```
 

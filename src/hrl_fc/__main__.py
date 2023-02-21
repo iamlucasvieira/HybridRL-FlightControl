@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import typer
-from hrl_fcs.core import Experiment
+from hrl_fc.core import Experiment
 from typing import Optional
 import pathlib as pl
 from helpers.paths import Path
