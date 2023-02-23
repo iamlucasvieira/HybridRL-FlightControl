@@ -62,33 +62,29 @@ class AircraftEnv(gym.Env):
         self.current_time += self.dt
 
         # Get aircraft next state after action and the reference value for the next state
-        x_t_1 = self.aircraft.response(action).flatten()
-        tracked_x_t_1 = x_t_1[self.tracked_state_mask]
-        x_t_r_1 = self.get_reference(self)
+        x_t1 = self.aircraft.response(action).flatten()
+        tracked_x_t1 = x_t1[self.tracked_state_mask]
+        x_t_r1 = self.get_reference(self)
 
         # Tracking error
-        e = tracked_x_t_1 - self.x_t_r
+        e = tracked_x_t1 - self.reference[-1]
         e_2 = e ** 2
 
         # Store values
         self.actions.append(action)
-        self.reference.append(self.x_t_r)
-        self.track.append(tracked_x_t_1)
+        self.reference.append(x_t_r1)
+        self.track.append(tracked_x_t1)
         self.error.append(e)
         self.sq_error.append(e_2)
-
-        self.x_t = x_t_1
-        self.x_t_r = x_t_r_1
-        self.tracked_x_t = tracked_x_t_1
 
         done = False
 
         reward = self._get_reward(self)
 
-        if abs(x_t_r_1) > 0.5:
+        if abs(x_t_r1) > 0.5:
             reward *= 100
             done = True
-            info = {"message": f"Reference too large: {x_t_r_1} > 0.5"}
+            info = {"message": f"Reference too large: {x_t_r1} > 0.5"}
 
         if self.current_time + self.dt > self.episode_length:
             done = True
@@ -123,12 +119,12 @@ class AircraftEnv(gym.Env):
         self.aircraft.build_state_space()
 
         #  Get initial state
-        self.x_t = self.aircraft.current_state.flatten()
-        self.x_t_r = self.get_reference(self)
-        self.tracked_x_t = self.x_t[self.tracked_state_mask]
+        x_t = self.aircraft.current_state.flatten()
+        x_t_r = self.get_reference(self)
+        tracked_x_t = x_t[self.tracked_state_mask]
 
-        self.reference = [0]
-        self.track = [self.tracked_x_t]
+        self.reference = [x_t_r]
+        self.track = [tracked_x_t]
 
     def render(self, mode="human"):
         # print("i")

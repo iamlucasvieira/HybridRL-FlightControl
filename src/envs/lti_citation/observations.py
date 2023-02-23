@@ -10,8 +10,14 @@ def get_observation(observation_type):
         return observations_dict[observation_type]
 
 
-def get_value(item):
-    return 0 if not item else item[-1]
+def get_value(item, idx=-1):
+    min_length = idx + 1 if idx >= 0 else abs(idx)
+    if isinstance(item, list) and len(item) >= min_length:
+        return item[idx]
+    else:
+        return 0
+
+    return 0 if not item else item[idx]
 
 
 class Observations:
@@ -49,8 +55,8 @@ class Observations:
     def states_ref(self):
         """Returns the all states and the reference state"""
         return np.append(
-            self.x_t,
-            [self.x_t_r]).astype(np.float32)
+            self.aircraft.current_state,
+            [get_value(self.reference, idx=-2)]).astype(np.float32)
 
 
 observations_dict = {
