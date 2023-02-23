@@ -1,6 +1,7 @@
 """Module for tracking training performance."""
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.callbacks import BaseCallback
+import wandb
 import numpy as np
 import os
 import time
@@ -71,4 +72,48 @@ class TensorboardCallback(BaseCallback):
         self.logger.record("time/time_elapsed", time_elapsed)
         self.logger.record("time/episodes", self.model._episode_num)
 
+        return True
+
+
+class OnlineCallback(BaseCallback):
+    """
+    A custom callback to log the IDHP online learning data.
+    """
+
+    def __init__(self, verbose=0):
+        super(OnlineCallback, self).__init__(verbose)
+        # Those variables will be accessible in the callback
+        # (they are defined in the base class)
+        # The RL model
+        # self.model = None  # type: BaseAlgorithm
+        # An alias for self.model.get_env(), the environment used for training
+        # self.training_env = None  # type: Union[gym.Env, VecEnv, None]
+        # Number of time the callback was called
+        # self.n_calls = 0  # type: int
+        # self.num_timesteps = 0  # type: int
+        # local and global variables
+        # self.locals = None  # type: Dict[str, Any]
+        # self.globals = None  # type: Dict[str, Any]
+        # The logger object, used to report things in the terminal
+        # self.logger = None  # stable_baselines3.common.logger
+        # # Sometimes, for event callback, it is useful
+        # # to have access to the parent object
+        # self.parent = None  # type: Optional[BaseCallback]
+
+    def _on_step(self) -> bool:
+        """
+        This method will be called by the model after each call to `env.step()`.
+
+        For child callback (of an `EventCallback`), this will be called
+        when the event is triggered.
+
+        :return: (bool) If the callback returns False, training is aborted early.
+        """
+        reference = self.model._env.reference[-2]
+        state = self.model._env.track[-1]
+        step = self.model.num_timesteps
+        wandb.log({"online/reference": reference,
+                   "online/learning_step": step})
+        wandb.log({"online/state": state,
+                   "online/learning_step": step})
         return True

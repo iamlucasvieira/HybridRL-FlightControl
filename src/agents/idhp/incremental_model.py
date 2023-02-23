@@ -52,6 +52,15 @@ class IncrementalModelBase(ABC):
         # Initialize theta
         self.theta = np.zeros((self.n_states + self.n_inputs, self.n_states))
 
+    @property
+    def ready(self):
+        """Return if the model is ready to be update."""
+        READY = (self.action_k is not None) and \
+                (self.state_k is not None) and \
+                (self.action_k_1 is not None) and \
+                (self.state_k_1 is not None)
+        return READY
+
     def update(self, future_state) -> None:
         """Update the model's covariance and parameter matrices.
 
@@ -59,7 +68,7 @@ class IncrementalModelBase(ABC):
             future_state: The state from the environment after the current action is taken.
         """
         # Only start updating after the first step
-        if self.action_k_1 is None and self.state_k_1 is None:
+        if not self.ready:
             return
 
         # Get the predicted change in state
@@ -137,6 +146,9 @@ class IncrementalLTIAircraft(IncrementalModelBase):
         self.state_k_1 = self.state_k
         self.state_k = env.aircraft.current_state
 
-    def update(self, env: AircraftEnv):
+    def update(self, env: AircraftEnv, action: float) -> None:
         """Update the model."""
-        super(IncrementalLTIAircraft, self).update(env.aircraft.current_state)
+        # Only update if two data points are available
+        if self.ready:
+            super(IncrementalLTIAircraft, self).update(env.aircraft.current_state)
+        self.increment(env, action)

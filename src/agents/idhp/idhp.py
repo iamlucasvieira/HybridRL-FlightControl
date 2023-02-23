@@ -6,7 +6,8 @@ from envs.lti_citation.aircraft_environment import AircraftEnv
 from agents.idhp.policy import IDHPPolicy
 from agents.idhp.incremental_model import IncrementalLTIAircraft
 from agents.idhp.idhp_data import IDHPLearningData
-from typing import Type, Optional, Dict, Any
+from helpers.callbacks import OnlineCallback
+from typing import Type, Optional, Dict, Any, Tuple, List
 import numpy as np
 
 
@@ -57,6 +58,7 @@ class IDHP(BaseAlgorithm):
         """Adds the required reward and observation fucntion to env."""
         env.set_reward_function('error')
         env.set_observation_function('states + ref')
+
         return env
 
     def _setup_model(self) -> None:
@@ -79,14 +81,19 @@ class IDHP(BaseAlgorithm):
             reset_num_timesteps: bool = True,
             progress_bar: bool = False,
     ):
+        online_callback = OnlineCallback()
+        callback = online_callback if callback is None else callback + [online_callback]
 
         total_timesteps, callback = self._setup_learn(
             total_timesteps,
             callback,
             reset_num_timesteps,
             tb_log_name,
-            progress_bar,
-        )
+            progress_bar, )
+
+        # Because IDHP is online, the episode step is equal to the learning step
+        self._env.env.episode_steps = total_timesteps
+        self._env.env.episode_length = total_timesteps * self._env.dt
 
         callback.on_training_start(locals(), globals())
         obs_t = torch.tensor(np.array([self._env.reset()]), requires_grad=True, dtype=torch.float32)
@@ -109,19 +116,20 @@ class IDHP(BaseAlgorithm):
 
             # Step environment
             obs_t1, rew_t1, done, info = self.env.step(action.detach().numpy())
+            if done:
+                print('Episode done', self.num_timesteps)
+                break
+            callback.on_step()
+            # Retrieve reward and episode length if using Monitor wrapper
+            self._update_info_buffer(info, done)
 
             # Store data
             self.learning_data.append(IDHPLearningData(action, obs_t1, rew_t1, done))
-            self.model.increment(self._env, action.detach().numpy())
+            # self.model.increment(self._env, action.detach().numpy())
 
             # Convert to tensors
             obs_t1 = torch.tensor(obs_t1, requires_grad=True, dtype=torch.float32)
             rew_t1 = torch.tensor(rew_t1, dtype=torch.float32)
-
-            if done:
-                print('Episode done', self.num_timesteps)
-                break
-                # raise NotImplementedError
 
             ###############
             # Critic loss #
@@ -140,13 +148,13 @@ class IDHP(BaseAlgorithm):
 
             # Critic error
 
-            e_c = -(dr_ds * self._env.tracked_state_mask + self.gamma * critic_t1) @ (
+            loss_c = -(dr_ds * self._env.tracked_state_mask + self.gamma * critic_t1) @ (
                     F_t_1 + G_t_1 @ obs_grad[:, :-1]) + critic_t
 
             ##############
             # Actor loss #
             ##############
-            e_a = -(dr_ds + self.gamma * critic_t1) @ G_t_1
+            loss_a = -(dr_ds + self.gamma * critic_t1) @ G_t_1
 
             ###################
             # Update networks #
@@ -154,23 +162,32 @@ class IDHP(BaseAlgorithm):
 
             # Backpropagate critic error
             self.critic.optimizer.zero_grad()
-            e_c.backward(gradient=torch.ones_like(e_c * -1), retain_graph=True)
+            loss_c.backward(gradient=torch.ones_like(loss_c), retain_graph=True)
 
             # Backpropagate actor error
             self.actor.optimizer.zero_grad()
-            e_a.backward(gradient=torch.ones_like(e_a * -1))
+            loss_a.backward(gradient=torch.ones_like(loss_a))
 
             # Update networks
             self.critic.optimizer.step()
             self.actor.optimizer.step()
 
             # Update incremental model
-            self.model.update(self._env)
+            self.model.update(self._env, action.detach().numpy())
 
+            # Log
+            # self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+            # self.logger.record("train/ent_coef", np.mean(ent_coefs))
+            self.logger.record("train/actor_loss", loss_a.mean().detach().numpy())
+            self.logger.record("train/critic_loss", loss_c.mean().detach().numpy())
+            self.logger.record("train/steps", self.num_timesteps)
+
+            if log_interval is not None and self.num_timesteps % log_interval == 0:
+                self.logger.dump()
             # Update observation
             obs_t = obs_t1  # Update obs
 
-        # callback.on_training_end()
+        callback.on_training_end()
 
         return self
 
@@ -197,3 +214,21 @@ class IDHP(BaseAlgorithm):
     def _env(self):
         """Return the environment from within the wrapper."""
         return self.env.envs[0]
+
+    def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
+        """
+        Get the name of the torch variables that will be saved with
+        PyTorch ``th.save``, ``th.load`` and ``state_dicts`` instead of the default
+        pickling strategy. This is to handle device placement correctly.
+
+        Names can point to specific variables under classes, e.g.
+        "policy.optimizer" would point to ``optimizer`` object of ``self.policy``
+        if this object.
+
+        :return:
+            List of Torch variables whose state dicts to save (e.g. th.nn.Modules),
+            and list of other Torch variables to store with ``th.save``.
+        """
+        state_dicts = ["policy.actor", "policy.critic"]
+
+        return state_dicts, []
