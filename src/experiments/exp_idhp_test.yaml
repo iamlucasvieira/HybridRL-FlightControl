@@ -1,9 +1,11 @@
 name: IDHP_test
-offline: false
-n_learning: 5
+wandb: true
+n_learning: 1
+learning_steps: 1_000
 agent:
   name: IDHP
 env:
   name: "LTI"
   config:
-    episode_steps: 1_000
+    episode_steps: 100_000
+seed: 50
