@@ -81,7 +81,7 @@ class ConfigAgent(BaseModel):
 class ConfigExperiment(BaseModel):
     """Class that defines the configuration of the sweep."""
     name: Optional[str]
-    offline: Optional[bool] = False
+    wandb: Optional[bool] = True
     n_learning: Optional[int] = 1
     learning_steps: Optional[int] = 1_000  # Number of total learning steps
     env: Union[ConfigLTIEnv, Config6DOF] = Field(discriminator='name', default=ConfigLTIEnv(name="LTI"))

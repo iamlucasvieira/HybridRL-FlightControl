@@ -15,7 +15,7 @@ from wandb.integration.sb3 import WandbCallback
 
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
-from helpers.tracking import TensorboardCallback
+from helpers.callbacks import TensorboardCallback
 from hrl_fc.config import ConfigExperiment
 
 
@@ -36,7 +36,6 @@ class Sweep:
             episode_steps: Number of steps.
             learning_steps: Number of total learning steps.
             verbose: Verbosity level.
-            offline: Whether to run offline.
             project_name: Name of the project.
             log_interval: Interval to log.
             reward_type: Type of reward.
@@ -46,7 +45,6 @@ class Sweep:
         properties:
             config: Configuration of the experiment.
             verbose: Verbosity level.
-            offline: Whether to run offline.
             env: Environment of the experiment.
             algo: Algorithm of the experiment.
             model: Model of the experiment.
@@ -61,7 +59,7 @@ class Sweep:
         else:
             self.config = config
 
-        if self.config.offline:
+        if not self.config.wandb:
             os.environ["WANDB_MODE"] = "offline"
 
         # Set the wandb log path
@@ -107,7 +105,7 @@ class Sweep:
         self.wandb_run = run
 
         # If online, get the run name provided by wandb
-        run_name = get_name([self.config.name, self.config.agent.__root__.name]) if self.config.offline else run.name
+        run_name = get_name([self.config.name, self.config.agent.__root__.name]) if not self.config.wandb else run.name
 
         # Create directories
         pl.Path.mkdir(self.MODELS_PATH / run_name, parents=True, exist_ok=True)
@@ -212,7 +210,7 @@ class Sweep:
 class Experiment:
     """Class that builds an experiment from a config."""
 
-    def __init__(self, filename: str, file_path: str = None, offline=None):
+    def __init__(self, filename: str, file_path: str = None):
 
         self.file_path = pl.Path(file_path) if file_path else Path.exp
         self.filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
@@ -256,11 +254,11 @@ class Experiment:
                     self.sweeps.append(Sweep(config=config))
 
             # If multiple sweeps generate seeds
-            if self.config.seed is not None:
-                random.seed(self.config.seed)
-
-            for sweep in self.sweeps:
-                sweep.config.seed = self.get_random_seed()
+            if len(self.sweeps) > 1:
+                if self.config.seed is not None:
+                    random.seed(self.config.seed)
+                for sweep in self.sweeps:
+                    sweep.config.seed = self.get_random_seed()
 
     def learn(self):
         """Run the experiment."""
