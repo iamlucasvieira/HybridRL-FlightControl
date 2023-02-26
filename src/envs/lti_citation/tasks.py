@@ -100,10 +100,10 @@ class LinearTasks:
 
 
 task_dict = {
-    "step_aoa": LinearTasks.step_aoa,
-    "sin_aoa": LinearTasks.sin_aoa,
-    "rect_aoa": LinearTasks.rect_aoa,
-    "square_aoa": LinearTasks.square_aoa,
+    "step_alpha": LinearTasks.step_aoa,
+    "sin_alpha": LinearTasks.sin_aoa,
+    "rect_alpha": LinearTasks.rect_aoa,
+    "square_alpha": LinearTasks.square_aoa,
     "step_q": LinearTasks.step_q,
     "sin_q": LinearTasks.sin_q,
     "rect_q": LinearTasks.rect_q,
