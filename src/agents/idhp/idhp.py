@@ -5,7 +5,7 @@ from stable_baselines3.common.type_aliases import MaybeCallback
 from envs.lti_citation.aircraft_environment import AircraftEnv
 from agents.idhp.policy import IDHPPolicy
 from agents.idhp.incremental_model import IncrementalLTIAircraft
-from agents.idhp.idhp_data import IDHPLearningData
+from dataclasses import dataclass
 from helpers.callbacks import OnlineCallback
 from typing import Type, Optional, Dict, Any, Tuple, List
 import numpy as np
@@ -49,10 +49,10 @@ class IDHP(BaseAlgorithm):
 
         self.policy, self.actor, self.critic = None, None, None
 
-        self.learning_starts = learning_starts
-        self.learning_data = []
-
         self._setup_model()
+
+        self.learning_data = IDHPLearningData([0],
+                                              [0], )
 
     @staticmethod
     def _setup_env(env: Type[AircraftEnv]) -> Type[AircraftEnv]:
@@ -111,7 +111,9 @@ class IDHP(BaseAlgorithm):
             action = scale_action(self.actor(obs_t), self._env.action_space)
             critic_t = self.critic(obs_t)
 
-            # Backpropagate action gradient
+            ##############
+            # Get losses #
+            ##############
             with torch.no_grad():
                 action.backward()
                 da_ds = obs_t.grad
@@ -128,9 +130,6 @@ class IDHP(BaseAlgorithm):
                 # Retrieve reward and episode length if using Monitor wrapper
                 self._update_info_buffer(info, done)
 
-                # Store data
-                self.learning_data.append(IDHPLearningData(action, obs_t1, rew_t1, done))
-
                 # Convert to tensors
                 obs_t1 = torch.tensor(obs_t1, requires_grad=True, dtype=torch.float32)
                 error_t1 = torch.tensor(self._env.error[-1], dtype=torch.float32)
@@ -144,52 +143,43 @@ class IDHP(BaseAlgorithm):
                 F_t_1 = torch.tensor(self.model.F, dtype=torch.float32)
                 G_t_1 = torch.tensor(self.model.G, dtype=torch.float32)
 
-                ##############
-                # Get losses #
-                ##############
-                loss_a = self.actor.get_loss(dr1_ds1, self.gamma, critic_t1, G_t_1)
-                loss_c = self.critic.get_loss(dr1_ds1, self.gamma, critic_t, critic_t1, F_t_1, G_t_1, da_ds)
+                # Get loss gradients for actor and critic
+                loss_gradient_a = self.actor.get_loss(dr1_ds1, self.gamma, critic_t1, G_t_1)
+                loss_gradient_c = self.critic.get_loss(dr1_ds1, self.gamma, critic_t, critic_t1, F_t_1, G_t_1, da_ds)
 
-                # Log
-                self.logger.record("train/actor_loss", loss_a.mean().detach().numpy())
-                self.logger.record("train/critic_loss", loss_c.mean().detach().numpy())
-                self.logger.record("train/steps", self.num_timesteps)
+            ########################
+            # Update IDHP elements #
+            ########################
 
-            # torch.onnx.export(self.actor, obs_t, "actor.onnx", verbose=True, input_names=['obs_t'], output_names=['action'])
-
-            ###################
-            # Update networks #
-            ###################
-
-            # Backpropagate critic error
-            action = scale_action(self.actor(obs_t), self._env.action_space)
+            # Update actor network
+            action = scale_action(self.actor(obs_t), self._env.action_space)  # Need to resample due to previous detach
             self.actor.optimizer.zero_grad()
-            loss_a = action * loss_a
-            loss_a.backward(gradient=torch.ones_like(loss_a))
-            # action.backward(gradient=loss_a)
+            loss_a = action * loss_gradient_a
+            loss_a.backward(gradient=torch.ones_like(loss_gradient_a))
             self.actor.optimizer.step()
 
+            # Update critic network
             self.critic.optimizer.zero_grad()
-            loss_c = critic_t * loss_c
-            loss_c.backward(gradient=torch.ones_like(loss_c))
-            # critic_t.backward(gradient=loss_c)
-            # loss_c.backward(gradient=torch.ones_like(loss_c), retain_graph=True)
+            loss_c = critic_t * loss_gradient_c
+            loss_c.backward(gradient=torch.ones_like(loss_gradient_c))
             self.critic.optimizer.step()
 
+            # Update incremental model
             self.model.update(self._env)
 
-            self.log_to_wandb(action)
-            # wandb.log({f"train/theta_{idx}": i for idx, i in enumerate(self.model.theta.flatten())} | {
-            #     "train/step": self.num_timesteps})
-            # wandb.log({f"train/action": action.detach().numpy()[0][0], "train/step": self.num_timesteps})
-            # wandb.log({f"train/error": error_t1.detach().numpy()[0], "train/step": self.num_timesteps})
-            # wandb.log({f"train/actor_loss": loss_a.detach().numpy()[0], "train/step": self.num_timesteps})
-            # wandb.log({f"train/critic_loss": loss_c.detach()[0, 0].numpy(), "train/step": self.num_timesteps})
+            ##########
+            # Loging #
+            ##########
+            # Log to stable baseliens logger
+            loss_gradient_a_mean = loss_gradient_a.mean().detach().numpy()
+            loss_gradient_c_mean = loss_gradient_c.mean().detach().numpy()
+            self.logger.record("train/actor_loss", loss_gradient_a_mean)
+            self.logger.record("train/critic_loss", loss_gradient_c_mean)
+            self.logger.record("train/steps", self.num_timesteps)
 
-            # Update incremental model
-            # for idx, i in enumerate(self.critic.ff[-1].weight[0].flatten())} | {"train/step": self.num_timesteps})
-            #     wandb.log({f"train/actor_w{idx}": i for idx, i in enumerate(self.actor.ff[-2].weight.flatten().detach().numpy())} | {
-            #         "train/step": self.num_timesteps})
+            # Log to be used in wandb
+            self.learning_data.loss_a.append(loss_gradient_a_mean.item())
+            self.learning_data.loss_c.append(loss_gradient_c_mean.item())
 
             if log_interval is not None and self.num_timesteps % log_interval == 0:
                 self.logger.dump()
@@ -223,7 +213,6 @@ class IDHP(BaseAlgorithm):
         new_obs, reward, done, info = self.env.step(action)
 
         self.num_timesteps += 1
-        self.learning_data.append(IDHPLearningData(action, new_obs, reward, done))
 
         callback.update_locals(locals())
 
@@ -257,3 +246,10 @@ def scale_action(action: np.ndarray, action_space) -> np.ndarray:
     """Scale the action to the correct range."""
     low, high = action_space.low[0], action_space.high[0]
     return action * (high - low) / 2 + (high + low) / 2
+
+
+@dataclass
+class IDHPLearningData:
+    """Class that stores the data used for learning."""
+    loss_a: List[float]
+    loss_c: List[float]

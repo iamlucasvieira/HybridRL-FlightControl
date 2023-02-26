@@ -52,6 +52,9 @@ class IncrementalModelBase(ABC):
         # Initialize theta
         self.theta = np.zeros((self.n_states + self.n_inputs, self.n_states))
 
+        # Data
+        self.errors = [np.array([0] * self.n_states)]
+
     @property
     def ready(self):
         """Return if the model is ready to be update."""
@@ -80,6 +83,7 @@ class IncrementalModelBase(ABC):
 
         # Get the error
         e = dx.T - dx_hat
+        self.errors.append(e)
 
         # Define matrices used to update theta and cov
         cov_at_x = self.cov @ X

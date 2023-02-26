@@ -111,9 +111,29 @@ class OnlineCallback(BaseCallback):
         """
         reference = self.model._env.reference[-2]
         state = self.model._env.track[-1]
+        sq_error = self.model._env.sq_error[-1]
         step = self.model.num_timesteps
+
+        # Log Tracking performance
         wandb.log({"online/reference": reference,
-                   "online/learning_step": step})
-        wandb.log({"online/state": state,
-                   "online/learning_step": step})
+                   "online/state": state,
+                   "train/step": step})
+        wandb.log({"online/sq_error": sq_error,
+                   "train/step": step})
+
+        # Log incremental model
+        wandb.log(
+            {f"model/w_{idx}": i for idx, i in enumerate(self.model.model.theta.flatten())} | {"train/step": step})
+        wandb.log({f"model/error_{idx}": abs(i) for idx, i in enumerate(self.model.model.errors[-1].flatten())} | {
+            "train/step": step})
+
+        # Log Actor
+        actor_weights = self.model.actor.state_dict()['ff.0.weight'].flatten()[:3].numpy()
+        wandb.log({f"actor/loss": self.model.learning_data.loss_a[-1], "train/step": step})
+        wandb.log({f"actor/w_{idx}": i for idx, i in enumerate(actor_weights)} | {"train/step": step})
+
+        # Log Critic
+        critic_weights = self.model.critic.state_dict()['ff.0.weight'].flatten()[:3].numpy()
+        wandb.log({f"critic/loss": self.model.learning_data.loss_c[-1], "train/step": step})
+        wandb.log({f"critic/w_{idx}": i for idx, i in enumerate(critic_weights)} | {"train/step": step})
         return True
