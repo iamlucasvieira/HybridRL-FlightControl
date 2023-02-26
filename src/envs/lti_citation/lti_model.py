@@ -29,6 +29,7 @@ class Aircraft:
         self.configuration = configuration
         self.dt = dt
         self.ss = None
+        self.states = None
         self.current_state = None
         self.tracked_state_map = None
 
@@ -64,6 +65,7 @@ class Aircraft:
             raise ValueError(f"No data available for {self.configuration} configuration")
 
         self.current_state = np.zeros((self.ss.nstates, 1))
+        self.states = [self.current_state]
 
     def response(self, u: np.ndarray, x: np.ndarray = None) -> np.ndarray:
         """Return the response of the aircraft model to the input u."""
@@ -76,6 +78,7 @@ class Aircraft:
 
         current_state = x + dx * self.dt
         self.current_state = current_state
+        self.states.append(current_state)
         return current_state
 
     def set_initial_state(self, inital_state: np.ndarray) -> None:
