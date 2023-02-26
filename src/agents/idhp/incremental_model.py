@@ -87,7 +87,7 @@ class IncrementalModelBase(ABC):
         x_at_cov_at_x = x_at_cov @ X
 
         # Update the parameter matrix theta
-        theta_k1 = self.theta + (cov_at_x @ np.linalg.inv(self.gamma + x_at_cov_at_x)) * e
+        theta_k1 = self.theta + (cov_at_x / (self.gamma + x_at_cov_at_x)) * e
         cov_k1 = (1 / self.gamma) * (self.cov - (cov_at_x @ x_at_cov) / (self.gamma + x_at_cov_at_x))
 
         self.theta, self.cov = theta_k1, cov_k1
@@ -138,17 +138,19 @@ class IncrementalLTIAircraft(IncrementalModelBase):
         n_inputs = env.aircraft.ss.ninputs
         super(IncrementalLTIAircraft, self).__init__(n_states, n_inputs)
 
-    def increment(self, env: AircraftEnv, action: float) -> None:
+    def increment(self, env: AircraftEnv) -> None:
         """Increment the model."""
-        self.action_k_1 = self.action_k
-        self.action_k = np.array(action)
+        if len(env.actions) < 2 and len(env.aircraft.states) < 2:
+            raise ValueError("Not enough data to increment the model.")
+        self.action_k_1 = env.actions[-2]
+        self.action_k = env.actions[-1]
 
-        self.state_k_1 = self.state_k
-        self.state_k = env.aircraft.current_state
+        self.state_k_1 = env.aircraft.states[-2]
+        self.state_k = env.aircraft.states[-1]
 
-    def update(self, env: AircraftEnv, action: float) -> None:
+    def update(self, env: AircraftEnv) -> None:
         """Update the model."""
         # Only update if two data points are available
         if self.ready:
             super(IncrementalLTIAircraft, self).update(env.aircraft.current_state)
-        self.increment(env, action)
+        self.increment(env)
