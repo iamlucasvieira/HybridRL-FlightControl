@@ -21,9 +21,9 @@ class BaseNetwork(nn.Module, ABC):
     def __init__(self,
                  observation_space: gym.spaces.Space,
                  action_space: gym.spaces.Space,
-                 hidden_size: int = 256,
+                 hidden_size: int = 10,
                  num_layers: int = 2,
-                 beta: float = 0.1):
+                 beta: float = 0.08):
         """Initialize the base network.
 
         Args:
@@ -41,13 +41,18 @@ class BaseNetwork(nn.Module, ABC):
         self.flatten = nn.Flatten()
         self.ff = self._build_network()
 
-        self.optimizer = optim.Adam(self.parameters(), lr=beta)
+        self.optimizer = optim.SGD(self.parameters(), lr=beta)
         self.device = 'cpu'  # Having issues not using cpu with get_device()
         self.to(self.device)
 
     @abstractmethod
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
+        pass
+
+    @abstractmethod
+    def get_loss(self):
+        """Gets the network loss."""
         pass
 
     def forward(self, x):
@@ -75,13 +80,18 @@ class Actor(BaseNetwork):
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
         ff = nn.Sequential(
-            nn.Linear(self.observation_space.shape[0], self.hidden_size),
-            nn.ReLU(),
-            nn.Linear(self.hidden_size, self.hidden_size),
-            nn.ReLU(),
-            nn.Linear(self.hidden_size, self.action_space.shape[0]),
+            nn.Linear(self.observation_space.shape[0], self.hidden_size, bias=False),
+            nn.Tanh(),
+            nn.Linear(self.hidden_size, self.hidden_size, bias=False),
+            nn.Tanh(),
+            nn.Linear(self.hidden_size, self.action_space.shape[0], bias=False),
+            nn.Tanh(),
         )
         return ff
+
+    def get_loss(self, dr1_ds1, gamma, critic_t1, G_t_1):
+        """Gets the network loss."""
+        return -(dr1_ds1 + gamma * critic_t1) @ G_t_1
 
 
 class Critic(BaseNetwork):
@@ -96,13 +106,18 @@ class Critic(BaseNetwork):
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
         ff = nn.Sequential(
-            nn.Linear(self.observation_space.shape[0], self.hidden_size),
-            nn.ReLU(),
-            nn.Linear(self.hidden_size, self.hidden_size),
-            nn.ReLU(),
-            nn.Linear(self.hidden_size, self.observation_space.shape[0]-1),  # Minus 1 to include only the states
+            nn.Linear(self.observation_space.shape[0], self.hidden_size, bias=False),
+            nn.Tanh(),
+            nn.Linear(self.hidden_size, self.hidden_size, bias=False),
+            nn.Tanh(),
+            nn.Linear(self.hidden_size, self.observation_space.shape[0] - 1, bias=False),
+            # Minus 1 to include only the states
         )
         return ff
+
+    def get_loss(self, dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad):
+        """Gets the network loss."""
+        return critic_t - (dr1_ds1 + gamma * critic_t1) @ (F_t_1 + G_t_1 @ obs_grad[:, :-1])
 
 
 class IDHPPolicy:
