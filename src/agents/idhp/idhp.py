@@ -9,6 +9,7 @@ from agents.idhp.idhp_data import IDHPLearningData
 from helpers.callbacks import OnlineCallback
 from typing import Type, Optional, Dict, Any, Tuple, List
 import numpy as np
+import wandb
 
 
 class IDHP(BaseAlgorithm):
@@ -20,7 +21,7 @@ class IDHP(BaseAlgorithm):
                  policy: str,
                  env: Type[AircraftEnv],
                  learning_rate: float = 3e-4,
-                 gamma: float = 0.99,
+                 gamma: float = 0.6,
                  policy_kwargs: Optional[Dict[str, Any]] = None,
                  verbose: int = 1,
                  tensorboard_log: str = None,
@@ -56,7 +57,7 @@ class IDHP(BaseAlgorithm):
     @staticmethod
     def _setup_env(env: Type[AircraftEnv]) -> Type[AircraftEnv]:
         """Adds the required reward and observation fucntion to env."""
-        env.set_reward_function('error')
+        env.set_reward_function('sq_error')
         env.set_observation_function('states + ref')
 
         return env
@@ -106,90 +107,108 @@ class IDHP(BaseAlgorithm):
             # Increment timestep
             self.num_timesteps += 1
 
-            # Sample action
-            action = self.actor(obs_t)
+            # Sample and scale action
+            action = scale_action(self.actor(obs_t), self._env.action_space)
+            critic_t = self.critic(obs_t)
 
             # Backpropagate action gradient
-            action.backward()
-            obs_grad = obs_t.grad
-            self.actor.zero_grad()
+            with torch.no_grad():
+                action.backward()
+                da_ds = obs_t.grad
+                self.actor.zero_grad()
 
-            # Step environment
-            obs_t1, rew_t1, done, info = self.env.step(action.detach().numpy())
-            if done:
-                print('Episode done', self.num_timesteps)
-                break
-            callback.on_step()
-            # Retrieve reward and episode length if using Monitor wrapper
-            self._update_info_buffer(info, done)
+                # Step environment
+                obs_t1, rew_t1, done, info = self.env.step(action.detach().numpy())
 
-            # Store data
-            self.learning_data.append(IDHPLearningData(action, obs_t1, rew_t1, done))
-            # self.model.increment(self._env, action.detach().numpy())
+                if done:
+                    print('Episode done', self.num_timesteps)
+                    break
+                callback.on_step()
 
-            # Convert to tensors
-            obs_t1 = torch.tensor(obs_t1, requires_grad=True, dtype=torch.float32)
-            rew_t1 = torch.tensor(rew_t1, dtype=torch.float32)
+                # Retrieve reward and episode length if using Monitor wrapper
+                self._update_info_buffer(info, done)
 
-            ###############
-            # Critic loss #
-            ###############
+                # Store data
+                self.learning_data.append(IDHPLearningData(action, obs_t1, rew_t1, done))
 
-            # Get the reward at time t+1 and build the cost function
-            dr_ds = 2 * rew_t1
+                # Convert to tensors
+                obs_t1 = torch.tensor(obs_t1, requires_grad=True, dtype=torch.float32)
+                error_t1 = torch.tensor(self._env.error[-1], dtype=torch.float32)
 
-            # Get the critic at time t and t+1
-            critic_t = self.critic(obs_t)
-            critic_t1 = self.critic(obs_t1)
+                # Get the reward gradient with respect to the state at time t+1
+                dr1_ds1 = - 2 * error_t1 * self._env.tracked_state_mask
 
-            # Get incremental model predictions of F and G at time t-1
-            F_t_1 = torch.tensor(self.model.F, dtype=torch.float32)
-            G_t_1 = torch.tensor(self.model.G, dtype=torch.float32)
+                critic_t1 = self.critic(obs_t1)
 
-            # Critic error
+                # Get incremental model predictions of F and G at time t-1
+                F_t_1 = torch.tensor(self.model.F, dtype=torch.float32)
+                G_t_1 = torch.tensor(self.model.G, dtype=torch.float32)
 
-            loss_c = -(dr_ds * self._env.tracked_state_mask + self.gamma * critic_t1) @ (
-                    F_t_1 + G_t_1 @ obs_grad[:, :-1]) + critic_t
+                ##############
+                # Get losses #
+                ##############
+                loss_a = self.actor.get_loss(dr1_ds1, self.gamma, critic_t1, G_t_1)
+                loss_c = self.critic.get_loss(dr1_ds1, self.gamma, critic_t, critic_t1, F_t_1, G_t_1, da_ds)
 
-            ##############
-            # Actor loss #
-            ##############
-            loss_a = -(dr_ds + self.gamma * critic_t1) @ G_t_1
+                # Log
+                self.logger.record("train/actor_loss", loss_a.mean().detach().numpy())
+                self.logger.record("train/critic_loss", loss_c.mean().detach().numpy())
+                self.logger.record("train/steps", self.num_timesteps)
+
+            # torch.onnx.export(self.actor, obs_t, "actor.onnx", verbose=True, input_names=['obs_t'], output_names=['action'])
 
             ###################
             # Update networks #
             ###################
 
             # Backpropagate critic error
-            self.critic.optimizer.zero_grad()
-            loss_c.backward(gradient=torch.ones_like(loss_c), retain_graph=True)
-
-            # Backpropagate actor error
+            action = scale_action(self.actor(obs_t), self._env.action_space)
             self.actor.optimizer.zero_grad()
+            loss_a = action * loss_a
             loss_a.backward(gradient=torch.ones_like(loss_a))
-
-            # Update networks
-            self.critic.optimizer.step()
+            # action.backward(gradient=loss_a)
             self.actor.optimizer.step()
 
-            # Update incremental model
-            self.model.update(self._env, action.detach().numpy())
+            self.critic.optimizer.zero_grad()
+            loss_c = critic_t * loss_c
+            loss_c.backward(gradient=torch.ones_like(loss_c))
+            # critic_t.backward(gradient=loss_c)
+            # loss_c.backward(gradient=torch.ones_like(loss_c), retain_graph=True)
+            self.critic.optimizer.step()
 
-            # Log
-            # self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
-            # self.logger.record("train/ent_coef", np.mean(ent_coefs))
-            self.logger.record("train/actor_loss", loss_a.mean().detach().numpy())
-            self.logger.record("train/critic_loss", loss_c.mean().detach().numpy())
-            self.logger.record("train/steps", self.num_timesteps)
+            self.model.update(self._env)
+
+            self.log_to_wandb(action)
+            # wandb.log({f"train/theta_{idx}": i for idx, i in enumerate(self.model.theta.flatten())} | {
+            #     "train/step": self.num_timesteps})
+            # wandb.log({f"train/action": action.detach().numpy()[0][0], "train/step": self.num_timesteps})
+            # wandb.log({f"train/error": error_t1.detach().numpy()[0], "train/step": self.num_timesteps})
+            # wandb.log({f"train/actor_loss": loss_a.detach().numpy()[0], "train/step": self.num_timesteps})
+            # wandb.log({f"train/critic_loss": loss_c.detach()[0, 0].numpy(), "train/step": self.num_timesteps})
+
+            # Update incremental model
+            # for idx, i in enumerate(self.critic.ff[-1].weight[0].flatten())} | {"train/step": self.num_timesteps})
+            #     wandb.log({f"train/actor_w{idx}": i for idx, i in enumerate(self.actor.ff[-2].weight.flatten().detach().numpy())} | {
+            #         "train/step": self.num_timesteps})
 
             if log_interval is not None and self.num_timesteps % log_interval == 0:
                 self.logger.dump()
+
             # Update observation
             obs_t = obs_t1  # Update obs
 
         callback.on_training_end()
 
         return self
+
+    def log_to_wandb(self, action):
+        """Log the learning performance to wandb."""
+        actor_weights = self.actor.ff[0].weight.clone().detach().numpy().flatten()
+        # wandb.log({f"training/w_a-{ii}": loss for ii, loss in enumerate(actor_weights)})
+        wandb.log({f"train/error": self._env.error[-1], "train/step": self.num_timesteps})
+        wandb.log({f"train/theta_{idx}": i for idx, i in enumerate(self.model.theta.flatten())} | {
+            "train/step": self.num_timesteps})
+        step = self.num_timesteps
 
     def _sample_action(self):
         return [0.1]  # self.actor(self.observation_space.sample())
@@ -232,3 +251,9 @@ class IDHP(BaseAlgorithm):
         state_dicts = ["policy.actor", "policy.critic"]
 
         return state_dicts, []
+
+
+def scale_action(action: np.ndarray, action_space) -> np.ndarray:
+    """Scale the action to the correct range."""
+    low, high = action_space.low[0], action_space.high[0]
+    return action * (high - low) / 2 + (high + low) / 2
