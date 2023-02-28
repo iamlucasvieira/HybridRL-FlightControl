@@ -1,15 +1,16 @@
 name: IDHP-sin_q_2
-wandb: true
-n_learning: 5
-learning_steps: 15_000
+wandb: false
 evaluate: false
+
 agent:
   name: IDHP
+  learn:
+    learning_steps: 15_000
+
 env:
   name: "LTI"
   config:
     dt: 0.1
-    episode_steps: 100_000
     task_type: sin_q
 
 seed: 54

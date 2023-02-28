@@ -32,6 +32,7 @@ dependencies:
   - ipympl>=0.9  # Jupyter notebook plotting
   - typer >= 0.7
   - flake8 >= 5.0
+  - pytest >= 7.1
   - pip:
       - opencv-python  # SB3 extra
       - stable-baselines3

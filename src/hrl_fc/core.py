@@ -16,8 +16,7 @@ from wandb.integration.sb3 import WandbCallback
 from helpers.misc import get_name
 from helpers.paths import Path, set_wandb_path
 from helpers.callbacks import TensorboardCallback
-from hrl_fc.config import ConfigExperiment
-
+from hrl_fc.experiment_config import ConfigExperiment
 
 class Sweep:
     """Class that builds an experiment."""
@@ -78,7 +77,7 @@ class Sweep:
         self.MODELS_PATH = Path.models / self.config.name
         self.LOGS_PATH = Path.logs / self.config.name
 
-        self.env = self.config.env.object(config=self.config.env.config)
+        self.env = self.config.env.object(self.config.env.config)
         self.algo = self.config.agent.__root__.object
 
     def learn(self, name=None, tags=None, wandb_config={}, wandb_kwargs={}):
@@ -117,7 +116,6 @@ class Sweep:
         # Load wandb callback
         wandb_callback = WandbCallback(
             model_save_freq=100,
-            # gradient_save_freq=config.episode_steps,
             model_save_path=f"{self.MODELS_PATH / run_name}",
             verbose=2)
 
@@ -125,10 +123,13 @@ class Sweep:
         tensorboard_callback = TensorboardCallback(verbose=2)
 
         # Create model
-        algo_kwargs = self.config.agent.__root__.config.dict()
+        algo_args = self.config.agent.__root__.args.dict()
+        algo_kwargs = self.config.agent.__root__.kwargs.dict()
+        if 'env' in algo_args:
+            algo_args['env'] = env
+
         model = algo(
-            algo_kwargs.pop("policy"),
-            env,
+            *algo_args,
             verbose=self.config.verbose,
             tensorboard_log=self.LOGS_PATH,
             seed=self.config.seed,

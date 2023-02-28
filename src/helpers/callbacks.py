@@ -6,6 +6,7 @@ import numpy as np
 import os
 import time
 import sys
+from wandb.integration.sb3 import WandbCallback
 
 
 class SaveOnBestTrainingRewardCallback(BaseCallback):
@@ -137,3 +138,11 @@ class OnlineCallback(BaseCallback):
         wandb.log({f"critic/loss": self.model.learning_data.loss_c[-1], "train/step": step})
         wandb.log({f"critic/w_{idx}": i for idx, i in enumerate(critic_weights)} | {"train/step": step})
         return True
+
+
+# Load wandb callback
+AVAILABLE_CALLBACKS = {
+    "wandb": WandbCallback,
+    "tensorboard": TensorboardCallback,
+    "online": OnlineCallback
+}
