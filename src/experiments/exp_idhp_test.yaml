@@ -1,16 +1,21 @@
-name: IDHP-sin_q_2
-wandb: false
+name: IHDP-gamma-dt
+wandb: true
 evaluate: false
+n_learning: 3
 
 agent:
   name: IDHP
   learn:
-    learning_steps: 15_000
+    total_timesteps: 15_000
+  sweep:
+    gamma: [ 0.7, 0.8, 0.9 ]
 
 env:
   name: "LTI"
-  config:
+  kwargs:
     dt: 0.1
     task_type: sin_q
+  sweep:
+    dt: [ 0.1, 0.01, 0.001 ]
 
 seed: 54

@@ -1,20 +1,16 @@
 """Module that allows building an experiment based on yaml configutaion."""
 import itertools
-import os
 import pathlib as pl
 import random
 import torch
+import operator
 
-import matplotlib.pyplot as plt
 import wandb
 import yaml
 from rich import print
-from rich.progress import track
-from stable_baselines3.common.monitor import Monitor
-from wandb.integration.sb3 import WandbCallback
 
 from helpers.misc import get_name
-from helpers.paths import Path, set_wandb_path
+from helpers.paths import Path
 from helpers.config_auto import validate_auto
 from hrl_fc.experiment_config import ConfigExperiment
 from helpers.callbacks import AVAILABLE_CALLBACKS
@@ -50,7 +46,6 @@ class Sweep:
         if "callback" in self.learn_kwargs:
             self.get_callbacks()
 
-
     @property
     def agent_config(self):
         """Alias for agent config."""
@@ -70,7 +65,8 @@ class Sweep:
         return agent
 
     def build_env(self):
-        env = self.env_config.object(self.env_config.config)
+        env_kwargs = self.env_config.kwargs.dict()
+        env = self.env_config.object(**env_kwargs)
         return env
 
     def replace_auto_config(self, config: dict) -> dict:
@@ -172,6 +168,7 @@ class ExperimentBuilder:
         self.file_path = pl.Path(file_path) if file_path else Path.exp
         self.filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
         self.sweeps = []
+        self.sweep_configs = []
 
         # Extract data from dict config
         self.config = self.load_config()
@@ -187,42 +184,45 @@ class ExperimentBuilder:
             return ConfigExperiment(**yaml.load(f, Loader=yaml.SafeLoader))
 
     def build_sweeps(self):
-        self.sweeps = []
-
-        # Get list of agents
-        agent_list = self.config.agent if isinstance(self.config.agent, list) else [self.config.agent]
-
         # Give default values for items that have no sweep set.
-        for sweep_option, sweep_value in self.config.env.sweep.dict().items():
-            if len(sweep_value) == 0:
-                getattr(self.config.env.sweep, sweep_option).append(getattr(self.config.env.config, sweep_option))
+        def get_sweep(sweep_attr: str, default_attr: str):
+            """Gets all possible sweeps."""
+            # If values from sweep are empty, initialize them with the default values.
+            sweep_list = []
+            sweep = operator.attrgetter(sweep_attr)(self.config)
+            defaults = operator.attrgetter(default_attr)(self.config)
 
-        for agent in agent_list:
+            for sweep_option, sweep_value in sweep.dict().items():
+                if not isinstance(sweep_value, list):
+                    setattr(sweep, sweep_option, [getattr(defaults, sweep_option)])
 
-            sweep_configurations = list(itertools.product(*self.config.env.sweep.dict().values()))
+            sweep_configurations = list(itertools.product(*sweep.dict().values()))
 
-            for _ in range(self.config.n_learning):
-                for sweep_config in sweep_configurations:
-                    config = self.config.copy(deep=True)
-                    config.agent = agent
-                    sweep_config_dict = dict(zip(config.env.sweep.dict().keys(), sweep_config))
-                    config.env.config.__dict__.update(sweep_config_dict)
+            for sweep_config in sweep_configurations:
+                config_list = [self.config] if len(self.sweep_configs) == 0 else self.sweep_configs
 
-                    self.sweeps.append(Sweep(config=config))
+                # Loop through existing sweeps
+                for config in config_list:
+                    new_config = config.copy(deep=True)
+                    sweep_config_dict = dict(zip(sweep.dict().keys(), sweep_config))
+                    operator.attrgetter(default_attr)(new_config).__dict__.update(sweep_config_dict)
+                    sweep_list.append(new_config)
+            return sweep_list
 
-            # If multiple sweeps generate seeds
-            if len(self.sweeps) > 1:
-                if self.config.seed is not None:
-                    random.seed(self.config.seed)
-                for sweep in self.sweeps:
-                    sweep.config.seed = self.get_random_seed()
+        # Get all possible sweeps
+        self.sweep_configs = get_sweep("env.sweep", "env.kwargs")
+        self.sweep_configs = get_sweep("agent.__root__.sweep", "agent.__root__.kwargs")
 
-    def learn(self):
-        """Run the experiment."""
-        if self.config.verbose > 0:
-            print(f"Running {len(self.sweeps)} sweeps")
-        for sweep in track(self.sweeps, description=":brain: Learning..."):
-            sweep.learn()
+        for _ in range(self.config.n_learning):
+            for sweep_config in self.sweep_configs:
+                self.sweeps.append(Sweep(sweep_config))
+
+        # If multiple sweeps generate seeds
+        if len(self.sweeps) > 1:
+            if self.config.seed is not None:
+                random.seed(self.config.seed)
+            for sweep in self.sweeps:
+                sweep.config.seed = self.get_random_seed()
 
     def get_random_seed(self):
         """Get a random seed."""

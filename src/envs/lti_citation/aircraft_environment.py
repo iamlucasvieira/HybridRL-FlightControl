@@ -7,30 +7,35 @@ from envs.lti_citation.lti_model import Aircraft
 from envs.lti_citation.tasks import get_task
 from envs.lti_citation.rewards import get_reward
 from envs.lti_citation.observations import get_observation
-from envs.lti_citation.config_lti_env import ConfigLTIBase
 
 
 class AircraftEnv(gym.Env):
     """Aircraft Environment that follows gym interface"""
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, config=None, **kwargs):
+    def __init__(self,
+                 filename: str = "citation.yaml",
+                 configuration: str = "sp",
+                 dt: float = 0.1,
+                 episode_steps: int = 100,
+                 task_type: str = "sin_q",
+                 reward_scale: float = 1.0,
+                 reward_type: str = "sq_error",
+                 observation_type: str = "states + ref + error",
+                 ):
         super(AircraftEnv, self).__init__()
 
-        if config is None:
-            config = ConfigLTIBase(**kwargs)
+        self.dt = dt
+        self.episode_steps = episode_steps
+        self.episode_length = episode_steps * dt
 
-        self.dt = config.dt
-        self.episode_steps = config.episode_steps
-        self.episode_length = self.episode_steps * self.dt
+        self.get_reference = get_task(task_type)
+        self.reward_scale = reward_scale
 
-        self.get_reference = get_task(config.task_type)
-        self.reward_scale = config.reward_scale
-
-        self.aircraft = Aircraft(filename=config.filename,
+        self.aircraft = Aircraft(filename=filename,
                                  dt=self.dt,
-                                 configuration=config.configuration,
-                                 task_type=config.task_type)
+                                 configuration=configuration,
+                                 task_type=task_type)
         self.current_states = None
 
         self.current_time = 0
@@ -51,8 +56,8 @@ class AircraftEnv(gym.Env):
 
         self._get_reward = None
         self._get_obs = None
-        self.set_reward_function(config.reward_type)
-        self.set_observation_function(config.observation_type)
+        self.set_reward_function(reward_type)
+        self.set_observation_function(observation_type)
 
     def step(self, action):
 

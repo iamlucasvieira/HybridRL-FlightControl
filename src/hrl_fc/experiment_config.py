@@ -1,24 +1,9 @@
 """Module that define configuration of algorithms."""
 from pydantic import BaseModel, Field, Extra
 from typing import Optional, List, Union, Literal
-import gym
 
 from agents.config import ConfigSAC, ConfigIDHP, ConfigTD3, ConfigSDSAC
-
-from envs.lti_citation.config_lti_env import ConfigLTIBase, ConfigLTISweep
-from envs.lti_citation.aircraft_environment import AircraftEnv
-
-
-# Configuration of Environments
-class ConfigLTIEnv(BaseModel):
-    """Symmetric derivatives."""
-    name: Literal['LTI'] = "LTI"
-    config: Optional[ConfigLTIBase] = ConfigLTIBase()
-    sweep: Optional[ConfigLTISweep] = ConfigLTISweep()
-    object: gym.Env = AircraftEnv
-
-    class Config:
-        extra = Extra.forbid
+from envs.lti_citation.config_lti_env import ConfigLTIEnv
 
 
 class Config6DOF(BaseModel):
