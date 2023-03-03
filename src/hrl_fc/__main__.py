@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import typer
-from hrl_fc.core import Experiment
+from hrl_fc.experiment_runner import Runner
 from typing import Optional
 import pathlib as pl
 from helpers.paths import Path
@@ -48,9 +48,7 @@ def main(filename: Optional[str] = typer.Argument(None, help="Experiment file na
         print(f"File {file} does not exist :sweat:")
         raise typer.Abort()
 
-    exp = Experiment(filename, file_path=filepath, offline=offline)
-
-    exp.learn()
+    Runner(file_name=filename, file_path=filepath).run()
 
 
 if __name__ == "__main__":

@@ -17,11 +17,13 @@ class ConfigIDHPArgs(BaseModel):
 
 class ConfigIDHPKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
-    learning_rate: Optional[float | List[float]] = 3e-4,
-    gamma: Optional[float | List[float]] = 0.6,
+    discount_factor: Optional[float | List[float]] = 0.6
+    discount_factor_model: Optional[float | List[float]] = 0.8
     verbose: Optional[int | List[int]] = get_auto("verbose")
     tensorboard_log: Optional[str | List[str]] = get_auto("tensorboard_log")
-    seed: Optional[int | List[str]] = get_auto("seed")
+    seed: Optional[int | List[int]] = get_auto("seed")
+    learning_rate: Optional[float | List[float]] = 0.08
+    hidden_size: Optional[int | List[int]] = 10
 
     class Config:
         extra = Extra.forbid

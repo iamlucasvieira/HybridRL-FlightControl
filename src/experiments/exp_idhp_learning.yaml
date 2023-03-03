@@ -1,0 +1,19 @@
+name: IHDP-learning
+wandb: true
+evaluate: false
+n_learning: 10
+
+agent:
+  name: IDHP
+  kwargs:
+    gamma: 0.8
+  learn:
+    total_timesteps: 20_000
+
+env:
+  name: "LTI"
+  kwargs:
+    dt: 0.1
+    task_type: sin_q
+
+seed: 54

@@ -23,7 +23,7 @@ class BaseNetwork(nn.Module, ABC):
                  action_space: gym.spaces.Space,
                  hidden_size: int = 10,
                  num_layers: int = 2,
-                 beta: float = 0.08):
+                 learning_rate: float = 0.08):
         """Initialize the base network.
 
         Args:
@@ -31,7 +31,7 @@ class BaseNetwork(nn.Module, ABC):
             action_space: The action space of the environment.
             hidden_size: The size of the hidden layers.
             num_layers: The number of hidden layers.
-            beta: The learning rate.
+            learning_rate: The learning rate.
         """
         super(BaseNetwork, self).__init__()
         self.observation_space = observation_space
@@ -41,7 +41,7 @@ class BaseNetwork(nn.Module, ABC):
         self.flatten = nn.Flatten()
         self.ff = self._build_network()
 
-        self.optimizer = optim.SGD(self.parameters(), lr=beta)
+        self.optimizer = optim.SGD(self.parameters(), lr=learning_rate)
         self.device = 'cpu'  # Having issues not using cpu with get_device()
         self.to(self.device)
 
@@ -125,10 +125,11 @@ class IDHPPolicy:
 
     def __init__(self,
                  observation_space: gym.spaces.Space,
-                 action_space: gym.spaces.Space, ):
+                 action_space: gym.spaces.Space,
+                 **kwargs):
         """Initialize the IDHP policy."""
-        self.actor = Actor(observation_space, action_space)
-        self.critic = Critic(observation_space, action_space)
+        self.actor = Actor(observation_space, action_space, **kwargs)
+        self.critic = Critic(observation_space, action_space, **kwargs)
 
     def predict(self, observation, state=None, episode_start=None, deterministic=None):
         """Predict the action."""

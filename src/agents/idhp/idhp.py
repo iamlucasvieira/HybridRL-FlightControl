@@ -20,19 +20,27 @@ class IDHP(BaseAlgorithm):
     def __init__(self,
                  policy: str,
                  env: Type[AircraftEnv],
-                 learning_rate: float = 3e-4,
-                 gamma: float = 0.6,
-                 policy_kwargs: Optional[Dict[str, Any]] = None,
+                 discount_factor: float = 0.6,
+                 discount_factor_model: float = 0.8,
                  verbose: int = 1,
                  tensorboard_log: str = None,
                  seed: int = None,
-                 learning_starts: int = 0,
+                 learning_rate: float = 0.08,
+                 hidden_size: int = 10,
                  **kwargs):
         """Initialize the IDHP algorithm.
 
         Args:
-            gamma (float): Discount factor.
-            learning_starts: how many steps of the model to collect transitions for before learning starts
+            policy: Policy to use.
+            env: Environment to use.
+            discount_factor (float): Discount factor.
+            discount_factor_model (float): Discount factor for incremental model.
+            verbose (int): Verbosity level.
+            tensorboard_log (str): Path to tensorboard log.
+            seed (int): Seed for random number generator.
+            beta_actor (float): Actor regularization parameter.
+            learning_rate (float): Critic regularization parameter.
+            hidden_size (int): Hidden size for actor and critic networks.
         """
         # Make sure environment has the right observation and reward functions for IDHP
         env = self._setup_env(env)
@@ -42,10 +50,20 @@ class IDHP(BaseAlgorithm):
                                    learning_rate,
                                    verbose=verbose,
                                    tensorboard_log=tensorboard_log,
-                                   policy_kwargs=policy_kwargs,
                                    seed=seed)
 
-        self.gamma = gamma
+        self.gamma = discount_factor
+
+        # Policy kwargs
+        self.policy_kwargs = {
+            "learning_rate": learning_rate,
+            "hidden_size": hidden_size,
+        }
+
+        # Initialize model kwargs
+        self.model_kwargs = {
+            "gamma": discount_factor_model,
+        }
 
         self.policy, self.actor, self.critic = None, None, None
 
@@ -53,6 +71,8 @@ class IDHP(BaseAlgorithm):
 
         self.learning_data = IDHPLearningData([0],
                                               [0], )
+
+        self.log_interval = None
 
     @staticmethod
     def _setup_env(env: Type[AircraftEnv]) -> Type[AircraftEnv]:
@@ -69,7 +89,7 @@ class IDHP(BaseAlgorithm):
                                         self.action_space,
                                         **self.policy_kwargs)
 
-        self.model = IncrementalLTIAircraft(self._env)
+        self.model = IncrementalLTIAircraft(self._env, **self.model_kwargs)
         self.actor = self.policy.actor
         self.critic = self.policy.critic
 
@@ -82,6 +102,7 @@ class IDHP(BaseAlgorithm):
             reset_num_timesteps: bool = True,
             progress_bar: bool = False,
     ):
+        self.log_interval = log_interval
         online_callback = OnlineCallback()
         callback = online_callback if callback is None else callback + [online_callback]
 

@@ -1,0 +1,23 @@
+name: IDHP-hyperparams-v3
+wandb: true
+evaluate: false
+n_learning: 3
+
+agent:
+  name: IDHP
+  learn:
+    total_timesteps: 15_000
+    log_interval: 1
+  sweep:
+    discount_factor: [0.6, 0.7, 0.8]
+    discount_factor_model: [0.6, 0.7, 0.8]
+    learning_rate: [0.1, 0.2]
+    hidden_size: [10, 90]
+
+env:
+  name: "LTI"
+  kwargs:
+    dt: 0.1
+    task_type: sin_q
+
+seed: 62

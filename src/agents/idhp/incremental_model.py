@@ -136,11 +136,11 @@ class IncrementalModelBase(ABC):
 class IncrementalLTIAircraft(IncrementalModelBase):
     """Incremental model for the LTI aircraft system."""
 
-    def __init__(self, env: AircraftEnv) -> None:
+    def __init__(self, env: AircraftEnv, **kwargs) -> None:
         """Initialize the model."""
         n_states = env.aircraft.ss.nstates
         n_inputs = env.aircraft.ss.ninputs
-        super(IncrementalLTIAircraft, self).__init__(n_states, n_inputs)
+        super(IncrementalLTIAircraft, self).__init__(n_states, n_inputs, **kwargs)
 
     def increment(self, env: AircraftEnv) -> None:
         """Increment the model."""

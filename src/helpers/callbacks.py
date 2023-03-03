@@ -110,6 +110,9 @@ class OnlineCallback(BaseCallback):
 
         :return: (bool) If the callback returns False, training is aborted early.
         """
+        if self.model.num_timesteps % self.model.log_interval != 0:
+            return True
+
         reference = self.model._env.reference[-2]
         state = self.model._env.track[-1]
         sq_error = self.model._env.sq_error[-1]
@@ -137,6 +140,13 @@ class OnlineCallback(BaseCallback):
         critic_weights = self.model.critic.state_dict()['ff.0.weight'].flatten()[:3].numpy()
         wandb.log({f"critic/loss": self.model.learning_data.loss_c[-1], "train/step": step})
         wandb.log({f"critic/w_{idx}": i for idx, i in enumerate(critic_weights)} | {"train/step": step})
+        return True
+
+    def _on_training_end(self) -> None:
+        """
+        This event is triggered before exiting the `learn()` method.
+        """
+        wandb.log({f'mean_error': np.mean(self.model._env.sq_error)})
         return True
 
 

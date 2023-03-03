@@ -1,5 +1,5 @@
 from hrl_fc.core import Experiment
 
-exp_name = "exp_idhp_test.yaml"
+exp_name = "exp_idhp_gamma.yaml"
 exp = Experiment(exp_name)
 exp.learn()

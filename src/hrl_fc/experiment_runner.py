@@ -1,5 +1,5 @@
 """Module that runs an experiment from a configuration file."""
-from experiment_builder import ExperimentBuilder, Sweep
+from hrl_fc.experiment_builder import ExperimentBuilder, Sweep
 from rich.progress import track
 import os
 from helpers.paths import Path
@@ -29,7 +29,7 @@ class Runner:
 
             sweep_config = sweep.config
 
-            self.wandb_run = wandb.init(
+            wandb_run = wandb.init(
                 project=sweep_config.name,
                 config=sweep_config.dict(),
                 sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
@@ -37,17 +37,16 @@ class Runner:
             )
 
             # Learn
-            sweep.learn(name=self.wandb_run.name)
+            sweep.learn(name=wandb_run.name)
 
             # Evaluate
             if self.config.evaluate:
                 self.evaluate(sweep)
 
-            self.wandb_run.finish()
+            wandb_run.finish()
 
     def learn(self, sweep: Sweep):
         """Start learning a sweep."""
-
 
     def evaluate(self):
         pass
@@ -59,7 +58,7 @@ class Runner:
 
 
 def main():
-    Runner('exp_idhp_test').run()
+    Runner('exp_idhp_hyperparameters').run()
 
 
 if __name__ == "__main__":
