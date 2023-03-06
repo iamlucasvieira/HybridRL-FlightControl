@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, Extra
 from typing import Optional, List, Union, Literal
 
 from agents.config import ConfigSAC, ConfigIDHP, ConfigTD3, ConfigSDSAC
-from envs.lti_citation.config_lti_env import ConfigLTIEnv
+from envs.config.config_lti_env import ConfigLTIEnv
 
 
 class Config6DOF(BaseModel):

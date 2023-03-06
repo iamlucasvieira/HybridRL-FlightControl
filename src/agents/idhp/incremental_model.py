@@ -1,7 +1,7 @@
 """IDHP incremental model."""
 import numpy as np
 from abc import ABC
-from envs.lti_citation.aircraft_environment import AircraftEnv
+from envs.lti_citation.lti_env import LTIEnv
 
 
 class IncrementalModelBase(ABC):
@@ -136,13 +136,13 @@ class IncrementalModelBase(ABC):
 class IncrementalLTIAircraft(IncrementalModelBase):
     """Incremental model for the LTI aircraft system."""
 
-    def __init__(self, env: AircraftEnv, **kwargs) -> None:
+    def __init__(self, env: LTIEnv, **kwargs) -> None:
         """Initialize the model."""
         n_states = env.aircraft.ss.nstates
         n_inputs = env.aircraft.ss.ninputs
         super(IncrementalLTIAircraft, self).__init__(n_states, n_inputs, **kwargs)
 
-    def increment(self, env: AircraftEnv) -> None:
+    def increment(self, env: LTIEnv) -> None:
         """Increment the model."""
         if len(env.actions) < 2 and len(env.aircraft.states) < 2:
             raise ValueError("Not enough data to increment the model.")
@@ -152,7 +152,7 @@ class IncrementalLTIAircraft(IncrementalModelBase):
         self.state_k_1 = env.aircraft.states[-2]
         self.state_k = env.aircraft.states[-1]
 
-    def update(self, env: AircraftEnv) -> None:
+    def update(self, env: LTIEnv) -> None:
         """Update the model."""
         # Only update if two data points are available
         if self.ready:

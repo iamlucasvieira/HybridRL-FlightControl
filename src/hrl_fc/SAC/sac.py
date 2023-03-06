@@ -1,10 +1,10 @@
 import numpy as np
 from sac_torch import Agent
-from envs.lti_citation.aircraft_environment import AircraftEnv
+from envs.lti_citation.lti_env import LTIEnv
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    env = AircraftEnv()  # gym.make('MountainCarContinuous-v0')
+    env = LTIEnv()  # gym.make('MountainCarContinuous-v0')
     agent = Agent(input_dims=env.observation_space.shape, env=env, n_actions=env.action_space.shape[0])
     n_games = 250
 

@@ -3,20 +3,10 @@ import gym
 from pydantic import BaseModel, validator, Extra
 from typing import Optional, List, Literal
 
-from envs.lti_citation.tasks import AVAILABLE_TASKS
-from envs.lti_citation.rewards import AVAILABLE_REWARDS
-from envs.lti_citation.observations import AVAILABLE_OBSERVATIONS
-from envs.lti_citation.aircraft_environment import AircraftEnv
-
-
-class ConfigLTISweep(BaseModel):
-    """Class that makes it possible to built multiple sweep configurations."""
-    reward_type: Optional[List[str]] = []
-    observation_type: Optional[List[str]] = []
-    task_type: Optional[List[str]] = []
-
-    class Config:
-        extra = Extra.forbid
+from envs.reference_signals import AVAILABLE_REFERENCES
+from envs.rewards import AVAILABLE_REWARDS
+from envs.observations import AVAILABLE_OBSERVATIONS
+from envs.lti_citation.lti_env import LTIEnv
 
 
 class ConfigLTIKwargs(BaseModel):
@@ -25,10 +15,11 @@ class ConfigLTIKwargs(BaseModel):
     configuration: Optional[str | List[str]] = "sp"
     dt: Optional[float | List[float]] = 0.1  # Time step
     episode_steps: Optional[int | List[int]] = 100  # Number of steps
-    task_type: Optional[str | List[str]] = "sin_q"
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
+    reference_type: Optional[str | List[str]] = "sin"
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
+    tracked_state: Optional[str | List[str]] = "q"
 
     @validator('configuration')
     def check_config(cls, configuration):
@@ -37,11 +28,11 @@ class ConfigLTIKwargs(BaseModel):
             raise ValueError(f"Configuration must be in {CONFIGURATIONS}")
         return configuration
 
-    @validator('task_type')
-    def check_task_type(cls, task_type):
-        if task_type not in AVAILABLE_TASKS and not isinstance(task_type, list):
-            raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
-        return task_type
+    @validator('reference_type')
+    def check_reference_type(cls, reference_type):
+        if reference_type not in AVAILABLE_REFERENCES and not isinstance(reference_type, list):
+            raise ValueError(f"Task must be in {AVAILABLE_REFERENCES}")
+        return reference_type
 
     @validator('reward_type')
     def check_reward_type(cls, reward_type):
@@ -64,7 +55,7 @@ class ConfigLTIEnv(BaseModel):
     name: Literal['LTI'] = "LTI"
     kwargs: Optional[ConfigLTIKwargs] = ConfigLTIKwargs()
     sweep: Optional[ConfigLTIKwargs] = ConfigLTIKwargs()
-    object: gym.Env = AircraftEnv
+    object: gym.Env = LTIEnv
 
     class Config:
         extra = Extra.forbid

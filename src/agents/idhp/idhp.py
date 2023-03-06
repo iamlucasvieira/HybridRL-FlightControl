@@ -2,7 +2,7 @@
 import torch
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.type_aliases import MaybeCallback
-from envs.lti_citation.aircraft_environment import AircraftEnv
+from envs.lti_citation.lti_env import LTIEnv
 from agents.idhp.policy import IDHPPolicy
 from agents.idhp.incremental_model import IncrementalLTIAircraft
 from dataclasses import dataclass
@@ -19,7 +19,7 @@ class IDHP(BaseAlgorithm):
 
     def __init__(self,
                  policy: str,
-                 env: Type[AircraftEnv],
+                 env: Type[LTIEnv],
                  discount_factor: float = 0.6,
                  discount_factor_model: float = 0.8,
                  verbose: int = 1,
@@ -75,7 +75,7 @@ class IDHP(BaseAlgorithm):
         self.log_interval = None
 
     @staticmethod
-    def _setup_env(env: Type[AircraftEnv]) -> Type[AircraftEnv]:
+    def _setup_env(env: Type[LTIEnv]) -> Type[LTIEnv]:
         """Adds the required reward and observation fucntion to env."""
         env.set_reward_function('sq_error')
         env.set_observation_function('states + ref')
