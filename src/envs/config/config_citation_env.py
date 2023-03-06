@@ -6,12 +6,13 @@ from typing import Optional, List, Literal
 from envs.reference_signals import AVAILABLE_REFERENCES
 from envs.rewards import AVAILABLE_REWARDS
 from envs.observations import AVAILABLE_OBSERVATIONS
+from envs.citation.models.model_loader import AVAILABLE_MODELS
 from envs.citation.citation_env import CitationEnv
 
 
 class ConfigCitationKwargs(BaseModel):
     """Base configuration which is passed to the gym environment."""
-    configuration: Optional[str | List[str]] = "sp"
+    model: Optional[str | List[str]] = "default"
     dt: Optional[float | List[float]] = 0.1  # Time step
     episode_steps: Optional[int | List[int]] = 100  # Number of steps
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
@@ -20,12 +21,11 @@ class ConfigCitationKwargs(BaseModel):
     observation_type: Optional[str | List[str]] = "states + ref + error"
     tracked_state: Optional[str | List[str]] = "q"
 
-    @validator('configuration')
-    def check_config(cls, configuration):
-        CONFIGURATIONS = ['sp']  # Available aircraft configurations
-        if configuration not in CONFIGURATIONS and not isinstance(configuration, list):
-            raise ValueError(f"Configuration must be in {CONFIGURATIONS}")
-        return configuration
+    @validator('model')
+    def check_config(cls, model):
+        if model not in AVAILABLE_MODELS and not isinstance(model, list):
+            raise ValueError(f"Configuration must be in {model}")
+        return model
 
     @validator('reference_type')
     def check_reference_type(cls, reference_type):
