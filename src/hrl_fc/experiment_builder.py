@@ -49,7 +49,7 @@ class Sweep:
     @property
     def agent_config(self):
         """Alias for agent config."""
-        return self.config.agent.__root__
+        return self.config.agent
 
     @property
     def env_config(self):
@@ -211,7 +211,7 @@ class ExperimentBuilder:
 
         # Get all possible sweeps
         self.sweep_configs = get_sweep("env.sweep", "env.kwargs")
-        self.sweep_configs = get_sweep("agent.__root__.sweep", "agent.__root__.kwargs")
+        self.sweep_configs = get_sweep("agent.sweep", "agent.kwargs")
 
         for _ in range(self.config.n_learning):
             for sweep_config in self.sweep_configs:
