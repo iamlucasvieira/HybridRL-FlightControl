@@ -21,6 +21,7 @@ def env_kwargs():
 
 class TestLTIEnv:
     """Tests LTIEnv."""
+
     def test_aircraft_reset(self, env_kwargs):
         """Tests if aircraft is reset after a reset."""
         env = LTIEnv(**env_kwargs)
@@ -29,3 +30,9 @@ class TestLTIEnv:
         assert len(env.aircraft.states) == 2, f"env.aircraft.states should be updated after an environmnet step"
         env.reset()
         assert len(env.aircraft.states) == 1, f"env.aircraft.states should be reset after an environmnet reset"
+
+    def test_unsupported_configuration(self, env_kwargs):
+        """Tests if unsupported configuration raises an error."""
+        env_kwargs["configuration"] = "unsupported"
+        with pytest.raises(ValueError):
+            LTIEnv(**env_kwargs)
