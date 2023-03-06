@@ -76,6 +76,10 @@ class BaseEnv(gym.Env, ABC):
         """The initial state of the environment."""
         raise NotImplementedError
 
+    def _reset(self):
+        """Allows child classes to reset their parameters."""
+        raise NotImplementedError
+
     def _observation_space(self) -> spaces.Box:
         """The observation space of the environment."""
         return spaces.Box(low=-1, high=1,
@@ -125,6 +129,7 @@ class BaseEnv(gym.Env, ABC):
 
     def reset(self):
         self.initialize()
+        self._reset()
         observation = self.get_obs(self)
         return observation  # reward, done, info can't be included
 

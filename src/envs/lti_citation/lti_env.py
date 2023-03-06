@@ -61,3 +61,7 @@ class LTIEnv(BaseEnv):
         self.aircraft.build_state_space()
         x_t = self.aircraft.current_state.flatten()
         return x_t
+
+    def _reset(self) -> None:
+        """Reset the state of the environment to an initial state."""
+        self.aircraft.build_state_space()
