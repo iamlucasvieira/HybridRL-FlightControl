@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 
 from envs.lti_citation.lti_env import LTIEnv
+from envs.citation.citation_env import CitationEnv
 from envs.observations import AVAILABLE_OBSERVATIONS, get_observation
 from envs.rewards import AVAILABLE_REWARDS, get_reward
 from envs.reference_signals import AVAILABLE_REFERENCES, get_reference_signal
@@ -23,7 +24,7 @@ def env_kwargs():
     return default_kwargs
 
 
-@pytest.mark.parametrize("env_constructor", [LTIEnv])
+@pytest.mark.parametrize("env_constructor", [LTIEnv, CitationEnv])
 class TestChildEnvs:
     """Tests the initialization of child envs of BaseEnv.
 
@@ -45,14 +46,14 @@ class TestChildEnvs:
     def test_step_storage(self, env_constructor, parameter, env_kwargs):
         """Tests if parameters used to store value are updated after a step."""
         env = env_constructor(**env_kwargs)
-        env.step(np.array([0]))
+        env.step(np.array([0] * env.action_space.shape[0]))
         assert len(getattr(env, parameter)) == 2, f"env.{parameter} should be updated after an environmnet step"
 
     @pytest.mark.parametrize("parameter", env_storage_parameters)
     def test_reset_storage(self, env_constructor, parameter, env_kwargs):
         """Tests if parameters used to store value are reset after a reset."""
         env = env_constructor(**env_kwargs)
-        env.step(np.array([0]))
+        env.step(np.array([0] * env.action_space.shape[0]))
         env.reset()
         assert len(getattr(env, parameter)) == 1, f"env.{parameter} should be reset after an environmnet reset"
 
