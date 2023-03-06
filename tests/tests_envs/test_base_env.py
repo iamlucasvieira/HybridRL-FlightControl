@@ -12,14 +12,13 @@ env_storage_parameters = ["actions", "reference", "track", "states", "error", "s
 @pytest.fixture
 def env_kwargs():
     default_kwargs = {
-        "filename": "citation.yaml",
-        "configuration": "sp",
         "dt": 0.1,
+        "episode_steps": 100,
+        "reward_scale": 1.0,
         "tracked_state": "q",
         "reference_type": "sin",
         "reward_type": "sq_error",
         "observation_type": "states + ref + error",
-        "reward_scale": 1.0,
     }
     return default_kwargs
 
