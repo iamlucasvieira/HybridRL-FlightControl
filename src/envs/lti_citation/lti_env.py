@@ -23,7 +23,7 @@ class LTIEnv(BaseEnv):
                                  configuration=configuration,
                                  tracked_state=tracked_state)
 
-        if tracked_state not in self.aircraft.states:
+        if tracked_state not in self.aircraft.ss.x_names:
             raise ValueError(f"Tracked state {tracked_state} not in model states {self.aircraft.states}")
 
         super(LTIEnv, self).__init__(
