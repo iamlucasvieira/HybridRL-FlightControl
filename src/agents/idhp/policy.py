@@ -5,7 +5,6 @@ import torch.optim as optim
 import gym
 from typing import Type
 from abc import ABC, abstractmethod
-from helpers.misc import get_device
 
 
 class BaseNetwork(nn.Module, ABC):
