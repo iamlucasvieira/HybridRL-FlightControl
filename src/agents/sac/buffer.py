@@ -35,9 +35,17 @@ class ReplayBuffer(deque):
         """Check if the replay buffer is full."""
         return len(self) == self.maxlen
 
-    def append(self, transition: tuple) -> None:
+    def push(self, transition: tuple) -> None:
         """Append a new transition to the replay buffer."""
         super(ReplayBuffer, self).append(Transition(*transition))
+
+    def append(self):
+        """Raise an error if the user tries to append to the replay buffer."""
+        raise NotImplementedError('Use push instead.')
+
+    def ready(self, batch_size: int) -> bool:
+        """Check if the replay buffer has enough samples to sample from."""
+        return len(self) >= batch_size
 
     def sample_buffer(self, batch_size):
         """Sample a batch of transitions from the replay buffer."""
