@@ -221,8 +221,8 @@ class TestSACPolicy:
 
         state = env.reset()
 
-        action = policy.get_action(state, deterministic=True)
-        action_from_actor, _ = policy.actor(th.tensor(state, dtype=th.float32), deterministic=True)
+        action = th.as_tensor(policy.get_action(state, deterministic=True), dtype=th.float32)
+        action_from_actor, _ = policy.actor(th.as_tensor(state, dtype=th.float32), deterministic=True)
 
         assert action.shape == action_space.shape
         assert th.allclose(action, action_from_actor)
