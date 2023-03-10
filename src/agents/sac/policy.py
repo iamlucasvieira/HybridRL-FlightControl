@@ -2,9 +2,9 @@
 import os
 import torch as th
 from torch import nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Normal
+from torch.nn.functional import softplus
 import numpy as np
 
 from typing import Union, List
@@ -18,8 +18,8 @@ class BaseNetwork(nn.Module, ABC):
     """Base network for Critic and Value networks."""
 
     def __init__(self,
-                 observation_space: spaces.Space,
-                 action_space: spaces.Space,
+                 observation_space: spaces.Box,
+                 action_space: spaces.Box,
                  learning_rate: float = 3e-4,
                  hidden_layers=None,
                  name='base',
@@ -69,8 +69,8 @@ class CriticNetwork(BaseNetwork):
     """Creates the critic neural network."""
 
     def __init__(self,
-                 observation_space: spaces.Space,
-                 action_space: spaces.Space,
+                 observation_space: spaces.Box,
+                 action_space: spaces.Box,
                  **kwargs):
         """Initialize critic network.
 
@@ -94,78 +94,77 @@ class CriticNetwork(BaseNetwork):
 
     def forward(self, state, action):
         """Forward pass of the critic's neural network."""
-        return self.ff(th.cat([state, action], dim=1))
+        return self.ff(th.cat([state, action], dim=-1))
 
 
 class ActorNetwork(BaseNetwork):
     """Actor network in SAC."""
 
     def __init__(self,
-                 observation_space: spaces.Space,
-                 action_space: spaces.Space,
+                 observation_space: spaces.Box,
+                 action_space: spaces.Box,
+                 sigma_min: float = -30,
+                 sigma_max: float = 2,
                  **kwargs):
         """Initialize actor network.
 
         args:
-            alpha: Learning rate.
-            input_dims: Input dimensions.
-            fc1_dims: Number of neurons in the first layer.
-            fc2_dims_: Number of neurons in the second layer.
-            name: Name of the network.
-            chkpt_dir: Checkpoint directory.
+            observation_space: Observation space.
+            action_space: Action space.
+            sigma_min: Minimum value of the standard deviation.
+            sigma_max: Maximum value of the standard deviation.
         """
         super(ActorNetwork, self).__init__(observation_space,
                                            action_space,
                                            **kwargs)
-        # self.mu = nn.Linear(self.fc2_dims, self.n_actions)
-        # self.sigma = nn.Linear(self.fc2_dims, self.n_actions)
+        self.mu = nn.Linear(self.hidden_layers[-1], self.action_dim)
+        self.log_sigma = nn.Linear(self.hidden_layers[-1], self.action_dim)
+        self.action_max = float(action_space.high[0])
+
+        self.sigma_min = sigma_min
+        self.sigma_max = sigma_max
 
     def _build_network(self) -> nn.Sequential:
         """Build network."""
-        ff = mlp([self.observation_dim + self.action_dim] + self.hidden_layers + [1],
-                 activation=nn.ReLU)
+        ff = mlp([self.observation_dim] + self.hidden_layers,
+                 activation=nn.ReLU,
+                 output_activation=nn.ReLU)
         return ff
 
-    # def forward(self, state):
-    #     """Forward pass in the actor network."""
-    #     prob = self.fc1(state)
-    #     prob = F.relu(prob)
-    #
-    #     prob = self.fc2(prob)
-    #     prob = F.relu(prob)
-    #
-    #     mu = self.mu(prob)
-    #     sigma = self.sigma(prob)
-    #
-    #     # Softplus activation function
-    #     sigma = T.clamp(sigma, min=self.param_noise, max=1)
-    #
-    #     return mu, sigma
-    #
-    # def sample_normal(self, state, reparamterize=True):
-    #     """Sample from a normal distribution."""
-    #     mu, sigma = self.forward(state)
-    #     probabilities = Normal(mu, sigma)
-    #
-    #     if reparamterize:  # Reparameterization trick: Sample with noise
-    #         actions = probabilities.rsample()
-    #     else:
-    #         actions = probabilities.sample()
-    #
-    #     action = T.tanh(actions) * T.tensor(self.max_action).to(self.device)
-    #     log_probs = probabilities.log_prob(actions)
-    #     log_probs -= T.log(1 - action.pow(2) + self.param_noise)
-    #     log_probs = log_probs.sum(1, keepdim=True)
-    #
-    #     return action, log_probs
+    def forward(self, state, with_log_prob=True, deterministic=False):
+        """Forward pass in the actor network.
+
+        args:
+            state: State.
+            with_log_prob: Whether to return the log probability.
+        """
+        net_output = self.ff(state)
+        mu = self.mu(net_output)
+        log_sigma = th.clamp(self.log_sigma(net_output), min=self.sigma_min, max=self.sigma_max)
+        sigma = th.exp(log_sigma)
+
+        action_distribution = Normal(mu, sigma)
+
+        action = action_distribution.rsample() if not deterministic else mu
+
+        if with_log_prob:  # From OpenAi Spinning Up
+            log_prob = action_distribution.log_prob(action) - \
+                       2 * np.log(2) - action - softplus(-2 * action)
+            log_prob = log_prob.sum(axis=-1)
+        else:
+            log_prob = None
+
+        action = th.tanh(action) * self.action_max
+
+        return action, log_prob
 
 
 class SACPolicy(nn.Module):
     """Policy for SAC algorithm."""
 
     def __init__(self,
-                 observation_space: spaces.Space,
-                 action_space: spaces.Space,
+                 observation_space: spaces.Box,
+                 action_space: spaces.Box,
                  learning_rate: float = 3e-4,
                  hidden_layers: List[int] = None,
                  save_path: Union[str, pl.Path] = ""):
@@ -202,7 +201,7 @@ class SACPolicy(nn.Module):
                                       hidden_layers=hidden_layers,
                                       save_path=save_path)
 
-    def act(self, state: np.ndarray) -> np.ndarray:
+    def get_action(self, state: np.ndarray, **kwargs) -> th.Tensor:
         """Get action from the policy.
 
         args:
@@ -210,11 +209,11 @@ class SACPolicy(nn.Module):
 
         returns:
             action: Action to take.
-
         """
-        state = th.tensor(state, dtype=th.float32, device=self.actor.device)
-        action, _ = self.actor.sample_normal(state, reparamterize=False)
-        return action.cpu().detach().numpy()
+        with th.no_grad():
+            state = th.tensor(state, dtype=th.float32, device=self.actor.device)
+            action, _ = self.actor(state, **kwargs)
+        return action.numpy()
 
     def save(self):
         """Save policy."""
