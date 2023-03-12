@@ -106,3 +106,11 @@ class TestSAC:
                   learning_starts=5)
         sac.learn(total_timesteps)
         assert sac.num_timesteps == total_timesteps
+
+
+    def test_dump_logs(self, env):
+        """Test that SAC logs are correctly dumped."""
+        sac = SAC(env, verbose=0)
+        sac._setup_learn(total_timesteps=100)
+        sac._dump_logs()
+        assert sac.logger is not None

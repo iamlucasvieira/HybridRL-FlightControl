@@ -34,7 +34,8 @@ class SAC(BaseAlgorithm):
                  gradient_steps: int = 1,
                  batch_size: int = 256,
                  learning_starts: int = 100,
-                 alpha: float = 0.2,
+                 entropy_coefficient: float = 0.2,
+                 entropy_coefficient_update: bool = True,
                  gamma: float = 0.99,
                  polyak: float = 0.995,
                  device: Optional[Union[th.device, str]] = None,
@@ -53,7 +54,8 @@ class SAC(BaseAlgorithm):
             buffer_size: Replay buffer size.
             batch_size: Batch size.
             learning_starts: Number of steps before learning starts.
-            alpha: Entropy coefficient.
+            entropy_coefficient: Entropy coefficient.
+            entropy_coefficient_update: Whether to update the entropy coefficient.
             gamma: Discount factor.
             polyak: Polyak averaging coefficient for updating target networks.
             device: Device to use.
@@ -65,9 +67,15 @@ class SAC(BaseAlgorithm):
         self.gradient_steps = gradient_steps
         self.batch_size = batch_size
         self.learning_starts = learning_starts
-        self.alpha = alpha
+        self.entropy_coefficient = entropy_coefficient
+        self.entropy_coefficient_update = entropy_coefficient_update
         self.gamma = gamma
         self.polyak = polyak
+
+        self.log_ent_coef = None
+        self.ent_coef_optimizer = None
+        self.target_entropy = None
+
         super(SAC, self).__init__(policy,
                                   env,
                                   learning_rate=learning_rate,
@@ -164,6 +172,9 @@ class SAC(BaseAlgorithm):
 
         self._n_updates += 1
 
+        if self.entropy_coefficient_update:
+            self.update_entropy_coefficient(buffer)
+
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         self.logger.record("train/actor_loss", np.mean(loss_actor.mean().item()))
         self.logger.record("train/critic_loss", np.mean(loss_critic.mean().item()))
@@ -177,6 +188,21 @@ class SAC(BaseAlgorithm):
                 new_target_param = polyak * target_param.data + (1 - polyak) * param.data
                 target_param.data.copy_(new_target_param)
 
+    def update_entropy_coefficient(self, buffer) -> None:
+        """Update the entropy coefficient."""
+        obs = to_tensor(buffer.obs)
+        _, log_prob = self.policy.actor(obs)
+        ent_coef = th.exp(self.log_ent_coef.detach())
+        ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
+
+        self.ent_coef_optimizer.zero_grad()
+        ent_coef_loss.backward()
+        self.ent_coef_optimizer.step()
+
+        self.entropy_coefficient = ent_coef.item()
+        self.logger.record("train/ent_coef", ent_coef.mean().item())
+        self.logger.record("train/ent_coef_loss", ent_coef_loss.mean().item())
+
     def _setup_model(self) -> None:
         """Initialize the SAC policy and replay buffer"""
         self.set_random_seed(self.seed)
@@ -186,9 +212,10 @@ class SAC(BaseAlgorithm):
         self.target_policy = deepcopy(self.policy)
         self.replay_buffer = ReplayBuffer(self.buffer_size)
 
-    def _setup_learn(self, *args, **kwargs) -> Tuple[int, BaseCallback]:
-        """Setup the learn method."""
-        return super(SAC, self)._setup_learn(*args, **kwargs)
+        if self.entropy_coefficient_update:
+            self.log_ent_coef = th.log(th.ones(1) * self.entropy_coefficient).requires_grad_(True)
+            self.ent_coef_optimizer = th.optim.Adam([self.log_ent_coef], lr=self.learning_rate)
+            self.target_entropy = -np.prod(self.env.action_space.shape).astype(np.float32)
 
     def _dump_logs(self) -> None:
         """
@@ -232,8 +259,8 @@ class SAC(BaseAlgorithm):
             critic_1_target = self.target_policy.critic_1(s_tp1, a_tp1)
             critic_2_target = self.target_policy.critic_2(s_tp1, a_tp1)
             critic_target = th.min(critic_1_target, critic_2_target)
-
-            target = r_t + self.gamma * (1 - done) * (critic_target - self.alpha * log_prob_tp1)
+            alpha = self.entropy_coefficient
+            target = r_t + self.gamma * (1 - done) * (critic_target - alpha * log_prob_tp1)
 
         loss_1 = ((critic_1 - target) ** 2).mean()
         loss_2 = ((critic_2 - target) ** 2).mean()
@@ -250,7 +277,7 @@ class SAC(BaseAlgorithm):
         s_t = to_tensor(transition.obs)
 
         a_t, log_prob = self.policy.actor(s_t)
-        alpha = self.alpha
+        alpha = self.entropy_coefficient
 
         critic_1 = self.policy.critic_1(s_t, a_t)
         critic_2 = self.policy.critic_2(s_t, a_t)

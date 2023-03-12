@@ -16,7 +16,22 @@ class ConfigSACArgs(BaseModel):
 
 class ConfigSACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
+    policy: Optional[str | List[str]] = 'default'
+    learning_rate: Optional[float | List[float]] = 3e-4
+    policy_kwargs: Optional[dict | List[dict]] = None
+    tensorboard_log: Optional[str | List[str]] = None
     verbose: Optional[int | List[int]] = get_auto("verbose")
+    seed: Optional[int | List[int]] = None
+    _init_setup_model: Optional[bool | List[bool]] = True
+    buffer_size: Optional[int | List[int]] = 1_000_000
+    gradient_steps: Optional[int | List[int]] = 1
+    batch_size: Optional[int | List[int]] = 256,
+    learning_starts: Optional[int | List[int]] = 100,
+    entropy_coefficient: Optional[float | List[float]] = 0.2,
+    entropy_coefficient_update: Optional[bool | List[bool]] = True,
+    gamma: Optional[float | List[float]] = 0.99,
+    polyak: Optional[float | List[float]] = 0.995,
+    device: Optional[str | List[str]] = None,
 
     class Config:
         extra = Extra.forbid
