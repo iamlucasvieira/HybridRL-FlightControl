@@ -25,13 +25,13 @@ class ConfigSACKwargs(BaseModel):
     _init_setup_model: Optional[bool | List[bool]] = True
     buffer_size: Optional[int | List[int]] = 1_000_000
     gradient_steps: Optional[int | List[int]] = 1
-    batch_size: Optional[int | List[int]] = 256,
-    learning_starts: Optional[int | List[int]] = 100,
-    entropy_coefficient: Optional[float | List[float]] = 0.2,
-    entropy_coefficient_update: Optional[bool | List[bool]] = True,
-    gamma: Optional[float | List[float]] = 0.99,
-    polyak: Optional[float | List[float]] = 0.995,
-    device: Optional[str | List[str]] = None,
+    batch_size: Optional[int | List[int]] = 256
+    learning_starts: Optional[int | List[int]] = 100
+    entropy_coefficient: Optional[float | List[float]] = 0.2
+    entropy_coefficient_update: Optional[bool | List[bool]] = True
+    gamma: Optional[float | List[float]] = 0.99
+    polyak: Optional[float | List[float]] = 0.995
+    device: Optional[str | List[str]] = None
 
     class Config:
         extra = Extra.forbid
