@@ -1,20 +1,21 @@
 """Module with SAC configuration."""
 from pydantic import BaseModel, Extra
 from typing import Optional, Literal, List
-from agents.sac.sac import SAC
+from stable_baselines3 import SAC
 from stable_baselines3.common.base_class import BaseAlgorithm
 from helpers.config_auto import get_auto
 
 
-class ConfigSACArgs(BaseModel):
+class ConfigSB3SACArgs(BaseModel):
     """Arguments for IDHP object."""
+    policy: Optional[str] = "MlpPolicy"
     env: Optional[str] = get_auto("env")
 
     class Config:
         extra = Extra.forbid
 
 
-class ConfigSACKwargs(BaseModel):
+class ConfigSB3SACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
     verbose: Optional[int | List[int]] = get_auto("verbose")
 
@@ -22,7 +23,7 @@ class ConfigSACKwargs(BaseModel):
         extra = Extra.forbid
 
 
-class ConfigSACLearn(BaseModel):
+class ConfigSB3SACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
     total_timesteps: Optional[int] = 1_000
     log_interval: Optional[int] = 1
@@ -34,13 +35,13 @@ class ConfigSACLearn(BaseModel):
 
 
 # Configuration of Agents
-class ConfigSAC(BaseModel):
+class ConfigSB3SAC(BaseModel):
     """Configuration of SAC."""
-    name: Literal['SAC'] = "SAC"
-    args: Optional[ConfigSACArgs] = ConfigSACArgs()
-    kwargs: Optional[ConfigSACKwargs] = ConfigSACKwargs()
-    sweep: Optional[ConfigSACKwargs] = ConfigSACKwargs()
-    learn: Optional[ConfigSACLearn] = ConfigSACLearn()
+    name: Literal['SB3SAC'] = "SB3SAC"
+    args: Optional[ConfigSB3SACArgs] = ConfigSB3SACArgs()
+    kwargs: Optional[ConfigSB3SACKwargs] = ConfigSB3SACKwargs()
+    sweep: Optional[ConfigSB3SACKwargs] = ConfigSB3SACKwargs()
+    learn: Optional[ConfigSB3SACLearn] = ConfigSB3SACLearn()
     object: BaseAlgorithm = SAC
 
     class Config:

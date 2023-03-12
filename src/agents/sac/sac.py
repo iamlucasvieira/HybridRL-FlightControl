@@ -1,9 +1,14 @@
 import gym
 import torch
+import time
+import sys
+import numpy as np
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.policies import BasePolicy
+from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.type_aliases import MaybeCallback
-from typing import Union, Optional
+from stable_baselines3.common.utils import safe_mean
+from typing import Union, Optional, Tuple
 import torch as th
 from copy import deepcopy
 from agents.sac.policy import SACPolicy
@@ -22,7 +27,7 @@ class SAC(BaseAlgorithm):
                  learning_rate: float = 3e-4,
                  policy_kwargs: Optional[dict] = None,
                  tensorboard_log: Optional[str] = None,
-                 verbose: int = 0,
+                 verbose: int = 1,
                  seed: Optional[int] = None,
                  _init_setup_model: bool = True,
                  buffer_size: int = 1_000_000,
@@ -79,7 +84,7 @@ class SAC(BaseAlgorithm):
             self,
             total_timesteps: int,
             callback: MaybeCallback = None,
-            log_interval: int = 100,
+            log_interval: int = 4,
             tb_log_name: str = "run",
             reset_num_timesteps: bool = True,
             progress_bar: bool = False,
@@ -118,13 +123,21 @@ class SAC(BaseAlgorithm):
             # If done, reset the environment
             if done:
                 obs = env.reset()
+                self._episode_num += 1
+
+                if self._episode_num % log_interval == 0:
+                    self._dump_logs()
+                    # self.logger.dump(step=self.num_timesteps)
             else:
                 obs = obs_tp1
 
             if step >= self.learning_starts:
                 for gradient_step in range(self.gradient_steps):
+                    callback.on_step()
                     self.update()
                     self.update_target_networks()
+
+        callback.on_training_end()
 
     def update(self) -> None:
         """Update the policy."""
@@ -149,6 +162,12 @@ class SAC(BaseAlgorithm):
         unfreeze(self.policy.critic_1)
         unfreeze(self.policy.critic_2)
 
+        self._n_updates += 1
+
+        self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+        self.logger.record("train/actor_loss", np.mean(loss_actor.mean().item()))
+        self.logger.record("train/critic_loss", np.mean(loss_critic.mean().item()))
+
     def update_target_networks(self) -> None:
         """Update the target networks."""
         polyak = self.polyak
@@ -158,7 +177,6 @@ class SAC(BaseAlgorithm):
                 new_target_param = polyak * target_param.data + (1 - polyak) * param.data
                 target_param.data.copy_(new_target_param)
 
-
     def _setup_model(self) -> None:
         """Initialize the SAC policy and replay buffer"""
         self.set_random_seed(self.seed)
@@ -167,6 +185,31 @@ class SAC(BaseAlgorithm):
                                         **self.policy_kwargs)
         self.target_policy = deepcopy(self.policy)
         self.replay_buffer = ReplayBuffer(self.buffer_size)
+
+    def _setup_learn(self, *args, **kwargs) -> Tuple[int, BaseCallback]:
+        """Setup the learn method."""
+        return super(SAC, self)._setup_learn(*args, **kwargs)
+
+    def _dump_logs(self) -> None:
+        """
+        Write log.
+        """
+        time_elapsed = max((time.time_ns() - self.start_time) / 1e9, sys.float_info.epsilon)
+        fps = int((self.num_timesteps - self._num_timesteps_at_start) / time_elapsed)
+        self.logger.record("time/episodes", self._episode_num, exclude="tensorboard")
+        if len(self.ep_info_buffer) > 0 and len(self.ep_info_buffer[0]) > 0:
+            self.logger.record("rollout/ep_rew_mean", safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]))
+            self.logger.record("rollout/ep_len_mean", safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer]))
+        self.logger.record("time/fps", fps)
+        self.logger.record("time/time_elapsed", int(time_elapsed), exclude="tensorboard")
+        self.logger.record("time/total_timesteps", self.num_timesteps, exclude="tensorboard")
+        if self.use_sde:
+            self.logger.record("train/std", (self.actor.get_std()).mean().item())
+
+        if len(self.ep_success_buffer) > 0:
+            self.logger.record("rollout/success_rate", safe_mean(self.ep_success_buffer))
+        # Pass the number of timesteps for tensorboard
+        self.logger.dump(step=self.num_timesteps)
 
     def get_critic_loss(self, transition: Transition) -> th.Tensor:
         """Get the critic loss.
@@ -186,11 +229,11 @@ class SAC(BaseAlgorithm):
         with th.no_grad():
             a_tp1, log_prob_tp1 = self.policy.actor(s_tp1)
 
-            critic_1_tp1 = self.target_policy.critic_1(s_tp1, a_tp1)
-            critic_2_tp1 = self.target_policy.critic_2(s_tp1, a_tp1)
-            critic_tp1 = th.min(critic_1_tp1, critic_2_tp1)
+            critic_1_target = self.target_policy.critic_1(s_tp1, a_tp1)
+            critic_2_target = self.target_policy.critic_2(s_tp1, a_tp1)
+            critic_target = th.min(critic_1_target, critic_2_target)
 
-            target = r_t + self.gamma * (1 - done) * (critic_tp1 - self.alpha * log_prob_tp1)
+            target = r_t + self.gamma * (1 - done) * (critic_target - self.alpha * log_prob_tp1)
 
         loss_1 = ((critic_1 - target) ** 2).mean()
         loss_2 = ((critic_2 - target) ** 2).mean()

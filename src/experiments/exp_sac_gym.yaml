@@ -1,0 +1,17 @@
+---
+name: SAC-gym
+wandb: false
+
+agent:
+  name: SAC
+  kwargs:
+    verbose: 1
+  learn:
+    total_timesteps: 20_000
+
+env:
+  name: "gym"
+  kwargs:
+    id: Pendulum-v1
+
+seed: 100

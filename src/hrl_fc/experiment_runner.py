@@ -48,8 +48,16 @@ class Runner:
     def learn(self, sweep: Sweep):
         """Start learning a sweep."""
 
-    def evaluate(self):
-        pass
+    def evaluate(self, sweep):
+        """Evaluate a sweep."""
+        self.print("Evaluating...")
+        obs = sweep.env.reset()
+        while True:
+            action, _states = sweep.agent.predict(obs, deterministic=True)
+            obs, reward, done, info = sweep.env.step(action)
+            sweep.env.render()
+            if done:
+                obs = sweep.env.reset()
 
     def print(self, message: str):
         """Prints only if verbose is greater than 0."""
@@ -58,7 +66,7 @@ class Runner:
 
 
 def main():
-    Runner('exp_idhp_hyperparameters').run()
+    Runner('exp_sac_gym').run()
 
 
 if __name__ == "__main__":

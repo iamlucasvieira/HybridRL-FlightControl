@@ -90,7 +90,7 @@ class TestCriticNetwork:
 
         output = net(th.tensor(state), th.tensor(action))
 
-        assert output.shape == (1,)
+        assert output.shape == ()
 
 
 @pytest.fixture

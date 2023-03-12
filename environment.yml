@@ -38,4 +38,5 @@ dependencies:
       - opencv-python  # SB3 extra
       - stable-baselines3
       - gym == 0.21
+      - pyglet == 1.5.27  # For gym rendering
       - -e .

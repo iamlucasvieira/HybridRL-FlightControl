@@ -94,7 +94,8 @@ class CriticNetwork(BaseNetwork):
 
     def forward(self, state, action):
         """Forward pass of the critic's neural network."""
-        return self.ff(th.cat([state, action], dim=-1))
+        q = self.ff(th.cat([state, action], dim=-1))
+        return th.squeeze(q, -1)
 
 
 class ActorNetwork(BaseNetwork):
@@ -149,7 +150,7 @@ class ActorNetwork(BaseNetwork):
 
         if with_log_prob:  # From OpenAi Spinning Up
             log_prob = action_distribution.log_prob(action) - \
-                       2 * np.log(2) - action - softplus(-2 * action)
+                      2 * (np.log(2) - action - softplus(-2 * action))
             log_prob = log_prob.sum(axis=-1)
         else:
             log_prob = None
@@ -226,3 +227,12 @@ class SACPolicy(nn.Module):
         self.actor.load_checkpoint()
         self.critic_1.load_checkpoint()
         self.critic_2.load_checkpoint()
+
+    def predict(self, observation: np.ndarray,
+                state: np.ndarray,
+                episode_start: np.ndarray,
+                deterministic: bool = False) -> np.ndarray:
+        """Predict action."""
+        # Unused arguments
+        del episode_start
+        return self.get_action(observation, deterministic=deterministic), state

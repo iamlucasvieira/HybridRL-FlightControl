@@ -13,6 +13,8 @@ def get_auto(item: str) -> str:
 
 def validate_auto(value: str) -> bool:
     """Validates that an auto item is valid"""
+    if not isinstance(value, str):
+        return False
     if value.startswith("auto."):
         item = value.split(".")[-1]
         if item in ALLOWS_AUTO:

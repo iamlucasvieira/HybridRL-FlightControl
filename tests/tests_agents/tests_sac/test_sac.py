@@ -74,6 +74,7 @@ class TestSAC:
                                               obs_=obs_tp1,
                                               done=done))
             obs = obs_tp1
+        sac._setup_learn(total_timesteps=100)
         sac.update()
         # After one update gradients should exist
         assert sac.policy.actor.optimizer.param_groups[0]['params'][0].grad is not None
