@@ -70,10 +70,6 @@ class IncrementalModelBase(ABC):
         Args:
             future_state: The state from the environment after the current action is taken.
         """
-        # Only start updating after the first step
-        if not self.ready:
-            return
-
         # Get the predicted change in state
         dx_hat, X = self.predict(self.state_k, self.state_k_1,
                                  self.action_k, self.action_k_1,
@@ -82,7 +78,7 @@ class IncrementalModelBase(ABC):
         dx = future_state - self.state_k
 
         # Get the error
-        e = dx.T - dx_hat
+        e = dx.T - dx_hat.T
         self.errors.append(e)
 
         # Define matrices used to update theta and cov
@@ -128,8 +124,8 @@ class IncrementalModelBase(ABC):
         X = np.vstack((dx, np.array(du).reshape(-1, 1)))
 
         # Get the predicted change in state
-        dx_hat = X.T @ self.theta
-
+        dx_hat_t = X.T @ self.theta
+        dx_hat = dx_hat_t.T
         return (dx_hat, X) if increment else state + dx_hat
 
 
