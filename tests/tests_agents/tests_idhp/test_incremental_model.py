@@ -19,6 +19,9 @@ class TestIncrementalCitation:
         assert model.n_states == n_states
         assert model.cov.shape == (n_inputs + n_states, n_inputs + n_states)
         assert model.theta.shape == (n_inputs + n_states, n_states)
+        assert len(model.errors) == 1
+        assert model.F is not None
+        assert model.G is not None
 
     def test_increment_not_enough_data(self, env):
         """Tests the increment method."""
