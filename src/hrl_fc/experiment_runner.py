@@ -33,12 +33,14 @@ class Runner:
                 project=sweep_config.name,
                 config=sweep_config.dict(),
                 sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
-                save_code=True,  # optional
+                save_code=False,  # optional
             )
 
             # Learn
             sweep.learn(name=wandb_run.name)
 
+            if self.config.save_model:
+                sweep.save_model()
             # Evaluate
             if self.config.evaluate:
                 self.evaluate(sweep)

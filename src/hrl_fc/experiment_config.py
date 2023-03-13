@@ -15,6 +15,7 @@ class ConfigExperiment(BaseModel):
     evaluate: Optional[bool] = True
     verbose: Optional[int] = 1
     seed: Optional[int] = None
+    save_model: Optional[bool] = True
     env: Union[ConfigLTIEnv, ConfigCitationEnv, ConfigGymEnv] = Field(discriminator='name', default=ConfigLTIEnv(name="LTI"))
     agent: Union[ConfigSB3SAC, ConfigIDHP, ConfigTD3, ConfigSDSAC, ConfigSAC] = Field(discriminator='name',
                                                                            default=ConfigSB3SAC(name="SB3SAC"))

@@ -42,10 +42,6 @@ class Sweep:
         # Learn kwargs
         self.learn_kwargs = self.agent_config.learn.dict()
 
-        # Get callbacks
-        if "callback" in self.learn_kwargs:
-            self.get_callbacks()
-
     @property
     def agent_config(self):
         """Alias for agent config."""
@@ -76,10 +72,14 @@ class Sweep:
             if key in config and validate_auto(config[key]):
                 config[key] = new_value
 
+        # Agent args and kwargs
         replace("env", self.env)
         replace("verbose", self.config.verbose)
         replace("tensorboard_log", self.LOGS_PATH)
         replace("seed", self.config.seed)
+
+        # Learn kwargs
+        replace("tb_log_name", self.run_name)
         return config
 
     def get_callbacks(self):
@@ -111,17 +111,30 @@ class Sweep:
             name = get_name([self.config.name, self.agent_config.name])
         self.run_name = name
 
+        # Get callbacks
+        if "callback" in self.learn_kwargs:
+            self.get_callbacks()
+
         # Create directories to save models and logs
         pl.Path.mkdir(self.MODELS_PATH / name, parents=True, exist_ok=True)
         pl.Path.mkdir(self.LOGS_PATH, parents=True, exist_ok=True)
 
-        # Learn
-        self.agent.learn(**self.learn_kwargs)
+        # Replace auto config
+        learn_kwargs = self.replace_auto_config(self.learn_kwargs)
 
-    def load_model(self, model_name="olive-sun-4"):
+        # Learn
+        self.agent.learn(**learn_kwargs)
+
+    def load_model(self, model_name):
         """Load a model file."""
-        model = self.algo.load(Path.models / self.project_name / model_name / "model.zip")
-        self.model = model
+        model = self.agent.load(self.MODELS_PATH / model_name / "model.zip")
+        self.agent = model
+
+    def save_model(self, model_name=None):
+        """Save a model file."""
+        if model_name is None:
+            model_name = self.run_name
+        self.agent.save(self.MODELS_PATH / model_name / "model.zip")
 
     def evaluate(self, n_times=1):
         """Run the experiment n times."""
