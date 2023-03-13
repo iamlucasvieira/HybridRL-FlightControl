@@ -125,7 +125,7 @@ class IncrementalModelBase(ABC):
         dx = x_k - x_k_1
 
         # Build the input information matrix
-        X = np.vstack((dx, np.array(du)))
+        X = np.vstack((dx, np.array(du).reshape(-1, 1)))
 
         # Get the predicted change in state
         dx_hat = X.T @ self.theta

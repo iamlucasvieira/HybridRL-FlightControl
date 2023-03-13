@@ -1,5 +1,5 @@
 """Module that implemment IDHP agent."""
-import torch
+import torch as th
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.type_aliases import MaybeCallback
 from envs import BaseEnv
@@ -118,7 +118,7 @@ class IDHP(BaseAlgorithm):
         self._env.env.episode_length = total_timesteps * self._env.dt
 
         callback.on_training_start(locals(), globals())
-        obs_t = torch.tensor(np.array([self._env.reset()]), requires_grad=True, dtype=torch.float32)
+        obs_t = th.tensor(np.array([self._env.reset()]), requires_grad=True, dtype=th.float32)
 
         while self.num_timesteps < total_timesteps:
             ###############################################
@@ -135,11 +135,13 @@ class IDHP(BaseAlgorithm):
             ##############
             # Get losses #
             ##############
-            with torch.no_grad():
-                action.backward()
-                da_ds = obs_t.grad
-                self.actor.zero_grad()
+            da_ds = []
+            for i in range(action.shape[1]):
+                grad_i = th.autograd.grad(action[:, i], obs_t, grad_outputs=th.ones_like(action[:, i]), retain_graph=True)
+                da_ds.append(grad_i[0])
+            da_ds = th.cat(da_ds)
 
+            with th.no_grad():
                 # Step environment
                 obs_t1, rew_t1, done, info = self.env.step(action.detach().numpy())
 
@@ -152,8 +154,8 @@ class IDHP(BaseAlgorithm):
                 self._update_info_buffer(info, done)
 
                 # Convert to tensors
-                obs_t1 = torch.tensor(obs_t1, requires_grad=True, dtype=torch.float32)
-                error_t1 = torch.tensor(self._env.error[-1], dtype=torch.float32)
+                obs_t1 = th.tensor(obs_t1, requires_grad=True, dtype=th.float32)
+                error_t1 = th.tensor(self._env.error[-1], dtype=th.float32)
 
                 # Get the reward gradient with respect to the state at time t+1
                 dr1_ds1 = - 2 * error_t1 * self._env.tracked_state_mask
@@ -161,8 +163,8 @@ class IDHP(BaseAlgorithm):
                 critic_t1 = self.critic(obs_t1)
 
                 # Get incremental model predictions of F and G at time t-1
-                F_t_1 = torch.tensor(self.model.F, dtype=torch.float32)
-                G_t_1 = torch.tensor(self.model.G, dtype=torch.float32)
+                F_t_1 = th.tensor(self.model.F, dtype=th.float32)
+                G_t_1 = th.tensor(self.model.G, dtype=th.float32)
 
                 # Get loss gradients for actor and critic
                 loss_gradient_a = self.actor.get_loss(dr1_ds1, self.gamma, critic_t1, G_t_1)
@@ -176,13 +178,13 @@ class IDHP(BaseAlgorithm):
             action = scale_action(self.actor(obs_t), self._env.action_space)  # Need to resample due to previous detach
             self.actor.optimizer.zero_grad()
             loss_a = action * loss_gradient_a
-            loss_a.backward(gradient=torch.ones_like(loss_gradient_a))
+            loss_a.backward(gradient=th.ones_like(loss_gradient_a))
             self.actor.optimizer.step()
 
             # Update critic network
             self.critic.optimizer.zero_grad()
             loss_c = critic_t * loss_gradient_c
-            loss_c.backward(gradient=torch.ones_like(loss_gradient_c))
+            loss_c.backward(gradient=th.ones_like(loss_gradient_c))
             self.critic.optimizer.step()
 
             # Update incremental model
@@ -211,33 +213,6 @@ class IDHP(BaseAlgorithm):
         callback.on_training_end()
 
         return self
-
-    def log_to_wandb(self, action):
-        """Log the learning performance to wandb."""
-        actor_weights = self.actor.ff[0].weight.clone().detach().numpy().flatten()
-        # wandb.log({f"training/w_a-{ii}": loss for ii, loss in enumerate(actor_weights)})
-        wandb.log({f"train/error": self._env.error[-1], "train/step": self.num_timesteps})
-        wandb.log({f"train/theta_{idx}": i for idx, i in enumerate(self.model.theta.flatten())} | {
-            "train/step": self.num_timesteps})
-        step = self.num_timesteps
-
-    def _sample_action(self):
-        return [0.1]  # self.actor(self.observation_space.sample())
-
-    def collect_rollouts(self, callback: MaybeCallback = None):
-        """Collects the experience with the environment."""
-
-        callback.on_rollout_start()
-
-        action = self._sample_action()
-
-        new_obs, reward, done, info = self.env.step(action)
-
-        self.num_timesteps += 1
-
-        callback.update_locals(locals())
-
-        return new_obs, reward, done, info, action
 
     @property
     def _env(self):

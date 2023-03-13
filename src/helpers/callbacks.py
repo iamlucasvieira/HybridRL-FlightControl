@@ -110,8 +110,9 @@ class OnlineCallback(BaseCallback):
 
         :return: (bool) If the callback returns False, training is aborted early.
         """
-        if self.model.num_timesteps % self.model.log_interval != 0:
+        if self.model.num_timesteps % self.model.log_interval != 0 or wandb.run is None:
             return True
+
 
         reference = self.model._env.reference[-2]
         state = self.model._env.track[-1]
@@ -146,7 +147,8 @@ class OnlineCallback(BaseCallback):
         """
         This event is triggered before exiting the `learn()` method.
         """
-        wandb.log({f'mean_error': np.mean(self.model._env.sq_error)})
+        if wandb.run is not None:
+            wandb.log({f'mean_error': np.mean(self.model._env.sq_error)})
         return True
 
 
