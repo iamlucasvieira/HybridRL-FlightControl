@@ -19,6 +19,7 @@ class CitationEnv(BaseEnv):
                  observation_type: str = "states + ref + error",
                  ):
         self.model = load_model(model)
+        self.states = []
 
         if tracked_state not in self.model.states:
             raise ValueError(f"Tracked state {tracked_state} not in model states {self.model.states}")
@@ -34,7 +35,6 @@ class CitationEnv(BaseEnv):
             reward_type=reward_type,
             observation_type=observation_type,
         )
-        print(1)
 
     @property
     def tracked_state_mask(self):
@@ -51,7 +51,9 @@ class CitationEnv(BaseEnv):
 
     def state_transition(self, action):
         """The state transition function of the environment."""
-        return self.model.step(action).flatten()
+        states = self.model.step(action).flatten()
+        self.states.append(states)
+        return states
 
     def _check_constraints(self, reward, done, info):
         return reward, done, info
@@ -67,3 +69,23 @@ class CitationEnv(BaseEnv):
         """Reset the environment."""
         self.model.terminate()
         self.model.initialize()
+
+    @property
+    def n_states(self) -> int:
+        """The number of states in the environment."""
+        return self.model.n_states
+
+    @property
+    def n_inputs(self) -> int:
+        """The number of inputs in the environment."""
+        return self.model.n_inputs
+
+    @property
+    def aircraft_states(self):
+        """The states of the aircraft."""
+        return self.states
+
+    @property
+    def current_aircraft_state(self):
+        """The current state of the aircraft."""
+        return self.states[-1]

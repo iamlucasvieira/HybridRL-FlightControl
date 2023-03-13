@@ -60,6 +60,26 @@ class BaseEnv(gym.Env, ABC):
         """A mask that has the shape of the aircraft states and the value 1 in the tracked state."""
         raise NotImplementedError
 
+    @property
+    def n_states(self):
+        """The number of states of the environment."""
+        raise NotImplementedError
+
+    @property
+    def n_inputs(self):
+        """The number of inputs of the environment."""
+        raise NotImplementedError
+
+    @property
+    def aircraft_states(self):
+        """The states of the aircraft."""
+        raise NotImplementedError
+
+    @property
+    def current_aircraft_state(self):
+        """The current state of the aircraft."""
+        raise NotImplementedError
+
     def _action_space(self) -> spaces.Box:
         """The action space of the environment."""
         raise NotImplementedError
@@ -169,3 +189,4 @@ class BaseEnv(gym.Env, ABC):
     def set_observation_function(self, observation_type: str) -> None:
         self.get_obs = get_observation(observation_type)
         self.observation_space = self._observation_space()
+

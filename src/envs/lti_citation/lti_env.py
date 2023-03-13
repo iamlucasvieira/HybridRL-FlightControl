@@ -68,3 +68,23 @@ class LTIEnv(BaseEnv):
     def _reset(self) -> None:
         """Reset the state of the environment to an initial state."""
         self.aircraft.build_state_space()
+
+    @property
+    def n_states(self) -> int:
+        """The number of states in the environment."""
+        return self.aircraft.ss.nstates
+
+    @property
+    def n_inputs(self) -> int:
+        """The number of inputs in the environment."""
+        return self.aircraft.ss.ninputs
+
+    @property
+    def aircraft_states(self):
+        """The states of the aircraft."""
+        return self.aircraft.states
+
+    @property
+    def current_aircraft_state(self):
+        """The current state of the aircraft."""
+        return self.aircraft.current_state
