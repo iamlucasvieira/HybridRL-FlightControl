@@ -10,6 +10,7 @@ from envs.config.gym_env import ConfigGymEnv
 class ConfigExperiment(BaseModel):
     """Class that defines the configuration of the sweep."""
     name: Optional[str]
+    description: Optional[str]
     wandb: Optional[bool] = True
     n_learning: Optional[int] = 1
     evaluate: Optional[bool] = True
