@@ -10,6 +10,7 @@ from envs.lti_citation.lti_env import LTIEnv
 import torch as th
 from copy import deepcopy
 
+
 @pytest.fixture
 def transition(env):
     """Create a Transition instance."""
@@ -27,40 +28,40 @@ class TestSAC:
 
     def test_init(self, env):
         """Test that SAC is correctly initialized."""
-        sac = SAC(env)
+        sac = SAC('default', env)
         assert sac is not None
 
     def test_policy(self, env):
         """Test that SAC policy is correctly initialized."""
-        sac = SAC(env)
+        sac = SAC('default', env)
         assert isinstance(sac.policy, SACPolicy)
 
     def test_target_policy(self, env):
         """Test that SAC target policy is correctly initialized and that it is a different object than policy."""
-        sac = SAC(env)
+        sac = SAC('default', env)
         assert isinstance(sac.target_policy, SACPolicy)
         assert sac.target_policy is not sac.policy
 
     def test_replay_buffer(self, env):
         """Test that SAC replay buffer is correctly initialized."""
-        sac = SAC(env)
+        sac = SAC('default', env)
         assert isinstance(sac.replay_buffer, ReplayBuffer)
 
     def test_get_critic_loss(self, env, transition):
         """Test that SAC critic loss is correctly computed."""
-        sac = SAC(env)
+        sac = SAC('default', env)
         critic_loss = sac.get_critic_loss(transition)
         assert isinstance(critic_loss, th.Tensor)
 
     def test_get_actor_loss(self, env, transition):
         """Test that SAC actor loss is correctly computed."""
-        sac = SAC(env)
+        sac = SAC('default', env)
         actor_loss = sac.get_actor_loss(transition)
         assert isinstance(actor_loss, th.Tensor)
 
     def test_update(self, env):
         """Test that SAC update is correctly computed."""
-        sac = SAC(env,
+        sac = SAC('default', env,
                   buffer_size=10,
                   batch_size=5)
         obs = env.reset()
@@ -84,7 +85,7 @@ class TestSAC:
     @pytest.mark.parametrize('polyak, result', [(0, True), (0.5, False)], ids=['0', '0.5'])
     def test_update_target(self, env, polyak, result):
         """Test that SAC target update is correctly computed."""
-        sac = SAC(env,
+        sac = SAC('default', env,
                   polyak=polyak)
 
         # Edit policy parameters
@@ -100,17 +101,16 @@ class TestSAC:
     @pytest.mark.parametrize('total_timesteps', [15, 100], ids=['15', '100'])
     def test_learn(self, env, total_timesteps):
         """Test that SAC learn is correctly computed."""
-        sac = SAC(env,
+        sac = SAC('default', env,
                   buffer_size=10,
                   batch_size=5,
                   learning_starts=5)
         sac.learn(total_timesteps)
         assert sac.num_timesteps == total_timesteps
 
-
     def test_dump_logs(self, env):
         """Test that SAC logs are correctly dumped."""
-        sac = SAC(env, verbose=0)
+        sac = SAC('default', env, verbose=0)
         sac._setup_learn(total_timesteps=100)
         sac._dump_logs()
         assert sac.logger is not None

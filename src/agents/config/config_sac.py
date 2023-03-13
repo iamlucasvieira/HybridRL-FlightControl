@@ -8,6 +8,7 @@ from helpers.config_auto import get_auto
 
 class ConfigSACArgs(BaseModel):
     """Arguments for IDHP object."""
+    policy: Optional[str] = "default"
     env: Optional[str] = get_auto("env")
 
     class Config:
@@ -16,22 +17,30 @@ class ConfigSACArgs(BaseModel):
 
 class ConfigSACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
-    policy: Optional[str | List[str]] = 'default'
     learning_rate: Optional[float | List[float]] = 3e-4
-    policy_kwargs: Optional[dict | List[dict]] = None
-    tensorboard_log: Optional[str | List[str]] = get_auto("tensorboard_log")
-    verbose: Optional[int | List[int]] = get_auto("verbose")
-    seed: Optional[int | List[int]] = None
-    _init_setup_model: Optional[bool | List[bool]] = True
     buffer_size: Optional[int | List[int]] = 1_000_000
-    gradient_steps: Optional[int | List[int]] = 1
-    batch_size: Optional[int | List[int]] = 256
     learning_starts: Optional[int | List[int]] = 100
-    entropy_coefficient: Optional[float | List[float]] = 0.2
-    entropy_coefficient_update: Optional[bool | List[bool]] = True
+    batch_size: Optional[int | List[int]] = 256
+    tau: Optional[float | List[float]] = 0.005
     gamma: Optional[float | List[float]] = 0.99
-    polyak: Optional[float | List[float]] = 0.995
-    device: Optional[str | List[str]] = None
+    train_freq: Optional[int | List[int]] = 1
+    gradient_steps: Optional[int | List[int]] = 1
+    # action_noise: Optional[ActionNoise] = None
+    # replay_buffer_class: Optional[Type[ReplayBuffer]] = None
+    # replay_buffer_kwargs: Optional[Dict[str, Any]] = None
+    optimize_memory_usage: Optional[bool | List[bool]] = False
+    ent_coef: Optional[str | List[str]] = "auto"
+    target_update_interval: Optional[int | List[int]] = 1
+    target_entropy: Optional[str | List[str]] = "auto"
+    use_sde: Optional[bool | List[bool]] = False
+    sde_sample_freq: Optional[int | List[int]] = -1
+    use_sde_at_warmup: Optional[bool | List[bool]] = False
+    tensorboard_log: Optional[str | List[str]] = get_auto("tensorboard_log")
+    policy_kwargs: Optional[dict | List[dict]] = None
+    verbose: Optional[int | List[int]] = 0
+    seed: Optional[int | List[int]] = get_auto("seed")
+    device: Optional[str | List[str]] = "auto"
+    _init_setup_model: Optional[bool | List[bool]] = True
 
     class Config:
         extra = Extra.forbid

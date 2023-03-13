@@ -22,8 +22,8 @@ class SAC(BaseAlgorithm):
     policy_aliases = {'default': SACPolicy}
 
     def __init__(self,
+                 policy: Union[BasePolicy, str],
                  env: Union[gym.Env, str],
-                 policy: Union[BasePolicy, str] = 'default',
                  learning_rate: float = 3e-4,
                  policy_kwargs: Optional[dict] = None,
                  tensorboard_log: Optional[str] = None,
