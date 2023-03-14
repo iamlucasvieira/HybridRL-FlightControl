@@ -1,15 +1,19 @@
 ---
 name: SAC-gym
+description: "Tests the SAC agent on the Pendulum-v1 Gym environment."
 wandb: false
+evaluate: true
+seed: 50
 
+# Set the agent to use
 agent:
   name: SAC
   learn:
     total_timesteps: 10_000
 
+# Set the environment to use
 env:
   name: "gym"
   kwargs:
     id: Pendulum-v1
 
-seed: 100

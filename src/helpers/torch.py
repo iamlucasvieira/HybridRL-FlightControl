@@ -4,6 +4,7 @@ import pathlib as pl
 from abc import ABC, abstractmethod
 from typing import Union, Tuple
 
+import numpy as np
 import torch as th
 import torch.optim as optim
 from gym import spaces
@@ -96,7 +97,13 @@ def to_tensor(*arrays, data_type=th.float32) -> Union[th.Tensor, Tuple[th.Tensor
         arrays: Numpy arrays to convert.
         data_type: Data type to use for the tensors.
     """
-    tensors = tuple(th.as_tensor(a, dtype=data_type) for a in arrays)
+
+    def _to_array(a):
+        if isinstance(a, np.ndarray):
+            return a
+        return np.array(a)
+
+    tensors = tuple(th.as_tensor(_to_array(a), dtype=data_type) for a in arrays)
     if len(tensors) == 1:
         return tensors[0]
     return tensors
