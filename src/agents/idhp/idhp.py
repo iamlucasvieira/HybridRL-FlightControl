@@ -1,15 +1,16 @@
 """Module that implemment IDHP agent."""
+from dataclasses import dataclass
+from typing import Type, Tuple, List, Optional
+
+import numpy as np
 import torch as th
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.type_aliases import MaybeCallback
-from envs import BaseEnv
-from agents.idhp.policy import IDHPPolicy
+
 from agents.idhp.incremental_model import IncrementalCitation
-from dataclasses import dataclass
+from agents.idhp.policy import IDHPPolicy
+from envs import BaseEnv
 from helpers.callbacks import OnlineCallback
-from typing import Type, Tuple, List
-import numpy as np
-import wandb
 
 
 class IDHP(BaseAlgorithm):
@@ -26,9 +27,8 @@ class IDHP(BaseAlgorithm):
                  tensorboard_log: str = None,
                  seed: int = None,
                  learning_rate: float = 0.08,
-                 hidden_layers: List[int] = [10, 10],
-                 actor_kwargs: dict = None,
-                 critic_kwargs: dict = None,
+                 actor_kwargs: Optional[dict] = None,
+                 critic_kwargs: Optional[dict] = None,
                  **kwargs):
         """Initialize the IDHP algorithm.
 
@@ -57,13 +57,11 @@ class IDHP(BaseAlgorithm):
         self.gamma = discount_factor
 
         # Initialize policy kwargs
-        default_policy_kwargs = {
-            "learning_rate": learning_rate,
-            "hidden_layers": hidden_layers,
-        }
-
-        self.actor_kwargs = default_policy_kwargs if actor_kwargs is None else actor_kwargs
-        self.critic_kwargs = default_policy_kwargs if critic_kwargs is None else critic_kwargs
+        actor_kwargs = {} if actor_kwargs is None else actor_kwargs
+        critic_kwargs = {} if critic_kwargs is None else critic_kwargs
+        default_policy_kwargs = {"learning_rate": learning_rate}
+        self.actor_kwargs = actor_kwargs | default_policy_kwargs
+        self.critic_kwargs = critic_kwargs | default_policy_kwargs
 
         # Initialize model kwargs
         self.model_kwargs = {
