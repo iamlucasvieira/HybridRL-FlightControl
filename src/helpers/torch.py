@@ -1,8 +1,68 @@
 """Module that contains helper functions for PyTorch."""
 
-import torch as th
-from torch import nn
+import pathlib as pl
+from abc import ABC, abstractmethod
 from typing import Union, Tuple
+
+import torch as th
+import torch.optim as optim
+from gym import spaces
+from torch import nn
+
+
+class BaseNetwork(nn.Module, ABC):
+    """Base network for Critic and Value networks."""
+
+    def __init__(self,
+                 observation_space: spaces.Box,
+                 action_space: spaces.Box,
+                 learning_rate: float = 3e-4,
+                 hidden_layers=None,
+                 name='base',
+                 save_path: Union[str, pl.Path] = "",
+                 device: Union[str, th.device] = "cpu"):
+        """Initialize critic network.
+
+        args:
+            beta: Learning rate.
+            input_dims: Input dimensions.
+            fc1_dims: Number of neurons in the first layer.
+            fc2_dims_: Number of neurons in the second layer.
+            name: Name of the network.
+            chkpt_dir: Checkpoint directory.
+
+        """
+        super(BaseNetwork, self).__init__()
+        if hidden_layers is None:
+            hidden_layers = [256, 256]
+
+        self.hidden_layers = hidden_layers
+        self.num_hidden_layers = len(hidden_layers)
+        self.learning_rate = learning_rate
+        self.observation_dim = observation_space.shape[0]
+        self.observation_space = observation_space
+        self.action_dim = action_space.shape[0]
+        self.action_space = action_space
+
+        self.ff = self._build_network()
+        self.name = name
+
+        self.optimizer = optim.Adam(self.parameters(), lr=learning_rate)
+        self.device = device
+        self.to(self.device)
+
+    @abstractmethod
+    def _build_network(self) -> nn.Sequential:
+        """Build network."""
+        raise NotImplementedError
+
+    def save_checkpoint(self):
+        """Save checkpoint."""
+        th.save(self.state_dict(), self.checkpoint_file)
+
+    def load_checkpoint(self):
+        """Load checkpoint."""
+        self.load_state_dict(th.load(self.checkpoint_file))
 
 
 def mlp(sizes, activation=nn.ReLU, output_activation=nn.Identity, bias=True):

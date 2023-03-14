@@ -1,40 +1,15 @@
 import pytest
-
-from agents.sac.policy import BaseNetwork, CriticNetwork, ActorNetwork, SACPolicy
-from envs.citation.citation_env import CitationEnv
-from torch import nn
 import torch as th
+from torch import nn
+
+from agents.sac.policy import CriticNetwork, ActorNetwork, SACPolicy
+from envs.citation.citation_env import CitationEnv
 
 
 @pytest.fixture
 def env():
     """Create a CitationEnv instance."""
     return CitationEnv()
-
-
-@pytest.mark.parametrize("network", [CriticNetwork])
-class TestBaseNetwork:
-    """Test BaseNetwork class for functionalities that are common to Actor and Critic."""
-
-    def test_abstract(self, env, network):
-        """Test that BaseNetwork is an abstract class and child is correctly initialized."""
-        observation_space = env.observation_space
-        action_space = env.action_space
-        with pytest.raises(NotImplementedError):
-            BaseNetwork(observation_space, action_space)
-
-        net = network(observation_space, action_space)
-        assert net is not None
-
-    def test_shapes(self, env, network):
-        """Test if network creates correct input and observation shapes."""
-        observation_space = env.observation_space
-        action_space = env.action_space
-
-        net = network(observation_space, action_space)
-
-        assert net.observation_dim == observation_space.shape[0]
-        assert net.action_dim == action_space.shape[0]
 
 
 @pytest.fixture

@@ -1,58 +1,39 @@
 """Module that defines the IDHP agent, including the actor and the critic."""
+from typing import Type, List
+
+import gym
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import gym
-from typing import Type, List
-from abc import ABC, abstractmethod
-from helpers.torch import mlp
+
+from helpers.torch import mlp, BaseNetwork
 
 
-class BaseNetwork(nn.Module, ABC):
-    """Base network class for the IDHP agent.
-
-    Attributes:
-        observation_space: The observation space of the environment.
-        action_space: The action space of the environment.
-        hidden_size: The size of the hidden layers.
-        num_layers: The number of hidden layers.
-    """
+class BaseNetworkIDHP(BaseNetwork):
+    """Base network class for the IDHP agent."""
 
     def __init__(self,
-                 observation_space: gym.spaces.Space,
-                 action_space: gym.spaces.Space,
-                 hidden_layers: List[int] = [10, 10],
-                 learning_rate: float = 0.08):
+                 *args,
+                 hidden_layers: List[int] = None,
+                 learning_rate: float = 0.08,
+                 **kwargs):
         """Initialize the base network.
 
         Args:
-            observation_space: The observation space of the environment.
-            action_space: The action space of the environment.
-            hidden_size: The size of the hidden layers.
-            num_layers: The number of hidden layers.
-            learning_rate: The learning rate.
+            hidden_layers: List of hidden layers.
+            learning_rate: Learning rate.
         """
-        super(BaseNetwork, self).__init__()
-        self.observation_space = observation_space
-        self.action_space = action_space
-        self.hidden_layers = hidden_layers
-        self.num_hidden_layers = len(hidden_layers)
-        self.flatten = nn.Flatten()
-        self.ff = self._build_network()
+        if hidden_layers is None:
+            hidden_layers = [10, 10]
 
+        super(BaseNetworkIDHP, self).__init__(*args, **kwargs,
+                                              hidden_layers=hidden_layers,
+                                              learning_rate=learning_rate
+                                              )
+        self.flatten = nn.Flatten()
         self.optimizer = optim.SGD(self.parameters(), lr=learning_rate)
         self.device = 'cpu'  # Having issues not using cpu with get_device()
         self.to(self.device)
-
-    @abstractmethod
-    def _build_network(self) -> Type[nn.Sequential]:
-        """Build the network."""
-        pass
-
-    @abstractmethod
-    def get_loss(self):
-        """Gets the network loss."""
-        pass
 
     def forward(self, x):
         """Forward pass."""
@@ -67,7 +48,7 @@ class BaseNetwork(nn.Module, ABC):
         return logits
 
 
-class Actor(BaseNetwork):
+class Actor(BaseNetworkIDHP):
     """Class that implements the actor network for the IDHP agent."""
 
     def __init__(self,
@@ -89,7 +70,7 @@ class Actor(BaseNetwork):
         return -(dr1_ds1 + gamma * critic_t1) @ G_t_1
 
 
-class Critic(BaseNetwork):
+class Critic(BaseNetworkIDHP):
     """Class that implements the critic network for the IDHP agent."""
 
     def __init__(self,
