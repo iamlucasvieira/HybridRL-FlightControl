@@ -129,3 +129,17 @@ class TestChildEnvs:
         assert env.get_obs == get_observation(observation_type), f"Observation function is not set correctly."
         assert obs_function_shape == observation_space_shape, \
             f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
+
+    def test_shapes(self, env_constructor, env_kwargs):
+        """Tests if the shapes of the state, action and observation spaces are correct."""
+        env = env_constructor(**env_kwargs)
+        for i in range(10):
+            shape_tracked_state = (np.sum(env.tracked_state_mask),)
+            assert np.isclose(env.current_time, env.dt * i)
+            assert env.actions[i].shape == env.action_space.shape
+            assert env.error[i].shape == shape_tracked_state
+            assert env.sq_error[i].shape == shape_tracked_state
+            assert env.states[i].shape == (env.n_states,)
+            assert env.reference[i].shape == shape_tracked_state
+            assert env.track[i].shape == shape_tracked_state
+            env.step(env.action_space.sample())
