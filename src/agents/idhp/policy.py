@@ -3,8 +3,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import gym
-from typing import Type
+from typing import Type, List
 from abc import ABC, abstractmethod
+from helpers.torch import mlp
 
 
 class BaseNetwork(nn.Module, ABC):
@@ -20,8 +21,7 @@ class BaseNetwork(nn.Module, ABC):
     def __init__(self,
                  observation_space: gym.spaces.Space,
                  action_space: gym.spaces.Space,
-                 hidden_size: int = 10,
-                 num_layers: int = 2,
+                 hidden_layers: List[int] = [10, 10],
                  learning_rate: float = 0.08):
         """Initialize the base network.
 
@@ -35,8 +35,8 @@ class BaseNetwork(nn.Module, ABC):
         super(BaseNetwork, self).__init__()
         self.observation_space = observation_space
         self.action_space = action_space
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
+        self.hidden_layers = hidden_layers
+        self.num_hidden_layers = len(hidden_layers)
         self.flatten = nn.Flatten()
         self.ff = self._build_network()
 
@@ -78,14 +78,10 @@ class Actor(BaseNetwork):
 
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
-        ff = nn.Sequential(
-            nn.Linear(self.observation_space.shape[0], self.hidden_size, bias=False),
-            nn.Tanh(),
-            nn.Linear(self.hidden_size, self.hidden_size, bias=False),
-            nn.Tanh(),
-            nn.Linear(self.hidden_size, self.action_space.shape[0], bias=False),
-            nn.Tanh(),
-        )
+        ff = mlp([self.observation_space.shape[0]] + self.hidden_layers + [self.action_space.shape[0]],
+                 activation=nn.Tanh,
+                 output_activation=nn.Tanh,
+                 bias=False)
         return ff
 
     def get_loss(self, dr1_ds1, gamma, critic_t1, G_t_1):
@@ -104,14 +100,10 @@ class Critic(BaseNetwork):
 
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
-        ff = nn.Sequential(
-            nn.Linear(self.observation_space.shape[0], self.hidden_size, bias=False),
-            nn.Tanh(),
-            nn.Linear(self.hidden_size, self.hidden_size, bias=False),
-            nn.Tanh(),
-            nn.Linear(self.hidden_size, self.observation_space.shape[0] - 1, bias=False),
-            # Minus 1 to include only the states
-        )
+        # Minus 1 in the observation states to include only the states and not the reference signal
+        ff = mlp([self.observation_space.shape[0]] + self.hidden_layers + [self.observation_space.shape[0] - 1],
+                 activation=nn.Tanh,
+                 bias=False)
         return ff
 
     def get_loss(self, dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad):
@@ -125,10 +117,12 @@ class IDHPPolicy:
     def __init__(self,
                  observation_space: gym.spaces.Space,
                  action_space: gym.spaces.Space,
-                 **kwargs):
+                 actor_kwargs={},
+                 critic_kwargs={}, ):
         """Initialize the IDHP policy."""
-        self.actor = Actor(observation_space, action_space, **kwargs)
-        self.critic = Critic(observation_space, action_space, **kwargs)
+
+        self.actor = Actor(observation_space, action_space, **actor_kwargs)
+        self.critic = Critic(observation_space, action_space, **critic_kwargs)
 
     def predict(self, observation, state=None, episode_start=None, deterministic=None):
         """Predict the action."""

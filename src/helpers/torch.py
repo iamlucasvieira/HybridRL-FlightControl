@@ -5,12 +5,12 @@ from torch import nn
 from typing import Union, Tuple
 
 
-def mlp(sizes, activation=nn.ReLU, output_activation=nn.Identity):
+def mlp(sizes, activation=nn.ReLU, output_activation=nn.Identity, bias=True):
     """Build a multi-layer perceptron (MLP) with the given sizes and activation functions."""
     layers = []
     for j in range(len(sizes) - 1):
         act = activation if j < len(sizes) - 2 else output_activation
-        layers += [th.nn.Linear(sizes[j], sizes[j + 1]), act()]
+        layers += [th.nn.Linear(sizes[j], sizes[j + 1], bias=bias), act()]
     return nn.Sequential(*layers)
 
 

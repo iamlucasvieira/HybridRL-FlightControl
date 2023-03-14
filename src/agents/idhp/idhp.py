@@ -26,7 +26,9 @@ class IDHP(BaseAlgorithm):
                  tensorboard_log: str = None,
                  seed: int = None,
                  learning_rate: float = 0.08,
-                 hidden_size: int = 10,
+                 hidden_layers: List[int] = [10, 10],
+                 actor_kwargs: dict = None,
+                 critic_kwargs: dict = None,
                  **kwargs):
         """Initialize the IDHP algorithm.
 
@@ -40,7 +42,7 @@ class IDHP(BaseAlgorithm):
             seed (int): Seed for random number generator.
             beta_actor (float): Actor regularization parameter.
             learning_rate (float): Critic regularization parameter.
-            hidden_size (int): Hidden size for actor and critic networks.
+            hidden_layers (List[int]): Hidden layers for actor and critic.
         """
         # Make sure environment has the right observation and reward functions for IDHP
         env = self._setup_env(env)
@@ -54,11 +56,14 @@ class IDHP(BaseAlgorithm):
 
         self.gamma = discount_factor
 
-        # Policy kwargs
-        self.policy_kwargs = {
+        # Initialize policy kwargs
+        default_policy_kwargs = {
             "learning_rate": learning_rate,
-            "hidden_size": hidden_size,
+            "hidden_layers": hidden_layers,
         }
+
+        self.actor_kwargs = default_policy_kwargs if actor_kwargs is None else actor_kwargs
+        self.critic_kwargs = default_policy_kwargs if critic_kwargs is None else critic_kwargs
 
         # Initialize model kwargs
         self.model_kwargs = {
@@ -87,7 +92,8 @@ class IDHP(BaseAlgorithm):
         self.set_random_seed(self.seed)
         self.policy = self.policy_class(self.observation_space,
                                         self.action_space,
-                                        **self.policy_kwargs)
+                                        actor_kwargs=self.actor_kwargs,
+                                        critic_kwargs=self.critic_kwargs)
 
         self.model = IncrementalCitation(self._env, **self.model_kwargs)
         self.actor = self.policy.actor
@@ -137,7 +143,8 @@ class IDHP(BaseAlgorithm):
             ##############
             da_ds = []
             for i in range(action.shape[1]):
-                grad_i = th.autograd.grad(action[:, i], obs_t, grad_outputs=th.ones_like(action[:, i]), retain_graph=True)
+                grad_i = th.autograd.grad(action[:, i], obs_t, grad_outputs=th.ones_like(action[:, i]),
+                                          retain_graph=True)
                 da_ds.append(grad_i[0])
             da_ds = th.cat(da_ds)
 

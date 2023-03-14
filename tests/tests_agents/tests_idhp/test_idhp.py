@@ -5,6 +5,8 @@ from agents import IDHP
 from envs import LTIEnv, CitationEnv, BaseEnv
 from envs.rewards import get_reward
 from envs.observations import get_observation
+
+
 @pytest.mark.parametrize('env', [LTIEnv, CitationEnv])
 class TestIDHP:
     """Tests the IDHP agent."""
@@ -34,3 +36,11 @@ class TestIDHP:
         agent = IDHP('default', env())
         agent.learn(100)
         assert agent.num_timesteps == 100
+
+    def test_policy_kwargs(self, env: BaseEnv):
+        """Tests the IDHP agent with kwargs for policy."""
+        agent = IDHP('default', env(),
+                     actor_kwargs={"hidden_layers": [10, 15, 20]},
+                     critic_kwargs={"hidden_layers": [15]})
+        assert agent.actor.num_hidden_layers == 3
+        assert agent.critic.num_hidden_layers == 1

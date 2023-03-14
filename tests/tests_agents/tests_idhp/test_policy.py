@@ -33,6 +33,22 @@ class TestIDHPPolicy:
         assert np.alltrue(obs == obs_)
         assert action.shape == env.action_space.shape
 
+    def test_actor_kwargs(self, env):
+        """Test the IDHP policy."""
+        env = env()
+        policy = IDHPPolicy(env.observation_space,
+                            env.action_space,
+                            actor_kwargs={"hidden_layers": [10, 15, 20]})
+        assert policy.actor.num_hidden_layers == 3
+
+    def test_critic_kwargs(self, env):
+        """Test the IDHP policy."""
+        env = env()
+        policy = IDHPPolicy(env.observation_space,
+                            env.action_space,
+                            critic_kwargs={"hidden_layers": [15]})
+        assert policy.critic.num_hidden_layers == 1
+
 
 @pytest.mark.parametrize("env", [LTIEnv, CitationEnv])
 class TestActor:
@@ -105,5 +121,5 @@ class TestCritic:
         obs_grad = np.random.rand(n_actions, n_states + 1)
 
         loss = critic.get_loss(dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad)
-        shape_critic_output = (1, critic.ff[-1].out_features)
+        shape_critic_output = (1, n_states)
         assert loss.shape == shape_critic_output
