@@ -75,6 +75,7 @@ class Evaluator:
 
     def __init__(self, file_name: str, file_path: str = None, zip_name: str = None, verbose=0):
         """Initialize the evaluator."""
+        os.environ["WANDB_DIR"] = Path.logs.as_posix()
         self.verbose = verbose
 
         self.print("Initializing evaluator...")
