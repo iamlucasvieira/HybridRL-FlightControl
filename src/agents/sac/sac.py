@@ -1,18 +1,18 @@
-import gym
-import torch
-import time
 import sys
+import time
+from copy import deepcopy
+from typing import Union, Optional, List
+
+import gym
 import numpy as np
+import torch as th
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.policies import BasePolicy
-from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.type_aliases import MaybeCallback
 from stable_baselines3.common.utils import safe_mean
-from typing import Union, Optional, Tuple
-import torch as th
-from copy import deepcopy
-from agents.sac.policy import SACPolicy
+
 from agents.sac.buffer import ReplayBuffer, Transition
+from agents.sac.policy import SACPolicy
 from helpers.torch import get_device, to_tensor, freeze, unfreeze
 
 
@@ -109,7 +109,7 @@ class SAC(BaseAlgorithm):
         callback.on_training_start(locals(), globals())
         callback.on_rollout_start()
 
-        env = self.env.envs[0].env
+        env = self._env
         obs = env.reset()
 
         for step in range(total_timesteps):
@@ -146,6 +146,10 @@ class SAC(BaseAlgorithm):
                     self.update_target_networks()
 
         callback.on_training_end()
+
+    @property
+    def _env(self) -> gym.Env:
+        return self.env.envs[0].env
 
     def update(self) -> None:
         """Update the policy."""
@@ -215,7 +219,7 @@ class SAC(BaseAlgorithm):
         if self.entropy_coefficient_update:
             self.log_ent_coef = th.log(th.ones(1) * self.entropy_coefficient).requires_grad_(True)
             self.ent_coef_optimizer = th.optim.Adam([self.log_ent_coef], lr=self.learning_rate)
-            self.target_entropy = -np.prod(self.env.action_space.shape).astype(np.float32)
+            self.target_entropy = -np.prod(self.action_space.shape).astype(np.float32)
 
     def _dump_logs(self) -> None:
         """
@@ -285,3 +289,19 @@ class SAC(BaseAlgorithm):
 
         loss = (alpha * log_prob - critic).mean()
         return loss
+
+    def _excluded_save_params(self) -> List[str]:
+        default_excluded_params = super()._excluded_save_params()
+        if 'env' in default_excluded_params:
+            default_excluded_params.remove('env')
+
+        return default_excluded_params
+
+        # def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
+    #     state_dicts = ["policy", "policy.actor.optimizer"]
+    #     # if self.ent_coef_optimizer is not None:
+    #     #     saved_pytorch_variables = ["log_ent_coef"]
+    #     #     state_dicts.append("ent_coef_optimizer")
+    #     # else:
+    #     #     saved_pytorch_variables = ["ent_coef_tensor"]
+    #     return state_dicts, []

@@ -1,0 +1,20 @@
+---
+name: SAC-citation
+description: "Tests the SAC agent on the non-linear citation environment."
+wandb: true
+evaluate: false
+seed: 50
+
+# Set the agent to use
+agent:
+  name: SB3SAC
+  learn:
+    total_timesteps: 10_000
+
+# Set the environment to use
+env:
+  name: "citation"
+  kwargs:
+    dt: 0.01
+    reference_type: sin
+    tracked_state: q

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-import typer
-from hrl_fc.experiment_runner import Runner
-from typing import Optional
 import pathlib as pl
-from helpers.paths import Path
+from typing import Optional
+
+import typer
 from rich import print
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.prompt import IntPrompt, Confirm
+from rich.table import Table
+
+from helpers.paths import Path
+from hrl_fc.experiment_runner import Runner, Evaluator
 
 app = typer.Typer()
 console = Console()
@@ -49,6 +51,21 @@ def main(filename: Optional[str] = typer.Argument(None, help="Experiment file na
         raise typer.Abort()
 
     Runner(file_name=filename, file_path=filepath).run()
+
+
+@app.command()
+def eval(model_directory: Optional[str] = typer.Argument(None, help="Directory of the model to evaluate"),
+         models_path: Optional[pl.Path] = typer.Argument(Path.models, help="Models path")):
+    """Evaluates an experiment from a zip file."""
+    print("Evaluating experiment...")
+    try:
+        eval = Evaluator(file_name=model_directory, file_path=models_path)
+        eval.evaluate()
+        print("Evaluation finished :tada:")
+    except FileNotFoundError:
+        print(f"Path {models_path / model_directory} does not exist :sweat:")
+    except ValueError:
+        print(f"Not able to load model from {model_directory} :sweat:")
 
 
 if __name__ == "__main__":

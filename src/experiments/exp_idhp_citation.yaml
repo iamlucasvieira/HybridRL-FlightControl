@@ -1,0 +1,21 @@
+name: IHDP-learning-citation
+wandb: true
+evaluate: false
+n_learning: 1
+
+agent:
+  name: IDHP
+  kwargs:
+    discount_factor: 0.8
+  learn:
+    total_timesteps: 1_000
+    log_interval: 10
+
+env:
+  name: "citation"
+  kwargs:
+    dt: 0.01
+    reference_type: sin
+    tracked_state: q
+
+seed: 54

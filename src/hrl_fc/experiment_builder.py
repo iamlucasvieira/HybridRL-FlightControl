@@ -1,19 +1,19 @@
 """Module that allows building an experiment based on yaml configutaion."""
 import itertools
+import operator
 import pathlib as pl
 import random
-import torch
-import operator
 
+import torch
 import wandb
 import yaml
 from rich import print
 
+from helpers.callbacks import AVAILABLE_CALLBACKS
+from helpers.config_auto import validate_auto
 from helpers.misc import get_name
 from helpers.paths import Path
-from helpers.config_auto import validate_auto
 from hrl_fc.experiment_config import ConfigExperiment
-from helpers.callbacks import AVAILABLE_CALLBACKS
 
 
 class Sweep:
@@ -136,15 +136,20 @@ class Sweep:
             model_name = self.run_name
         self.agent.save(self.MODELS_PATH / model_name / "model.zip")
 
-    def evaluate(self, n_times=1):
+    def _evaluate(self):
+        """Evaluate the agent."""
+        self.evaluate(self.agent, self.env)
+
+    @staticmethod
+    def evaluate(agent, env, n_times=1):
         """Run the experiment n times."""
-        env = self.env
 
         for _ in range(n_times):
             obs = env.reset()
-
-            for i in range(self.config.env.config.episode_steps):
-                action, _states = self.model.predict(obs, deterministic=True)
+            done = False
+            steps = 0
+            while not done:
+                action, _states = agent.predict(obs, deterministic=True)
 
                 # Transform action into numpy if it is a tensor
                 if isinstance(action, torch.Tensor):
@@ -156,21 +161,17 @@ class Sweep:
 
                 if wandb.run is not None:
                     wandb.log({"reward": reward,
-                               "episode_step": i})
+                               "episode_step": steps})
                     wandb.log({"reference": env.reference[-1],
                                "state": env.track[-1],
-                               "episode_step": i})
+                               "episode_step": steps})
                     wandb.log({"action": action,
-                               "episode_step": i, })
+                               "episode_step": steps, })
                     wandb.log({"tracking_error": env.sq_error[-1],
-                               "episode_step": i})
+                               "episode_step": steps})
 
-                if done:
-                    print(f"finished at {i}")
-                    break
-
-        if wandb.run is not None:
-            self.wandb_run.finish()
+                steps += 1
+            print(f"finished at {steps - 1}")
 
 
 class ExperimentBuilder:
