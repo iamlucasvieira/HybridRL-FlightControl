@@ -6,7 +6,7 @@ from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.type_aliases import MaybeCallback
 
 from agents import IDHP, SAC
-from agents.idhp_sac.policy import IDHPSACPolicy
+from agents.idhp_sac.policy import IDHPSACPolicy, IDHPSACActor
 from helpers.callbacks import OnlineCallback, TensorboardCallback
 from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
@@ -43,9 +43,9 @@ class IDHPSAC(BaseAlgorithm):
             sac_hidden_layers = [256, 256]
 
         if idhp_hidden_layers is None:
-            idhp_hidden_layers = [10]
+            idhp_hidden_layers = [10, 10]
 
-        actor_kwargs = {"hidden_layers": sac_hidden_layers + idhp_hidden_layers}
+        actor_kwargs = {"hidden_layers": idhp_hidden_layers}
         critic_kwargs = {"hidden_layers": idhp_hidden_layers}
         # Make sure environment follows IDHP requirements
         env = IDHP._setup_env(env)
@@ -84,13 +84,8 @@ class IDHPSAC(BaseAlgorithm):
         idhp_actor = self.idhp.policy.actor
         sac_actor = self.sac.policy.actor
 
-        for i, layer in enumerate(sac_actor.ff):
-            # Freeze the layers of the SAC
-            for param in layer.parameters():
-                param.requires_grad = False
-
-            # Update IDHP layers
-            idhp_actor.ff[i] = layer
+        # Update the IDHP layers
+        self.idhp.policy.actor = IDHPSACActor(idhp_actor, sac_actor)
 
     def _setup_model(self):
         """Set up the model."""

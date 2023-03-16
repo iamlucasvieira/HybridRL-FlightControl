@@ -9,14 +9,15 @@ seed: 50
 agent:
   name: IDHP-SAC
   learn:
-    sac_timesteps: 100_000
+    sac_timesteps: 200_000
     idhp_timesteps: 1_000
-#    sac_model: IDHP-SAC-LTI/rich-music-42
+    sac_model: IDHP-SAC-LTI/crimson-mountain-74
 
 # Set the environment to use
 env:
   name: "LTI"
   kwargs:
     dt: 0.01
+    episode_steps: 500
     reference_type: sin
     tracked_state: q

@@ -1,10 +1,10 @@
 """Tests for the IDHP-SAC agent."""
-from copy import deepcopy
 
 import pytest
 import torch as th
 
 from agents import IDHPSAC
+from agents.idhp_sac.policy import IDHPSACActor
 from envs import CitationEnv, LTIEnv
 from envs.observations import get_observation
 from envs.rewards import get_reward
@@ -30,6 +30,8 @@ class TestIDHPSAC:
                         batch_size=1)
 
         agent.learn(sac_timesteps=3, idhp_timesteps=3)
+        assert isinstance(agent.idhp.policy.actor, IDHPSACActor)
+        assert agent.idhp.policy.actor == agent.idhp.actor
         assert agent.sac.num_timesteps == 3
         assert agent.sac._n_updates == 2
         assert agent.idhp.num_timesteps == 3
@@ -54,8 +56,9 @@ class TestIDHPSAC:
                         batch_size=1)
 
         agent._setup_idhp()
+        assert isinstance(agent.idhp.policy.actor, IDHPSACActor)
 
-        for idhp_layer, sac_layer in zip(agent.idhp.policy.actor.ff, agent.sac.policy.actor.ff):
+        for idhp_layer, sac_layer in zip(agent.idhp.policy.actor.sac.ff, agent.sac.policy.actor.ff):
             assert idhp_layer == sac_layer
             if isinstance(idhp_layer, th.nn.Linear):
                 assert th.allclose(idhp_layer.weight, sac_layer.weight)
@@ -69,11 +72,9 @@ class TestIDHPSAC:
                         buffer_size=1,
                         batch_size=1)
 
-        agent._setup_idhp()
-        layers_before_learning = deepcopy(agent.sac.policy.actor.ff)
         agent.learn(sac_timesteps=3, idhp_timesteps=3)
 
-        for idhp_layer, sac_layer in zip(agent.idhp.policy.actor.ff, layers_before_learning):
+        for idhp_layer, sac_layer in zip(agent.idhp.policy.actor.sac.ff, agent.sac.policy.actor.ff):
             if isinstance(idhp_layer, th.nn.Linear):
                 assert th.allclose(idhp_layer.weight, sac_layer.weight)
                 assert th.allclose(idhp_layer.bias, sac_layer.bias)

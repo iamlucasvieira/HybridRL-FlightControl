@@ -69,7 +69,7 @@ class IDHP(BaseAlgorithm):
             "gamma": discount_factor_model,
         }
 
-        self.policy, self.actor, self.critic = None, None, None
+        self.policy = None
 
         self._setup_model()
 
@@ -97,8 +97,16 @@ class IDHP(BaseAlgorithm):
                                         critic_kwargs=self.critic_kwargs)
 
         self.model = IncrementalCitation(self._env, **self.model_kwargs)
-        self.actor = self.policy.actor
-        self.critic = self.policy.critic
+
+    @property
+    def actor(self) -> th.nn.Module:
+        """Get actor."""
+        return self.policy.actor
+
+    @property
+    def critic(self) -> th.nn.Module:
+        """Get critic."""
+        return self.policy.critic
 
     def learn(
             self,
@@ -120,10 +128,6 @@ class IDHP(BaseAlgorithm):
             tb_log_name,
             progress_bar, )
 
-        # Because IDHP is online, the episode step is equal to the learning step
-        self._env.episode_steps = total_timesteps
-        self._env.episode_length = total_timesteps * self._env.dt
-
         callback.on_training_start(locals(), globals())
         obs_t = th.tensor(np.array([self._env.reset()]), requires_grad=True, dtype=th.float32)
 
@@ -136,7 +140,7 @@ class IDHP(BaseAlgorithm):
             self.num_timesteps += 1
 
             # Sample and scale action
-            action = scale_action(self.actor(obs_t), self._env.action_space)
+            action = self.actor(obs_t)
             critic_t = self.critic(obs_t)
 
             ##############
@@ -183,7 +187,7 @@ class IDHP(BaseAlgorithm):
             ########################
 
             # Update actor network
-            action = scale_action(self.actor(obs_t), self._env.action_space)  # Need to resample due to previous detach
+            action = self.actor(obs_t, to_scale=False)
             self.actor.optimizer.zero_grad()
             loss_a = action * loss_gradient_a
             loss_a.backward(gradient=th.ones_like(loss_gradient_a))
@@ -244,12 +248,6 @@ class IDHP(BaseAlgorithm):
         state_dicts = ["policy.actor", "policy.critic"]
 
         return state_dicts, []
-
-
-def scale_action(action: np.ndarray, action_space) -> np.ndarray:
-    """Scale the action to the correct range."""
-    low, high = action_space.low[0], action_space.high[0]
-    return action * (high - low) / 2 + (high + low) / 2
 
 
 @dataclass

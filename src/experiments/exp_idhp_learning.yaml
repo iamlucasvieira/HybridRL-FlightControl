@@ -1,7 +1,7 @@
 name: IHDP-learning
 wandb: true
 evaluate: false
-n_learning: 10
+n_learning: 1
 
 agent:
   name: IDHP
@@ -13,7 +13,8 @@ agent:
 env:
   name: "LTI"
   kwargs:
-    dt: 0.1
+    dt: 0.01
+    episode_steps: 1_000
     reference_type: sin
     tracked_state: q
 

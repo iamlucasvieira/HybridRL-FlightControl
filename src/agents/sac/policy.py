@@ -79,14 +79,8 @@ class ActorNetwork(BaseNetwork):
                  output_activation=nn.ReLU)
         return ff
 
-    def forward(self, state, with_log_prob=True, deterministic=False):
-        """Forward pass in the actor network.
-
-        args:
-            state: State.
-            with_log_prob: Whether to return the log probability.
-        """
-        net_output = self.ff(state)
+    def output_layer(self, net_output, with_log_prob=True, deterministic=False):
+        """The output layer of the SAC agent."""
         mu = self.mu(net_output)
         log_sigma = th.clamp(self.log_sigma(net_output), min=self.sigma_min, max=self.sigma_max)
         sigma = th.exp(log_sigma)
@@ -103,6 +97,18 @@ class ActorNetwork(BaseNetwork):
             log_prob = None
 
         action = th.tanh(action) * self.action_max
+
+        return action, log_prob
+
+    def forward(self, state, with_log_prob=True, deterministic=False):
+        """Forward pass in the actor network.
+
+        args:
+            state: State.
+            with_log_prob: Whether to return the log probability.
+        """
+        net_output = self.ff(state)
+        action, log_prob = self.output_layer(net_output, with_log_prob=with_log_prob, deterministic=deterministic)
 
         return action, log_prob
 

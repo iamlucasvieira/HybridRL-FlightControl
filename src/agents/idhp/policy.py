@@ -2,7 +2,8 @@
 from typing import Type, List
 
 import gym
-import torch
+import numpy as np
+import torch as th
 import torch.nn as nn
 import torch.optim as optim
 
@@ -42,8 +43,8 @@ class BaseNetworkIDHP(BaseNetwork):
             x = self.flatten(x)
 
         # Transform into tensor if needed
-        if not isinstance(x, torch.Tensor):
-            x = torch.tensor(x, dtype=torch.float32)
+        if not isinstance(x, th.Tensor):
+            x = th.tensor(x, dtype=th.float32)
         logits = self.ff(x)
         return logits
 
@@ -63,11 +64,19 @@ class Actor(BaseNetworkIDHP):
                  activation=nn.Tanh,
                  output_activation=nn.Tanh,
                  bias=False)
+
         return ff
 
     def get_loss(self, dr1_ds1, gamma, critic_t1, G_t_1):
         """Gets the network loss."""
         return -(dr1_ds1 + gamma * critic_t1) @ G_t_1
+
+    def forward(self, x, to_scale: bool = True):
+        """Forward pass."""
+        action = super(Actor, self).forward(x)
+        if to_scale:
+            action = scale_action(action, self.action_space) * 10
+        return action
 
 
 class Critic(BaseNetworkIDHP):
@@ -108,3 +117,9 @@ class IDHPPolicy(nn.Module):
     def predict(self, observation, state=None, episode_start=None, deterministic=None):
         """Predict the action."""
         return self.actor(observation), observation
+
+
+def scale_action(action: th.tensor, action_space) -> np.ndarray:
+    """Scale the action to the correct range."""
+    low, high = action_space.low[0], action_space.high[0]
+    return action * (high - low) / 2 + (high + low) / 2
