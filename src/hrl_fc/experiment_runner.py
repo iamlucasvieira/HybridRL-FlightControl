@@ -1,15 +1,14 @@
 """Module that runs an experiment from a configuration file."""
-import importlib
 import os
-import pathlib as pl
 
 import wandb
 from rich.progress import track
-from stable_baselines3.common.save_util import load_from_zip_file
 
 from helpers.misc import verbose_print
 from helpers.paths import Path
-from hrl_fc.experiment_builder import ExperimentBuilder, Sweep
+from helpers.sb3 import load_agent
+from helpers.wandb_helpers import evaluate
+from hrl_fc.experiment_builder import ExperimentBuilder
 
 
 class Runner:
@@ -50,7 +49,7 @@ class Runner:
 
             # Evaluate
             if self.config.evaluate:
-                sweep._evaluate()
+                sweep.evaluate()
 
             wandb_run.finish()
 
@@ -73,42 +72,16 @@ class Runner:
 class Evaluator:
     """Class responsible for replaying evaluation of stored models."""
 
-    def __init__(self, file_name: str, file_path: str = None, zip_name: str = None, verbose=0):
+    def __init__(self, model_directory: str, models_directory: str = None, zip_name: str = None, verbose=0):
         """Initialize the evaluator."""
         os.environ["WANDB_DIR"] = Path.logs.as_posix()
         self.verbose = verbose
 
         self.print("Initializing evaluator...")
-        file_path = Path.models if file_path is None else pl.Path(file_path)
-        zip_name = "model.zip" if zip_name is None else zip_name
-        file = file_path / file_name / zip_name
-
-        if not file.is_file():
-            raise FileNotFoundError(f"File {file} does not exist.")
-
-        data, _, _ = load_from_zip_file(file)
-        policy_class = data["policy_class"]
-        self.data = data
-        # Check if the policy used is implemented in this repo
-        if policy_class.__module__.startswith("agents."):
-            algorithm_name = policy_class.__module__.split(".")[1]
-        else:
-            raise ValueError("Policy not implemented for re-loading")
-
-        switch = {
-            "sac": "SAC",
-        }
-
-        if algorithm_name not in switch:
-            raise ValueError("Algorithm not implemented for re-loading")
-
-        algorithm = switch[algorithm_name]
-
-        # Import agent
-        agent = getattr(importlib.import_module("agents"), algorithm)
-
-        # Load model
-        self.agent = agent.load(file)
+        self.agent, self.data = load_agent(model_directory=model_directory,
+                                           models_directory=models_directory,
+                                           zip_name=zip_name,
+                                           with_data=True)
 
     def evaluate(self):
         """Evaluate a sweep."""
@@ -120,7 +93,7 @@ class Evaluator:
         )
 
         self.print("Evaluating...")
-        Sweep.evaluate(self.agent, self.agent._env)
+        evaluate(self.agent, self.agent._env)
 
         wandb_run.finish()
 
@@ -130,7 +103,7 @@ class Evaluator:
 
 
 def main():
-    Runner('exp_sac_lti').run()
+    Runner('exp_idhp_sac_lti').run()
 
 
 if __name__ == "__main__":

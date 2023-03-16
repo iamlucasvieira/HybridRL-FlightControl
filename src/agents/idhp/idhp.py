@@ -6,6 +6,7 @@ import numpy as np
 import torch as th
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.type_aliases import MaybeCallback
+from stable_baselines3.common.vec_env import DummyVecEnv
 
 from agents.idhp.incremental_model import IncrementalCitation
 from agents.idhp.policy import IDHPPolicy
@@ -80,6 +81,8 @@ class IDHP(BaseAlgorithm):
     @staticmethod
     def _setup_env(env: Type[BaseEnv]) -> Type[BaseEnv]:
         """Adds the required reward and observation fucntion to env."""
+        if isinstance(env, DummyVecEnv):
+            env = env.envs[0]
         env.set_reward_function('sq_error')
         env.set_observation_function('states + ref')
 

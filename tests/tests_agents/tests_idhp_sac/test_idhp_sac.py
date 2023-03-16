@@ -27,7 +27,7 @@ class TestIDHPSAC:
                         buffer_size=1,
                         batch_size=1)
 
-        agent.learn(3)
+        agent.learn(sac_timesteps=3, idhp_timesteps=3)
         assert agent.sac.num_timesteps == 3
         assert agent.sac._n_updates == 2
         assert agent.idhp.num_timesteps == 3
@@ -69,7 +69,7 @@ class TestIDHPSAC:
 
         agent._setup_idhp()
         layers_before_learning = deepcopy(agent.sac.policy.actor.ff)
-        agent.learn(3)
+        agent.learn(sac_timesteps=3, idhp_timesteps=3)
 
         for idhp_layer, sac_layer in zip(agent.idhp.policy.actor.ff, layers_before_learning):
             if isinstance(idhp_layer, th.nn.Linear):

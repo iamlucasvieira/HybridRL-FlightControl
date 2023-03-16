@@ -13,7 +13,7 @@ from stable_baselines3.common.utils import safe_mean
 
 from agents.sac.buffer import ReplayBuffer, Transition
 from agents.sac.policy import SACPolicy
-from helpers.torch import get_device, to_tensor, freeze, unfreeze
+from helpers.torch_helpers import get_device, to_tensor, freeze, unfreeze
 
 
 class SAC(BaseAlgorithm):

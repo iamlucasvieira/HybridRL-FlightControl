@@ -9,7 +9,7 @@ from torch import nn
 from torch.distributions import Normal
 from torch.nn.functional import softplus
 
-from helpers.torch import mlp, BaseNetwork
+from helpers.torch_helpers import mlp, BaseNetwork
 
 
 class CriticNetwork(BaseNetwork):

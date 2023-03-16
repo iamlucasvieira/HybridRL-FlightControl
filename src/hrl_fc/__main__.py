@@ -55,15 +55,15 @@ def main(filename: Optional[str] = typer.Argument(None, help="Experiment file na
 
 @app.command()
 def eval(model_directory: Optional[str] = typer.Argument(None, help="Directory of the model to evaluate"),
-         models_path: Optional[pl.Path] = typer.Argument(Path.models, help="Models path")):
+         models_directory: Optional[pl.Path] = typer.Argument(Path.models, help="Models path")):
     """Evaluates an experiment from a zip file."""
     print("Evaluating experiment...")
     try:
-        eval = Evaluator(file_name=model_directory, file_path=models_path)
-        eval.evaluate()
+        evaluator = Evaluator(model_directory=model_directory, models_directory=models_directory)
+        evaluator.evaluate()
         print("Evaluation finished :tada:")
     except FileNotFoundError:
-        print(f"Path {models_path / model_directory} does not exist :sweat:")
+        print(f"Path {model_directory / model_directory} does not exist :sweat:")
     except ValueError:
         print(f"Not able to load model from {model_directory} :sweat:")
 

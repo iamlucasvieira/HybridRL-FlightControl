@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from helpers.torch import mlp, BaseNetwork
+from helpers.torch_helpers import mlp, BaseNetwork
 
 
 class BaseNetworkIDHP(BaseNetwork):
@@ -92,7 +92,7 @@ class Critic(BaseNetworkIDHP):
         return critic_t - (dr1_ds1 + gamma * critic_t1) @ (F_t_1 + G_t_1 @ obs_grad[:, :-1])
 
 
-class IDHPPolicy:
+class IDHPPolicy(nn.Module):
     """Class that implements the IDHP policy."""
 
     def __init__(self,
@@ -101,7 +101,7 @@ class IDHPPolicy:
                  actor_kwargs={},
                  critic_kwargs={}, ):
         """Initialize the IDHP policy."""
-
+        super(IDHPPolicy, self).__init__()
         self.actor = Actor(observation_space, action_space, **actor_kwargs)
         self.critic = Critic(observation_space, action_space, **critic_kwargs)
 

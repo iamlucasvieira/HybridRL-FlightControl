@@ -1,0 +1,22 @@
+---
+name: IDHP-SAC-LTI
+description: "Tests the SAC agent on the lti citation environment."
+wandb: true
+evaluate: false
+seed: 50
+
+# Set the agent to use
+agent:
+  name: IDHP-SAC
+  learn:
+    sac_timesteps: 100_000
+    idhp_timesteps: 1_000
+#    sac_model: IDHP-SAC-LTI/rich-music-42
+
+# Set the environment to use
+env:
+  name: "LTI"
+  kwargs:
+    dt: 0.01
+    reference_type: sin
+    tracked_state: q

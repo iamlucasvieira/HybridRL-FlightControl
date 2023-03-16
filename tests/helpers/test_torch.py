@@ -1,7 +1,7 @@
 import pytest
 
 from envs import LTIEnv, CitationEnv
-from helpers.torch import BaseNetwork
+from helpers.torch_helpers import BaseNetwork
 
 
 @pytest.mark.parametrize("env", [LTIEnv, CitationEnv])
