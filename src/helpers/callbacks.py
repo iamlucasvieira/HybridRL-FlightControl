@@ -1,11 +1,12 @@
 """Module for tracking training performance."""
-from stable_baselines3.common.results_plotter import load_results, ts2xy
-from stable_baselines3.common.callbacks import BaseCallback
-import wandb
-import numpy as np
 import os
-import time
 import sys
+import time
+
+import numpy as np
+import wandb
+from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.results_plotter import load_results, ts2xy
 from wandb.integration.sb3 import WandbCallback
 
 
@@ -113,18 +114,20 @@ class OnlineCallback(BaseCallback):
         if self.model.num_timesteps % self.model.log_interval != 0 or wandb.run is None:
             return True
 
-
         reference = self.model._env.reference[-2]
         state = self.model._env.track[-1]
         sq_error = self.model._env.sq_error[-1]
+        action = self.model._env.actions[-1]
         step = self.model.num_timesteps
 
         # Log Tracking performance
         wandb.log({"online/reference": reference,
                    "online/state": state,
-                   "train/step": step})
+                   "online/step": step})
         wandb.log({"online/sq_error": sq_error,
-                   "train/step": step})
+                   "online/step": step})
+        wandb.log({"online/action": action,
+                   "online/step": step})
 
         # Log incremental model
         wandb.log(
