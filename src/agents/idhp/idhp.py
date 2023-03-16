@@ -121,8 +121,8 @@ class IDHP(BaseAlgorithm):
             progress_bar, )
 
         # Because IDHP is online, the episode step is equal to the learning step
-        self._env.env.episode_steps = total_timesteps
-        self._env.env.episode_length = total_timesteps * self._env.dt
+        self._env.episode_steps = total_timesteps
+        self._env.episode_length = total_timesteps * self._env.dt
 
         callback.on_training_start(locals(), globals())
         obs_t = th.tensor(np.array([self._env.reset()]), requires_grad=True, dtype=th.float32)
@@ -225,7 +225,7 @@ class IDHP(BaseAlgorithm):
     @property
     def _env(self):
         """Return the environment from within the wrapper."""
-        return self.env.envs[0]
+        return self.env.envs[0].env
 
     def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
         """

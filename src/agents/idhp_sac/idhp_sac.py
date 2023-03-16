@@ -1,5 +1,5 @@
 """Module that builds the hybrid IDHP-SAC agent."""
-from copy import deepcopy
+from copy import copy
 from typing import List, Tuple, Optional
 
 from stable_baselines3.common.base_class import BaseAlgorithm
@@ -47,14 +47,18 @@ class IDHPSAC(BaseAlgorithm):
 
         actor_kwargs = {"hidden_layers": sac_hidden_layers + idhp_hidden_layers}
         critic_kwargs = {"hidden_layers": idhp_hidden_layers}
+        # Make sure environment follows IDHP requirements
+        env = IDHP._setup_env(env)
 
-        self.idhp = IDHP("default", env,
+        # Make copies of env for SAC and IDHP
+        env_sac, env_idhp = copy(env), copy(env)
+        self.idhp = IDHP("default", env_idhp,
                          learning_rate=learning_rate,
                          verbose=verbose,
                          actor_kwargs=actor_kwargs,
                          critic_kwargs=critic_kwargs, )
 
-        self.sac = SAC("default", deepcopy(env),
+        self.sac = SAC("default", env_sac,
                        learning_rate=learning_rate,
                        verbose=verbose,
                        learning_starts=learning_starts,
@@ -63,7 +67,7 @@ class IDHPSAC(BaseAlgorithm):
                        policy_kwargs={"hidden_layers": sac_hidden_layers}, )
 
         super(IDHPSAC, self).__init__(policy,
-                                      deepcopy(env),
+                                      env,
                                       learning_rate=learning_rate,
                                       policy_kwargs=policy_kwargs,
                                       tensorboard_log=tensorboard_log,
@@ -135,7 +139,7 @@ class IDHPSAC(BaseAlgorithm):
     @property
     def _env(self):
         """Return the environment."""
-        return self.sac._env
+        return self.env
 
     def print(self, message):
         """Prints message based on verbosity."""

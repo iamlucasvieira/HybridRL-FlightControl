@@ -6,6 +6,8 @@ import torch as th
 
 from agents import IDHPSAC
 from envs import CitationEnv, LTIEnv
+from envs.observations import get_observation
+from envs.rewards import get_reward
 
 
 @pytest.mark.parametrize("env", [CitationEnv, LTIEnv])
@@ -75,3 +77,33 @@ class TestIDHPSAC:
             if isinstance(idhp_layer, th.nn.Linear):
                 assert th.allclose(idhp_layer.weight, sac_layer.weight)
                 assert th.allclose(idhp_layer.bias, sac_layer.bias)
+
+    def test_envs_independent(self, env):
+        """Tests that the envs from SAC and IDHP are different."""
+        env = env()
+        agent = IDHPSAC("default", env,
+                        learning_starts=1,
+                        buffer_size=1,
+                        batch_size=1)
+
+        assert agent.sac._env != agent.idhp._env
+        assert agent.sac._env.episode_steps == agent.idhp._env.episode_steps
+        agent.idhp._env.episode_steps = 0
+        assert agent.sac._env.episode_steps != agent.idhp._env.episode_steps
+
+    def test_envs_are_idhp_like(self, env):
+        """Tests if the created environment are according to IDHP requirements."""
+        env = env()
+        agent = IDHPSAC("default", env,
+                        learning_starts=1,
+                        buffer_size=1,
+                        batch_size=1)
+
+        reward_function = 'sq_error'
+        observation_function = 'states + ref'
+
+        assert agent.sac._env.get_reward == get_reward(reward_function)
+        assert agent.idhp._env.get_reward == get_reward(reward_function)
+
+        assert agent.sac._env.get_obs == get_observation(observation_function)
+        assert agent.idhp._env.get_obs == get_observation(observation_function)

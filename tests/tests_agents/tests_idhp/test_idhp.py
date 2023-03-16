@@ -3,8 +3,8 @@ import pytest
 
 from agents import IDHP
 from envs import LTIEnv, CitationEnv, BaseEnv
-from envs.rewards import get_reward
 from envs.observations import get_observation
+from envs.rewards import get_reward
 
 
 @pytest.mark.parametrize('env', [LTIEnv, CitationEnv])
@@ -28,8 +28,8 @@ class TestIDHP:
         """Tests the IDHP agent."""
         agent = IDHP('default', env())
         assert agent.env is not None
-        assert agent._env.env.get_reward == get_reward('sq_error')
-        assert agent._env.env.get_obs == get_observation('states + ref')
+        assert agent._env.get_reward == get_reward('sq_error')
+        assert agent._env.get_obs == get_observation('states + ref')
 
     def test_learn(self, env: BaseEnv):
         """Tests the IDHP agent."""
