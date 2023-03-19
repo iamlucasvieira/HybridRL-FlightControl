@@ -1,6 +1,6 @@
 """Module that defines configuration items that can be automatically set by core."""
 
-ALLOWS_AUTO = ["env", "verbose", "tensorboard_log", "seed", "tb_log_name"]
+ALLOWS_AUTO = ["env", "verbose", "tensorboard_log", "seed", "run_name"]
 
 
 def get_auto(item: str) -> str:

@@ -1,7 +1,7 @@
 from typing import Optional, Literal, List
 
 from pydantic import BaseModel, Extra
-from stable_baselines3.common.base_class import BaseAlgorithm
+from agents.base_agent import BaseAgent
 
 from agents import IDHPSAC
 from helpers.config_auto import get_auto
@@ -37,14 +37,12 @@ class ConfigIDHPSACKwargs(BaseModel):
 
 class ConfigIDHPSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
-    sac_timesteps: Optional[int] = 1_000
-    idhp_timesteps: Optional[int] = 1_000
+    sac_steps: Optional[int] = 1_000
+    idhp_steps: Optional[int] = 1_000
     sac_model: Optional[str] = None
     callback: Optional[list] = ["tensorboard"]
     log_interval: Optional[int] = 1
-    tb_log_name: Optional[str] = get_auto("tb_log_name")
-    reset_num_timesteps: Optional[bool] = True
-    progress_bar: Optional[bool] = False
+    run_name: Optional[str] = get_auto("run_name")
 
 
 class ConfigIDHPSAC(BaseModel):
@@ -54,7 +52,7 @@ class ConfigIDHPSAC(BaseModel):
     kwargs: Optional[ConfigIDHPSACKwargs] = ConfigIDHPSACKwargs()
     sweep: Optional[ConfigIDHPSACKwargs] = ConfigIDHPSACKwargs()
     learn: Optional[ConfigIDHPSACLearn] = ConfigIDHPSACLearn()
-    object: BaseAlgorithm = IDHPSAC
+    object: BaseAgent = IDHPSAC
 
     class Config:
         extra = Extra.forbid

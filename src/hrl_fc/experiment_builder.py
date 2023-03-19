@@ -12,6 +12,7 @@ from helpers.misc import get_name
 from helpers.paths import Path
 from helpers.wandb_helpers import evaluate
 from hrl_fc.experiment_config import ConfigExperiment
+from agents.base_agent import BaseAgent
 
 
 class Sweep:
@@ -50,7 +51,7 @@ class Sweep:
         """Alias for env config."""
         return self.config.env
 
-    def build_agent(self):
+    def build_agent(self) -> BaseAgent:
         agent_args = tuple(self.replace_auto_config(self.agent_config.args.dict()).values())
         agent_kwargs = self.replace_auto_config(self.agent_config.kwargs.dict())
 
@@ -77,7 +78,7 @@ class Sweep:
         replace("seed", self.config.seed)
 
         # Learn kwargs
-        replace("tb_log_name", self.run_name)
+        replace("run_name", self.run_name)
         return config
 
     def get_callbacks(self):
@@ -130,9 +131,7 @@ class Sweep:
 
     def save_model(self, model_name=None):
         """Save a model file."""
-        if model_name is None:
-            model_name = self.run_name
-        self.agent.save(self.MODELS_PATH / model_name / "model.zip")
+        self.agent.save()
 
     def evaluate(self):
         """Evaluate the agent."""

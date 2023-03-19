@@ -10,6 +10,11 @@ import torch as th
 import numpy as np
 import time
 from agents.base_logger import Logger
+import pathlib as pl
+from helpers.paths import Path
+from hrl_fc.console import console
+import pickle
+
 
 class BaseAgent(ABC):
     """Base agent class."""
@@ -43,6 +48,7 @@ class BaseAgent(ABC):
         self.observation_space = env.observation_space
         self.action_space = env.action_space
         self._n_updates = 0
+        self.run_name = None
 
         # Setup learn variables
         self.total_steps = None
@@ -65,7 +71,7 @@ class BaseAgent(ABC):
     def print(self, message: str):
         """Print only if verbosity is enabled."""
         if self.verbose > 0:
-            print(message)
+            console.print(f"Agent: {message}", style="blue")
 
     def _setup_model(self):
         """Set up the model."""
@@ -76,14 +82,16 @@ class BaseAgent(ABC):
 
     def _setup_learn(self,
                      total_steps: int,
+                     run_name: str,
                      callback: Optional[List[BaseCallback]] = None,
-                     tb_log_name: str = "run", ) -> ListCallback:
+                     ) -> ListCallback:
         """Set up the learn method."""
         self.start_time = time.time_ns()
         self.num_steps = 0
         self.total_steps = total_steps
         self._episode_num = 0
-        self.logger = Logger(self.tensorboard_log, tb_log_name, self.verbose)
+        self.run_name = run_name
+        self.logger = Logger(self.tensorboard_log, run_name, self.verbose)
         callback = self._init_callback(callback)
         return callback
 
@@ -92,7 +100,7 @@ class BaseAgent(ABC):
         """Learn method."""
         pass
 
-    def learn(self, total_steps: int, callback: Optional[List[BaseCallback]] = None,
+    def learn(self, total_steps: int, run_name: str = "run", callback: Optional[List[BaseCallback]] = None,
               log_interval: int = 4) -> None:
         """Learn method.
 
@@ -102,7 +110,7 @@ class BaseAgent(ABC):
             log_interval: Log interval.
         """
 
-        callback = self._setup_learn(total_steps, callback=callback)
+        callback = self._setup_learn(total_steps, run_name, callback=callback)
         callback.on_training_start(locals(), globals())
         self._learn(total_steps, callback, log_interval)
 
@@ -138,3 +146,37 @@ class BaseAgent(ABC):
     def setup_model(self):
         """Agent specific setup."""
         pass
+
+    def save(self, path: Optional[pl.Path] = None):
+        """Save the model."""
+        if path is None:
+            path = Path.models
+        if self.run_name is None:
+            raise ValueError("Run name not set. Agent needs to 'learn' before saving.")
+        path = path / self.run_name
+
+        policy_path = path / 'policy.pt'
+        env_path = path / 'env.pkl'
+
+        # Make directory for files
+        path.mkdir(parents=True, exist_ok=True)
+
+        th.save(self.policy.state_dict(), policy_path)
+
+        # Save environment as pickle
+        # with open(env_path, 'wb') as f:
+        #     pickle.dump(self.env, f)
+
+    def load(self, path: str):
+        """Load the model."""
+        path = pl.Path(path)
+
+        # Load the policy
+        self.policy.load_state_dict(th.load(path / 'policy.pt'))
+
+        # Load the environment
+        # with open(path / 'env.pkl', 'rb') as f:
+        #     self.env = pickle.load(f)
+
+    def predict(self, observation: np.ndarray, deterministic: bool = False) -> np.ndarray:
+        return self.policy.predict(observation, deterministic=deterministic)

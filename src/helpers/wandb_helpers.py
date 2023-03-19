@@ -8,17 +8,18 @@ def evaluate(agent, env, n_times=1):
     """Run the experiment n times."""
 
     for _ in range(n_times):
-        obs = env.reset()
+        obs, _ = env.reset()
         done = False
         steps = 0
         while not done:
-            action, _states = agent.predict(obs, deterministic=True)
+            action = agent.predict(obs, deterministic=True)
 
             # Transform action into numpy if it is a tensor
             if isinstance(action, torch.Tensor):
                 action = action.detach().numpy()
 
-            obs, reward, done, info = env.step(action)
+            obs, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
 
             env.render()
 

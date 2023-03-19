@@ -2,7 +2,7 @@
 from pydantic import BaseModel, Extra
 from typing import Optional, Literal
 from agents.seres_dsac.seres_dsac_agent import DSAC
-from stable_baselines3.common.base_class import BaseAlgorithm
+from agents.base_agent import BaseAgent
 
 
 class ConfigSDSACArgs(BaseModel):
@@ -26,7 +26,7 @@ class ConfigSDSAC(BaseModel):
     args: Optional[ConfigSDSACArgs] = ConfigSDSACArgs()
     kwargs: Optional[ConfigSDSACKwargs] = ConfigSDSACKwargs()
     sweep: Optional[ConfigSDSACSweep] = ConfigSDSACSweep()
-    object: BaseAlgorithm = DSAC
+    object: BaseAgent = DSAC
 
     class Config:
         extra = Extra.forbid

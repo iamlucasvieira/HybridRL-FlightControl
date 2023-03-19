@@ -2,8 +2,8 @@
 from pydantic import BaseModel, Extra
 from typing import Optional, Literal, List
 from agents.sac.sac import SAC
-from stable_baselines3.common.base_class import BaseAlgorithm
 from helpers.config_auto import get_auto
+from agents.base_agent import BaseAgent
 
 
 class ConfigSACArgs(BaseModel):
@@ -39,12 +39,10 @@ class ConfigSACKwargs(BaseModel):
 
 class ConfigSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
-    total_timesteps: Optional[int] = 1_000
-    callback: Optional[list] = ["tensorboard"]
+    total_steps: Optional[int] = 1_000
+    callback: Optional[list] = [] #["tensorboard"]
     log_interval: Optional[int] = 1
-    tb_log_name: Optional[str] = get_auto("tb_log_name")
-    reset_num_timesteps: Optional[bool] = True
-    progress_bar: Optional[bool] = False
+    run_name: Optional[str] = get_auto("run_name")
 
     class Config:
         extra = Extra.forbid
@@ -58,7 +56,7 @@ class ConfigSAC(BaseModel):
     kwargs: Optional[ConfigSACKwargs] = ConfigSACKwargs()
     sweep: Optional[ConfigSACKwargs] = ConfigSACKwargs()
     learn: Optional[ConfigSACLearn] = ConfigSACLearn()
-    object: BaseAlgorithm = SAC
+    object: BaseAgent = SAC
 
     class Config:
         extra = Extra.forbid

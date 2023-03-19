@@ -4,6 +4,8 @@ from typing import Optional, Any
 import pathlib as pl
 from torch.utils.tensorboard import SummaryWriter
 from collections import defaultdict
+from rich.table import Table
+from hrl_fc.console import console
 
 
 class Logger:
@@ -20,13 +22,23 @@ class Logger:
     def record(self, key: str, value: Any) -> None:
         self.data[key] = value
 
-    def dump(self):
+    def dump(self, step: int = 0):
         """Dump the data to the log directory."""
-
-        self.print(self.data)
+        if self.verbose > 0:
+            self.print_table(step)
+        # self.print(self.data)
         self.data.clear()
 
     def print(self, message) -> None:
         """Print a message."""
         if self.verbose > 0:
             print(message)
+
+    def print_table(self, steps):
+        """Print the table."""
+        table = Table(title=f"Step {steps}")
+        table.add_column("Key")
+        table.add_column("Value")
+        for key, value in self.data.items():
+            table.add_row(key, str(value))
+        console.print(table)

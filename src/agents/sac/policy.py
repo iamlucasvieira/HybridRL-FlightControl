@@ -8,7 +8,7 @@ from gymnasium import spaces
 from torch import nn
 from torch.distributions import Normal
 from torch.nn.functional import softplus
-
+from agents.base_policy import BasePolicy
 from helpers.torch_helpers import mlp, BaseNetwork
 
 
@@ -113,15 +113,14 @@ class ActorNetwork(BaseNetwork):
         return action, log_prob
 
 
-class SACPolicy(nn.Module):
+class SACPolicy(BasePolicy):
     """Policy for SAC algorithm."""
 
     def __init__(self,
                  observation_space: spaces.Box,
                  action_space: spaces.Box,
                  learning_rate: float = 3e-4,
-                 hidden_layers: List[int] = None,
-                 save_path: Union[str, pl.Path] = ""):
+                 hidden_layers: List[int] = None):
         """Initialize policy.
 
         args:
@@ -132,33 +131,36 @@ class SACPolicy(nn.Module):
             save_path: Path to save the policy.
 
         """
-        super(SACPolicy, self).__init__()
         if hidden_layers is None:
             hidden_layers = [256, 256]
 
-        self.observation_space = observation_space
-        self.action_space = action_space
         self.learning_rate = learning_rate
         self.hidden_layers = hidden_layers
-        self.save_path = save_path
+        super(SACPolicy, self).__init__(observation_space, action_space)
+
+    def _setup_policy(self):
+        """Setup policy."""
+        observation_space = self.observation_space
+        action_space = self.action_space
+        learning_rate = self.learning_rate
+        hidden_layers = self.hidden_layers
 
         self.actor = ActorNetwork(observation_space,
                                   action_space,
                                   learning_rate=learning_rate,
-                                  hidden_layers=hidden_layers,
-                                  save_path=save_path)
+                                  hidden_layers=hidden_layers, )
+
         self.critic_1 = CriticNetwork(observation_space,
                                       action_space,
                                       learning_rate=learning_rate,
-                                      hidden_layers=hidden_layers,
-                                      save_path=save_path)
+                                      hidden_layers=hidden_layers)
+
         self.critic_2 = CriticNetwork(observation_space,
                                       action_space,
                                       learning_rate=learning_rate,
-                                      hidden_layers=hidden_layers,
-                                      save_path=save_path)
+                                      hidden_layers=hidden_layers)
 
-    def get_action(self, state: np.ndarray, **kwargs) -> th.Tensor:
+    def get_action(self, state: np.ndarray, **kwargs) -> np.ndarray:
         """Get action from the policy.
 
         args:
@@ -172,23 +174,7 @@ class SACPolicy(nn.Module):
             action, _ = self.actor(state, **kwargs)
         return action.numpy()
 
-    def save(self):
-        """Save policy."""
-        self.actor.save_checkpoint()
-        self.critic_1.save_checkpoint()
-        self.critic_2.save_checkpoint()
-
-    def load(self):
-        """Load policy."""
-        self.actor.load_checkpoint()
-        self.critic_1.load_checkpoint()
-        self.critic_2.load_checkpoint()
-
     def predict(self, observation: np.ndarray,
-                state: np.ndarray,
-                episode_start: np.ndarray,
                 deterministic: bool = False) -> np.ndarray:
         """Predict action."""
-        # Unused arguments
-        del episode_start
-        return self.get_action(observation, deterministic=deterministic), state
+        return self.get_action(observation, deterministic=deterministic)

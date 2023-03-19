@@ -94,7 +94,7 @@ class Evaluator:
         )
 
         self.print("Evaluating...")
-        evaluate(self.agent, self.agent._env)
+        evaluate(self.agent, self.agent.env)
 
         wandb_run.finish()
 
@@ -104,7 +104,7 @@ class Evaluator:
 
 
 def main():
-    Runner('exp_idhp_sac_lti').run()
+    Runner('exp_sac_gym').run()
 
 
 if __name__ == "__main__":

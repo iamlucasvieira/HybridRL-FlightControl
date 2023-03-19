@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from pydantic import BaseModel, Field, Extra
 
-from agents.config import ConfigSB3SAC, ConfigIDHP, ConfigTD3, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC
+from agents.config import ConfigIDHP, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC
 from envs.config.config_citation_env import ConfigCitationEnv
 from envs.config.config_lti_env import ConfigLTIEnv
 from envs.config.gym_env import ConfigGymEnv
@@ -21,9 +21,9 @@ class ConfigExperiment(BaseModel):
     save_model: Optional[bool] = True
     env: Union[ConfigLTIEnv, ConfigCitationEnv, ConfigGymEnv] = Field(discriminator='name',
                                                                       default=ConfigLTIEnv(name="LTI"))
-    agent: Union[ConfigSB3SAC, ConfigIDHP, ConfigTD3, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC] = Field(
+    agent: Union[ConfigIDHP, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC] = Field(
         discriminator='name',
-        default=ConfigSB3SAC(name="SB3SAC"))
+        default=ConfigSAC(name="SAC"))
 
     class Config:
         extra = Extra.forbid

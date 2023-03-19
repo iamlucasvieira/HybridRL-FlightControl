@@ -1,5 +1,5 @@
 """Module that configures the LTI environment."""
-import gym
+import gymnasium as gym
 from pydantic import BaseModel, validator, Extra
 from typing import Optional, List, Literal
 

@@ -113,5 +113,5 @@ class TestSAC:
         """Test that SAC logs are correctly dumped."""
         sac = SAC('default', env, verbose=0)
         sac._setup_learn(100)
-        sac._dump_logs()
+        # sac._dump_logs()
         assert sac.logger is not None

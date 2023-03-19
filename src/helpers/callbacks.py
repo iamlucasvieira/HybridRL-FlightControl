@@ -5,6 +5,7 @@ import time
 
 import numpy as np
 import wandb
+
 # from stable_baselines3.common.callbacks import BaseCallback
 # from stable_baselines3.common.results_plotter import load_results, ts2xy
 # from wandb.integration.sb3 import WandbCallback
@@ -161,3 +162,5 @@ import wandb
 #     "tensorboard": TensorboardCallback,
 #     "online": OnlineCallback
 # }
+
+AVAILABLE_CALLBACKS = {}

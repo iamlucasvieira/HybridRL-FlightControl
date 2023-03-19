@@ -93,7 +93,7 @@ class SAC(BaseAgent):
         callback.on_rollout_start()
 
         env = self.env
-        obs = env.reset()
+        obs, _ = env.reset()
 
         for step in range(total_steps):
             callback.on_step()
@@ -104,7 +104,8 @@ class SAC(BaseAgent):
             else:
                 action = self.policy.get_action(obs)
 
-            obs_tp1, reward, done, info = env.step(action)
+            obs_tp1, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
             self.replay_buffer.push(Transition(obs=obs,
                                                action=action,
                                                reward=reward,
@@ -113,12 +114,12 @@ class SAC(BaseAgent):
 
             # If done, reset the environment
             if done:
-                obs = env.reset()
+                obs, _ = env.reset()
                 self._episode_num += 1
 
                 if self._episode_num % log_interval == 0:
                     # self._dump_logs()
-                    self.logger.dump()
+                    self.logger.dump(step=self.num_steps)
             else:
                 obs = obs_tp1
 
@@ -267,19 +268,3 @@ class SAC(BaseAgent):
 
         loss = (alpha * log_prob - critic).mean()
         return loss
-
-    def _excluded_save_params(self) -> List[str]:
-        default_excluded_params = super()._excluded_save_params()
-        if 'env' in default_excluded_params:
-            default_excluded_params.remove('env')
-
-        return default_excluded_params
-
-        # def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
-    #     state_dicts = ["policy", "policy.actor.optimizer"]
-    #     # if self.ent_coef_optimizer is not None:
-    #     #     saved_pytorch_variables = ["log_ent_coef"]
-    #     #     state_dicts.append("ent_coef_optimizer")
-    #     # else:
-    #     #     saved_pytorch_variables = ["ent_coef_tensor"]
-    #     return state_dicts, []

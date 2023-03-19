@@ -99,7 +99,7 @@ def to_tensor(*arrays, data_type=th.float32) -> Union[th.Tensor, Tuple[th.Tensor
     """
 
     def _to_array(a):
-        if isinstance(a, np.ndarray):
+        if isinstance(a, np.ndarray or tuple):
             return a
         return np.array(a)
 
