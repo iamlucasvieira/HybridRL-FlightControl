@@ -2,8 +2,7 @@
 from envs.base_env import BaseEnv
 from envs.citation.models.model_loader import load_model
 import numpy as np
-from gym import spaces
-
+from gymnasium import spaces
 
 class CitationEnv(BaseEnv):
     """Citation Environment that follows gym interface"""

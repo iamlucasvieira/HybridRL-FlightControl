@@ -1,7 +1,7 @@
 """Module that defines the IDHP agent, including the actor and the critic."""
 from typing import Type, List
 
-import gym
+import gymnasium as gym
 import numpy as np
 import torch as th
 import torch.nn as nn

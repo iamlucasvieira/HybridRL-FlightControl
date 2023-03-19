@@ -3,26 +3,24 @@ import time
 from copy import deepcopy
 from typing import Union, Optional, List
 
-import gym
+import gymnasium as gym
 import numpy as np
 import torch as th
-from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.policies import BasePolicy
-from stable_baselines3.common.type_aliases import MaybeCallback
-from stable_baselines3.common.utils import safe_mean
 
 from agents.sac.buffer import ReplayBuffer, Transition
 from agents.sac.policy import SACPolicy
 from helpers.torch_helpers import get_device, to_tensor, freeze, unfreeze
+from agents.base_agent import BaseAgent
+from agents.base_callback import ListCallback
 
 
-class SAC(BaseAlgorithm):
+class SAC(BaseAgent):
     """Implements the Soft Actor-Critic algorithm."""
 
     policy_aliases = {'default': SACPolicy}
 
     def __init__(self,
-                 policy: Union[BasePolicy, str],
+                 policy: str,
                  env: Union[gym.Env, str],
                  learning_rate: float = 3e-4,
                  policy_kwargs: Optional[dict] = None,
@@ -67,6 +65,7 @@ class SAC(BaseAlgorithm):
         self.gradient_steps = gradient_steps
         self.batch_size = batch_size
         self.learning_starts = learning_starts
+        self.learning_rate = learning_rate
         self.entropy_coefficient = entropy_coefficient
         self.entropy_coefficient_update = entropy_coefficient_update
         self.gamma = gamma
@@ -78,43 +77,27 @@ class SAC(BaseAlgorithm):
 
         super(SAC, self).__init__(policy,
                                   env,
-                                  learning_rate=learning_rate,
                                   policy_kwargs=policy_kwargs,
                                   tensorboard_log=tensorboard_log,
                                   verbose=verbose,
                                   seed=seed,
                                   device=device, )
 
-        if _init_setup_model:
-            self._setup_model()
-
-    def learn(
+    def _learn(
             self,
-            total_timesteps: int,
-            callback: MaybeCallback = None,
-            log_interval: int = 4,
-            tb_log_name: str = "run",
-            reset_num_timesteps: bool = True,
-            progress_bar: bool = False,
+            total_steps: int,
+            callback: ListCallback,
+            log_interval: int,
     ) -> None:
         """Learn from the environment."""
-
-        total_timesteps, callback = self._setup_learn(
-            total_timesteps,
-            callback,
-            reset_num_timesteps,
-            tb_log_name,
-            progress_bar, )
-
-        callback.on_training_start(locals(), globals())
         callback.on_rollout_start()
 
-        env = self._env
+        env = self.env
         obs = env.reset()
 
-        for step in range(total_timesteps):
+        for step in range(total_steps):
             callback.on_step()
-            self.num_timesteps += 1
+            self.num_steps += 1
 
             if step < self.learning_starts:
                 action = env.action_space.sample()
@@ -134,8 +117,8 @@ class SAC(BaseAlgorithm):
                 self._episode_num += 1
 
                 if self._episode_num % log_interval == 0:
-                    self._dump_logs()
-                    # self.logger.dump(step=self.num_timesteps)
+                    # self._dump_logs()
+                    self.logger.dump()
             else:
                 obs = obs_tp1
 
@@ -146,10 +129,6 @@ class SAC(BaseAlgorithm):
                     self.update_target_networks()
 
         callback.on_training_end()
-
-    @property
-    def _env(self) -> gym.Env:
-        return self.env.envs[0].env
 
     def update(self) -> None:
         """Update the policy."""
@@ -179,7 +158,7 @@ class SAC(BaseAlgorithm):
         if self.entropy_coefficient_update:
             self.update_entropy_coefficient(buffer)
 
-        self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+        self.logger.record("train/n_updates", self._n_updates)
         self.logger.record("train/actor_loss", np.mean(loss_actor.mean().item()))
         self.logger.record("train/critic_loss", np.mean(loss_critic.mean().item()))
 
@@ -207,9 +186,8 @@ class SAC(BaseAlgorithm):
         self.logger.record("train/ent_coef", ent_coef.mean().item())
         self.logger.record("train/ent_coef_loss", ent_coef_loss.mean().item())
 
-    def _setup_model(self) -> None:
+    def setup_model(self) -> None:
         """Initialize the SAC policy and replay buffer"""
-        self.set_random_seed(self.seed)
         self.policy = self.policy_class(self.observation_space,
                                         self.action_space,
                                         **self.policy_kwargs)

@@ -2,18 +2,15 @@
 from copy import copy
 from typing import List, Tuple, Optional
 
-from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.type_aliases import MaybeCallback
-
+from agents.base_agent import BaseAgent
 from agents import IDHP, SAC
 from agents.idhp_sac.policy import IDHPSACPolicy, IDHPSACActor
-from helpers.callbacks import OnlineCallback, TensorboardCallback
 from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
 
 
-class IDHPSAC(BaseAlgorithm):
+class IDHPSAC(BaseAgent):
     """Class that implements the hybrid IDHP-SAC agent."""
 
     policy_aliases = {"default": IDHPSACPolicy}
@@ -95,7 +92,7 @@ class IDHPSAC(BaseAlgorithm):
               sac_timesteps: int = 1_000_000,
               idhp_timesteps: int = 1_000_000,
               sac_model: Optional[str] = None,
-              callback: MaybeCallback = None,
+              callback = None,
               log_interval: int = 4,
               tb_log_name: str = "run",
               reset_num_timesteps: bool = True,

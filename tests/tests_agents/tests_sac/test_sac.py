@@ -75,7 +75,7 @@ class TestSAC:
                                               obs_=obs_tp1,
                                               done=done))
             obs = obs_tp1
-        sac._setup_learn(total_timesteps=100)
+        sac._setup_learn(100)
         sac.update()
         # After one update gradients should exist
         assert sac.policy.actor.optimizer.param_groups[0]['params'][0].grad is not None
@@ -98,19 +98,20 @@ class TestSAC:
         for param, target_param in zip(sac.policy.critic_1.parameters(), sac.target_policy.critic_1.parameters()):
             assert th.allclose(param.data, target_param.data) == result
 
-    @pytest.mark.parametrize('total_timesteps', [15, 100], ids=['15', '100'])
+    @pytest.mark.parametrize('total_timesteps', [15, 100, 200], ids=['15', '100', '200'])
     def test_learn(self, env, total_timesteps):
         """Test that SAC learn is correctly computed."""
         sac = SAC('default', env,
                   buffer_size=10,
                   batch_size=5,
-                  learning_starts=5)
-        sac.learn(total_timesteps)
-        assert sac.num_timesteps == total_timesteps
+                  learning_starts=5,
+                  verbose=1)
+        sac.learn(total_timesteps, log_interval=1)
+        assert sac.num_steps == total_timesteps
 
     def test_dump_logs(self, env):
         """Test that SAC logs are correctly dumped."""
         sac = SAC('default', env, verbose=0)
-        sac._setup_learn(total_timesteps=100)
+        sac._setup_learn(100)
         sac._dump_logs()
         assert sac.logger is not None

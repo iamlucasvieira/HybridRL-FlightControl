@@ -1,7 +1,7 @@
 """Creates a gym environment for the aircraft model"""
 from envs.lti_citation.models.lti_model import Aircraft
 from envs.base_env import BaseEnv
-from gym import spaces
+from gymnasium import spaces
 import numpy as np
 
 

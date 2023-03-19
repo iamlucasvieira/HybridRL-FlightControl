@@ -1,13 +1,11 @@
 """Class that creates LTI aircraft model."""
 import numpy as np
-import rich.repr
 import yaml
 from pathlib import Path
 
 from envs.lti_citation.models.config_lti import AircraftData
 
 
-@rich.repr.auto
 class Aircraft:
     """Class that creates the LTI aircraft state space model."""
 
@@ -85,10 +83,10 @@ class Aircraft:
         """Set initial state of the aircraft."""
         self.current_state = inital_state.reshape(self.ss.nstates, 1)
 
-    def __rich_repr__(self) -> rich.repr.Result:
-        """Representation of the state space model."""
-        yield "Aircraft", self.filename
-        yield "Configuration", self.configuration
+    # def __rich_repr__(self) -> rich.repr.Result:
+    #     """Representation of the state space model."""
+    #     yield "Aircraft", self.filename
+    #     yield "Configuration", self.configuration
 
     def get_tracked_state_map(self, tracked_state) -> None:
         """Remove the state being tracked based in a task name."""

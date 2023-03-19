@@ -7,7 +7,7 @@ from typing import Union, Tuple
 import numpy as np
 import torch as th
 import torch.optim as optim
-from gym import spaces
+from gymnasium import spaces
 from torch import nn
 
 

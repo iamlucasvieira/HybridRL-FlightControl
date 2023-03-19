@@ -4,17 +4,15 @@ from typing import Type, Tuple, List, Optional
 
 import numpy as np
 import torch as th
-from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.type_aliases import MaybeCallback
-from stable_baselines3.common.vec_env import DummyVecEnv
 
 from agents.idhp.incremental_model import IncrementalCitation
 from agents.idhp.policy import IDHPPolicy
 from envs import BaseEnv
-from helpers.callbacks import OnlineCallback
+# from helpers.callbacks import OnlineCallback
+from agents.base_agent import BaseAgent
 
 
-class IDHP(BaseAlgorithm):
+class IDHP(BaseAgent):
     """Class that implements the IDHP algorithm."""
 
     policy_aliases = {'default': IDHPPolicy}
@@ -111,7 +109,7 @@ class IDHP(BaseAlgorithm):
     def learn(
             self,
             total_timesteps: int,
-            callback: MaybeCallback = None,
+            callback = None,
             log_interval: int = 4,
             tb_log_name: str = "run",
             reset_num_timesteps: bool = True,
