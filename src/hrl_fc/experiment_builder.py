@@ -136,7 +136,7 @@ class Sweep:
 
     def evaluate(self):
         """Evaluate the agent."""
-        evaluate(self.agent, self.env)
+        evaluate(self.agent, self.env, n_times=self.config.evaluate)
 
 
 class ExperimentBuilder:

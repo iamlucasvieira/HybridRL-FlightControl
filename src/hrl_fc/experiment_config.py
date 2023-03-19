@@ -15,7 +15,7 @@ class ConfigExperiment(BaseModel):
     description: Optional[str]
     wandb: Optional[bool] = True
     n_learning: Optional[int] = 1
-    evaluate: Optional[bool] = True
+    evaluate: Optional[bool | int] = 1
     verbose: Optional[int] = 1
     seed: Optional[int] = None
     save_model: Optional[bool] = True

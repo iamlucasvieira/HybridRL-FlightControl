@@ -39,6 +39,7 @@ class Runner:
                 config=sweep_config.dict(),
                 sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
                 save_code=False,  # optional
+                monitor_gym=True
             )
 
             # Learn

@@ -1,8 +1,8 @@
 ---
 name: SAC-gym
 description: "Tests the SAC agent on the Pendulum-v1 Gym environment."
-wandb: false
-evaluate: true
+wandb: true
+evaluate: 20
 seed: 50
 
 # Set the agent to use
