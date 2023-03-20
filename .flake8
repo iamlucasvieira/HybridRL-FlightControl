@@ -6,3 +6,4 @@ max-complexity = 11
 docstring-convention = google
 rst-roles = class,const,func,meth,mod,ref
 rst-directives = deprecated
+exclude = citation.py, __init__.py

@@ -46,7 +46,7 @@ class SymmetricData(BaseModel):
     @validator("cx", "cz")
     def check_zero_derivative(cls, v: SymmetricDerivatives) -> SymmetricDerivatives:
         if v.o is None:
-            raise ValueError(f"A value for _o must be provided.")
+            raise ValueError("A value for o must be provided.")
         return v
 
     class Config:

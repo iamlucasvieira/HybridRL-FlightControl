@@ -1,6 +1,5 @@
 """Gym environment configuration."""
 from typing import Callable
-from typing import List
 from typing import Literal
 from typing import Optional
 
