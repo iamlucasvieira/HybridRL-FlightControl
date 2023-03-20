@@ -1,7 +1,7 @@
 """Module that contains tests for the SAC buffer."""
 
 import pytest
-from agents.sac.buffer import ReplayBuffer
+from agents.buffer import ReplayBuffer
 
 
 class TestBuffer:

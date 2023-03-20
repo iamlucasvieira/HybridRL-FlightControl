@@ -60,7 +60,7 @@ class TestCriticNetwork:
 
         net = CriticNetwork(observation_space, action_space, **critic_kwargs)
 
-        state = env.reset()
+        state, _ = env.reset()
         action = env.action_space.sample()
 
         output = net(th.tensor(state), th.tensor(action))
@@ -122,7 +122,7 @@ class TestActorNetwork:
 
         net = ActorNetwork(observation_space, action_space, **actor_kwargs)
 
-        state = env.reset()
+        state, _ = env.reset()
 
         action, log_prob = net(th.tensor(state))
 
@@ -136,7 +136,7 @@ class TestActorNetwork:
 
         net = ActorNetwork(observation_space, action_space, **actor_kwargs)
 
-        state = env.reset()
+        state, _ = env.reset()
 
         action, log_prob = net(th.tensor(state), with_log_prob=False)
 
@@ -150,7 +150,7 @@ class TestActorNetwork:
 
         net = ActorNetwork(observation_space, action_space, **actor_kwargs)
 
-        state = env.reset()
+        state, _ = env.reset()
 
         action, log_prob = net(th.tensor(state), deterministic=True)
 
@@ -180,7 +180,7 @@ class TestSACPolicy:
 
         policy = SACPolicy(observation_space, action_space)
 
-        state = env.reset()
+        state, _ = env.reset()
 
         action = policy.get_action(state)
         action_from_actor, _ = policy.actor(th.tensor(state, dtype=th.float32))
@@ -194,7 +194,7 @@ class TestSACPolicy:
 
         policy = SACPolicy(observation_space, action_space)
 
-        state = env.reset()
+        state, _ = env.reset()
 
         action = th.as_tensor(policy.get_action(state, deterministic=True), dtype=th.float32)
         action_from_actor, _ = policy.actor(th.as_tensor(state, dtype=th.float32), deterministic=True)

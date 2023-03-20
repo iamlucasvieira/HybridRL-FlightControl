@@ -7,6 +7,7 @@ from agents.sac.policy import SACPolicy
 from agents.buffer import ReplayBuffer, Transition
 from envs.citation.citation_env import CitationEnv
 from envs.lti_citation.lti_env import LTIEnv
+from agents.base_logger import Logger
 import torch as th
 from copy import deepcopy
 
@@ -14,7 +15,7 @@ from copy import deepcopy
 @pytest.fixture
 def transition(env):
     """Create a Transition instance."""
-    obs = env.reset()
+    obs, _ = env.reset()
     return Transition(obs=th.from_numpy(obs),
                       action=th.from_numpy(env.action_space.sample()),
                       reward=0,
@@ -28,46 +29,47 @@ class TestSAC:
 
     def test_init(self, env):
         """Test that SAC is correctly initialized."""
-        sac = SAC('default', env)
+        sac = SAC(env)
         assert sac is not None
 
     def test_policy(self, env):
         """Test that SAC policy is correctly initialized."""
-        sac = SAC('default', env)
+        sac = SAC(env)
         assert isinstance(sac.policy, SACPolicy)
 
     def test_target_policy(self, env):
         """Test that SAC target policy is correctly initialized and that it is a different object than policy."""
-        sac = SAC('default', env)
+        sac = SAC(env)
         assert isinstance(sac.target_policy, SACPolicy)
         assert sac.target_policy is not sac.policy
 
     def test_replay_buffer(self, env):
         """Test that SAC replay buffer is correctly initialized."""
-        sac = SAC('default', env)
+        sac = SAC(env)
         assert isinstance(sac.replay_buffer, ReplayBuffer)
 
     def test_get_critic_loss(self, env, transition):
         """Test that SAC critic loss is correctly computed."""
-        sac = SAC('default', env)
+        sac = SAC(env)
         critic_loss = sac.get_critic_loss(transition)
         assert isinstance(critic_loss, th.Tensor)
 
     def test_get_actor_loss(self, env, transition):
         """Test that SAC actor loss is correctly computed."""
-        sac = SAC('default', env)
+        sac = SAC(env)
         actor_loss = sac.get_actor_loss(transition)
         assert isinstance(actor_loss, th.Tensor)
 
     def test_update(self, env):
         """Test that SAC update is correctly computed."""
-        sac = SAC('default', env,
+        sac = SAC(env,
                   buffer_size=10,
                   batch_size=5)
-        obs = env.reset()
+        obs, _ = env.reset()
         while not sac.replay_buffer.full():
             action = env.action_space.sample()
-            obs_tp1, reward, done, info = env.step(action)
+            obs_tp1, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
 
             sac.replay_buffer.push(Transition(obs=obs,
                                               action=action,
@@ -75,7 +77,7 @@ class TestSAC:
                                               obs_=obs_tp1,
                                               done=done))
             obs = obs_tp1
-        sac._setup_learn(100)
+        sac._setup_learn(100, "")
         sac.update()
         # After one update gradients should exist
         assert sac.policy.actor.optimizer.param_groups[0]['params'][0].grad is not None
@@ -85,7 +87,7 @@ class TestSAC:
     @pytest.mark.parametrize('polyak, result', [(0, True), (0.5, False)], ids=['0', '0.5'])
     def test_update_target(self, env, polyak, result):
         """Test that SAC target update is correctly computed."""
-        sac = SAC('default', env,
+        sac = SAC(env,
                   polyak=polyak)
 
         # Edit policy parameters
@@ -98,20 +100,19 @@ class TestSAC:
         for param, target_param in zip(sac.policy.critic_1.parameters(), sac.target_policy.critic_1.parameters()):
             assert th.allclose(param.data, target_param.data) == result
 
-    @pytest.mark.parametrize('total_timesteps', [15, 100, 200], ids=['15', '100', '200'])
-    def test_learn(self, env, total_timesteps):
+    @pytest.mark.parametrize('total_steps', [15, 100, 200], ids=['15', '100', '200'])
+    def test_learn(self, env, total_steps):
         """Test that SAC learn is correctly computed."""
-        sac = SAC('default', env,
+        sac = SAC(env,
                   buffer_size=10,
                   batch_size=5,
                   learning_starts=5,
                   verbose=1)
-        sac.learn(total_timesteps, log_interval=1)
-        assert sac.num_steps == total_timesteps
+        sac.learn(total_steps, log_interval=1)
+        assert sac.num_steps == total_steps
 
     def test_dump_logs(self, env):
         """Test that SAC logs are correctly dumped."""
-        sac = SAC('default', env, verbose=0)
-        sac._setup_learn(100)
-        # sac._dump_logs()
-        assert sac.logger is not None
+        sac = SAC(env, verbose=0)
+        sac._setup_learn(100, "")
+        assert isinstance(sac.logger, Logger)
