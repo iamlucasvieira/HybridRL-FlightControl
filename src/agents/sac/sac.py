@@ -17,10 +17,7 @@ from agents.base_callback import ListCallback
 class SAC(BaseAgent):
     """Implements the Soft Actor-Critic algorithm."""
 
-    policy_aliases = {'default': SACPolicy}
-
     def __init__(self,
-                 policy: str,
                  env: Union[gym.Env, str],
                  learning_rate: float = 3e-4,
                  policy_kwargs: Optional[dict] = None,
@@ -43,7 +40,6 @@ class SAC(BaseAgent):
 
         args:
             env: Environment.
-            policy: Policy.
             learning_rate: Learning rate.
             policy_kwargs: Policy keyword arguments.
             log_dir: Log directory.
@@ -77,7 +73,7 @@ class SAC(BaseAgent):
         self.ent_coef_optimizer = None
         self.target_entropy = None
 
-        super(SAC, self).__init__(policy,
+        super(SAC, self).__init__(SACPolicy,
                                   env,
                                   policy_kwargs=policy_kwargs,
                                   log_dir=log_dir,
@@ -188,9 +184,6 @@ class SAC(BaseAgent):
 
     def setup_model(self) -> None:
         """Initialize the SAC policy and replay buffer"""
-        self.policy = self.policy_class(self.observation_space,
-                                        self.action_space,
-                                        **self.policy_kwargs)
         self.target_policy = deepcopy(self.policy)
         self.replay_buffer = ReplayBuffer(self.buffer_size)
 

@@ -1,8 +1,8 @@
 """Module that defines the base agent that is stable-baselines3 like."""
 from abc import ABC, abstractmethod
 import gymnasium as gym
-# from stable_baselines3.common.base_class import BaseAlgorithm
 from agents.base_callback import ListCallback, BaseCallback
+from agents.base_policy import BasePolicy
 from helpers.torch_helpers import get_device
 from typing import Optional, List, Tuple, Any, Dict, SupportsFloat
 import random
@@ -11,7 +11,6 @@ import numpy as np
 import time
 from agents.base_logger import Logger
 import pathlib as pl
-from helpers.paths import Path
 from hrl_fc.console import console
 import pickle
 from agents.buffer import ReplayBuffer, Transition
@@ -20,9 +19,7 @@ from agents.buffer import ReplayBuffer, Transition
 class BaseAgent(ABC):
     """Base agent class."""
 
-    policy_aliases = {}
-
-    def __init__(self, policy: str, env: gym.Env,
+    def __init__(self, policy: BasePolicy, env: gym.Env,
                  device: Optional[str] = None,
                  verbose: int = 0,
                  seed: Optional[int] = None,
@@ -36,7 +33,6 @@ class BaseAgent(ABC):
         Args:
             env: Environment.
         """
-        self.policy_class = self.get_policy(policy)
         self.env = env
         self.device = get_device() if device is None else device
         self.verbose = verbose
@@ -53,6 +49,7 @@ class BaseAgent(ABC):
         self._n_updates = 0
         self.run_name = None
         self.episode_buffer = None
+        self.policy = policy(self.observation_space, self.action_space, **self.policy_kwargs)
 
         # Setup learn variables
         self.total_steps = None
@@ -65,12 +62,6 @@ class BaseAgent(ABC):
 
         if _init_setup_model:
             self._setup_model()
-
-    def get_policy(self, policy: str):
-        """Get the policy object from the policy aliases."""
-        if policy not in self.policy_aliases:
-            raise ValueError(f'Policy {policy} not supported.')
-        return self.policy_aliases[policy]
 
     def print(self, message: str, identifier=True, **kwargs):
         """Print only if verbosity is enabled."""
@@ -237,7 +228,11 @@ class BaseAgent(ABC):
                 env_path.unlink()
 
     def load(self, path: str):
-        """Load the model."""
+        """Load the model.
+
+        Args:
+            path: Path to the model.
+        """
         path = path
         policy_path = path / 'policy.pt'
         env_path = path / 'env.pkl'
@@ -256,4 +251,10 @@ class BaseAgent(ABC):
             self.print("Environment file not found.")
 
     def predict(self, observation: np.ndarray, deterministic: bool = False) -> np.ndarray:
+        """Predict the action.
+
+        Args:
+            observation: Observation.
+            deterministic: Whether to use deterministic action.
+        """
         return self.policy.predict(observation, deterministic=deterministic)
