@@ -11,7 +11,6 @@ from helpers.paths import Path
 # from stable_baselines3.common.save_util import load_from_zip_file
 
 
-
 def load_agent(
     model_directory: str,
     models_directory: str = None,
