@@ -4,7 +4,7 @@ import gymnasium as gym
 from agents.base_callback import ListCallback, BaseCallback
 from agents.base_policy import BasePolicy
 from helpers.torch_helpers import get_device
-from typing import Optional, List, Tuple, Any, Dict, SupportsFloat
+from typing import Optional, List, Tuple, Any, Union, SupportsFloat
 import random
 import torch as th
 import numpy as np
@@ -14,12 +14,12 @@ import pathlib as pl
 from hrl_fc.console import console
 import pickle
 from agents.buffer import ReplayBuffer, Transition
-
+from envs.base_env import BaseEnv
 
 class BaseAgent(ABC):
     """Base agent class."""
 
-    def __init__(self, policy: BasePolicy, env: gym.Env,
+    def __init__(self, policy: BasePolicy, env: Union[BaseEnv, gym.Env],
                  device: Optional[str] = None,
                  verbose: int = 0,
                  seed: Optional[int] = None,

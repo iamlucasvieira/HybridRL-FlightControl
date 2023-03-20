@@ -26,9 +26,9 @@ class TestCitationEnv:
         """Tests if aircraft is reset after a reset."""
         env = CitationEnv(**env_kwargs)
 
-        first_response, _, _, _ = env.step(np.array([0] * env.action_space.shape[0]))
+        first_response, _, _, _, _ = env.step(np.array([0] * env.action_space.shape[0]))
         env.reset()
-        second_response, _, _, _ = env.step(np.array([0] * env.action_space.shape[0]))
+        second_response, _, _, _, _ = env.step(np.array([0] * env.action_space.shape[0]))
 
         assert (first_response == second_response).all(), f"env.model should be reset after an environment reset"
 

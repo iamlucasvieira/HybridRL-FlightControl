@@ -1,13 +1,14 @@
 """Module that defines the IDHP agent, including the actor and the critic."""
-from typing import Type, List
+from typing import Type, List, Optional
 
-import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
 
 from helpers.torch_helpers import mlp, BaseNetwork
+from agents.base_policy import BasePolicy
 
 
 class BaseNetworkIDHP(BaseNetwork):
@@ -101,22 +102,27 @@ class Critic(BaseNetworkIDHP):
         return critic_t - (dr1_ds1 + gamma * critic_t1) @ (F_t_1 + G_t_1 @ obs_grad[:, :-1])
 
 
-class IDHPPolicy(nn.Module):
+class IDHPPolicy(BasePolicy):
     """Class that implements the IDHP policy."""
 
     def __init__(self,
-                 observation_space: gym.spaces.Space,
-                 action_space: gym.spaces.Space,
-                 actor_kwargs={},
-                 critic_kwargs={}, ):
+                 observation_space: spaces.Space,
+                 action_space: spaces.Space,
+                 actor_kwargs: Optional[dict] = None,
+                 critic_kwargs: Optional[dict] = None, ):
         """Initialize the IDHP policy."""
-        super(IDHPPolicy, self).__init__()
-        self.actor = Actor(observation_space, action_space, **actor_kwargs)
-        self.critic = Critic(observation_space, action_space, **critic_kwargs)
+        self.actor_kwargs = {} if actor_kwargs is None else actor_kwargs
+        self.critic_kwargs = {} if critic_kwargs is None else critic_kwargs
+        super(IDHPPolicy, self).__init__(observation_space, action_space)
 
-    def predict(self, observation, state=None, episode_start=None, deterministic=None):
+    def _setup_policy(self):
+        """Set up the policy."""
+        self.actor = Actor(self.observation_space, self.action_space, **self.actor_kwargs)
+        self.critic = Critic(self.observation_space, self.action_space, **self.critic_kwargs)
+
+    def predict(self, observation, deterministic: bool = True):
         """Predict the action."""
-        return self.actor(observation), observation
+        return self.actor(observation)
 
 
 def scale_action(action: th.tensor, action_space) -> np.ndarray:

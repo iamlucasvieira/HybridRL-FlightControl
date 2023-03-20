@@ -8,7 +8,6 @@ from helpers.config_auto import get_auto
 
 class ConfigIDHPArgs(BaseModel):
     """Arguments for IDHP object."""
-    policy: Optional[str] = "default"
     env: Optional[str] = get_auto("env")
 
     class Config:

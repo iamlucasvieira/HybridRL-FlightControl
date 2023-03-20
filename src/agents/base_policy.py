@@ -10,8 +10,8 @@ class BasePolicy(nn.Module, ABC):
     """Base policy class."""
 
     def __init__(self,
-                 observation_space: spaces.Box,
-                 action_space: spaces.Box,
+                 observation_space: spaces.Space,
+                 action_space: spaces.Space,
                  _init_setup_policy: bool = True):
         """Initialize policy.
 

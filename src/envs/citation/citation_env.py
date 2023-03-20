@@ -49,7 +49,7 @@ class CitationEnv(BaseEnv):
 
     def state_transition(self, action):
         """The state transition function of the environment."""
-        states = self.model.step(action)
+        states = self.model.step(action.flatten())
         self._states.append(states.reshape(-1, 1))
         return states
 

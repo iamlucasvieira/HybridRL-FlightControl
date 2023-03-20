@@ -4,7 +4,7 @@ import pytest
 
 from agents.sac.sac import SAC
 from agents.sac.policy import SACPolicy
-from agents.sac.buffer import ReplayBuffer, Transition
+from agents.buffer import ReplayBuffer, Transition
 from envs.citation.citation_env import CitationEnv
 from envs.lti_citation.lti_env import LTIEnv
 import torch as th

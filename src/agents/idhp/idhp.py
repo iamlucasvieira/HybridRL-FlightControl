@@ -10,20 +10,19 @@ from agents.idhp.policy import IDHPPolicy
 from envs import BaseEnv
 # from helpers.callbacks import OnlineCallback
 from agents.base_agent import BaseAgent
+from agents.base_callback import ListCallback
 
 
 class IDHP(BaseAgent):
     """Class that implements the IDHP algorithm."""
 
-    policy_aliases = {'default': IDHPPolicy}
-
     def __init__(self,
-                 policy: str,
-                 env: Type[BaseEnv],
+                 env: BaseEnv,
                  discount_factor: float = 0.6,
                  discount_factor_model: float = 0.8,
                  verbose: int = 1,
-                 tensorboard_log: str = None,
+                 log_dir: Optional[str] = None,
+                 save_dir: Optional[str] = None,
                  seed: int = None,
                  learning_rate: float = 0.08,
                  actor_kwargs: Optional[dict] = None,
@@ -37,7 +36,8 @@ class IDHP(BaseAgent):
             discount_factor (float): Discount factor.
             discount_factor_model (float): Discount factor for incremental model.
             verbose (int): Verbosity level.
-            tensorboard_log (str): Path to tensorboard log.
+            log_dir (str): Directory to save logs.
+            save_dir (str): Directory to save models.
             seed (int): Seed for random number generator.
             beta_actor (float): Actor regularization parameter.
             learning_rate (float): Critic regularization parameter.
@@ -46,55 +46,42 @@ class IDHP(BaseAgent):
         # Make sure environment has the right observation and reward functions for IDHP
         env = self._setup_env(env)
 
-        super(IDHP, self).__init__(policy,
-                                   env,
-                                   learning_rate,
-                                   verbose=verbose,
-                                   tensorboard_log=tensorboard_log,
-                                   seed=seed)
-
-        self.gamma = discount_factor
-
-        # Initialize policy kwargs
+        # Create the policy kwargs
         actor_kwargs = {} if actor_kwargs is None else actor_kwargs
         critic_kwargs = {} if critic_kwargs is None else critic_kwargs
         default_policy_kwargs = {"learning_rate": learning_rate}
-        self.actor_kwargs = actor_kwargs | default_policy_kwargs
-        self.critic_kwargs = critic_kwargs | default_policy_kwargs
+        actor_kwargs = actor_kwargs | default_policy_kwargs
+        critic_kwargs = critic_kwargs | default_policy_kwargs
+        policy_kwargs = {"actor_kwargs": actor_kwargs, "critic_kwargs": critic_kwargs}
 
-        # Initialize model kwargs
-        self.model_kwargs = {
-            "gamma": discount_factor_model,
-        }
+        super(IDHP, self).__init__(IDHPPolicy,
+                                   env,
+                                   verbose=verbose,
+                                   log_dir=log_dir,
+                                   save_dir=save_dir,
+                                   seed=seed,
+                                   policy_kwargs=policy_kwargs, )
 
-        self.policy = None
+        self.gamma = discount_factor
 
-        self._setup_model()
+        # Initialize model
+        self.model = IncrementalCitation(self.env, gamma=discount_factor_model)
 
         self.learning_data = IDHPLearningData([0],
                                               [0], )
 
         self.log_interval = None
 
+    def setup_model(self):
+        """Setup model."""
+        pass
+
     @staticmethod
-    def _setup_env(env: Type[BaseEnv]) -> Type[BaseEnv]:
+    def _setup_env(env: BaseEnv) -> BaseEnv:
         """Adds the required reward and observation fucntion to env."""
-        if isinstance(env, DummyVecEnv):
-            env = env.envs[0]
         env.set_reward_function('sq_error')
         env.set_observation_function('states + ref')
-
         return env
-
-    def _setup_model(self) -> None:
-        """Setup the model."""
-        self.set_random_seed(self.seed)
-        self.policy = self.policy_class(self.observation_space,
-                                        self.action_space,
-                                        actor_kwargs=self.actor_kwargs,
-                                        critic_kwargs=self.critic_kwargs)
-
-        self.model = IncrementalCitation(self._env, **self.model_kwargs)
 
     @property
     def actor(self) -> th.nn.Module:
@@ -106,36 +93,23 @@ class IDHP(BaseAgent):
         """Get critic."""
         return self.policy.critic
 
-    def learn(
+    def _learn(
             self,
-            total_timesteps: int,
-            callback = None,
-            log_interval: int = 4,
-            tb_log_name: str = "run",
-            reset_num_timesteps: bool = True,
-            progress_bar: bool = False,
+            total_steps: int,
+            callback: ListCallback,
+            log_interval: int,
     ):
-        self.log_interval = log_interval
-        online_callback = OnlineCallback()
-        callback = online_callback if callback is None else callback + [online_callback]
+        """Learn the policy."""
+        obs_t, _ = self.env.reset()
+        obs_t = th.tensor(np.array([obs_t]), requires_grad=True, dtype=th.float32)
 
-        total_timesteps, callback = self._setup_learn(
-            total_timesteps,
-            callback,
-            reset_num_timesteps,
-            tb_log_name,
-            progress_bar, )
-
-        callback.on_training_start(locals(), globals())
-        obs_t = th.tensor(np.array([self._env.reset()]), requires_grad=True, dtype=th.float32)
-
-        while self.num_timesteps < total_timesteps:
+        while self.num_steps < total_steps:
             ###############################################
             # Act and collect state transition and reward #
             ###############################################
 
             # Increment timestep
-            self.num_timesteps += 1
+            self.num_steps += 1
 
             # Sample and scale action
             action = self.actor(obs_t)
@@ -153,22 +127,23 @@ class IDHP(BaseAgent):
 
             with th.no_grad():
                 # Step environment
-                obs_t1, rew_t1, done, info = self.env.step(action.detach().numpy())
+
+                obs_t1, rew_t1, terminated, truncated, info = self.get_rollout(action.detach().numpy(),
+                                                                               obs_t.detach().numpy(), callback)
+
+                done = terminated or truncated
 
                 if done:
-                    print('Episode done', self.num_timesteps)
+                    self.print(f"Episode done with total steps {self.num_steps}")
                     break
                 callback.on_step()
 
-                # Retrieve reward and episode length if using Monitor wrapper
-                self._update_info_buffer(info, done)
-
                 # Convert to tensors
                 obs_t1 = th.tensor(obs_t1, requires_grad=True, dtype=th.float32)
-                error_t1 = th.tensor(self._env.error[-1], dtype=th.float32)
+                error_t1 = th.tensor(self.env.error[-1], dtype=th.float32)
 
                 # Get the reward gradient with respect to the state at time t+1
-                dr1_ds1 = - 2 * error_t1 * self._env.tracked_state_mask
+                dr1_ds1 = - 2 * error_t1 * self.env.tracked_state_mask
 
                 critic_t1 = self.critic(obs_t1)
 
@@ -198,7 +173,7 @@ class IDHP(BaseAgent):
             self.critic.optimizer.step()
 
             # Update incremental model
-            self.model.update(self._env)
+            self.model.update(self.env)
 
             ##########
             # Loging #
@@ -208,44 +183,18 @@ class IDHP(BaseAgent):
             loss_gradient_c_mean = loss_gradient_c.mean().detach().numpy()
             self.logger.record("train/actor_loss", loss_gradient_a_mean)
             self.logger.record("train/critic_loss", loss_gradient_c_mean)
-            self.logger.record("train/steps", self.num_timesteps)
 
             # Log to be used in wandb
             self.learning_data.loss_a.append(loss_gradient_a_mean.item())
             self.learning_data.loss_c.append(loss_gradient_c_mean.item())
 
-            if log_interval is not None and self.num_timesteps % log_interval == 0:
-                self.logger.dump()
+            if log_interval is not None and self.num_steps % log_interval == 0:
+                self.dump_logs()
 
             # Update observation
             obs_t = obs_t1  # Update obs
 
-        callback.on_training_end()
-
         return self
-
-    @property
-    def _env(self):
-        """Return the environment from within the wrapper."""
-        return self.env.envs[0].env
-
-    def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
-        """
-        Get the name of the torch variables that will be saved with
-        PyTorch ``th.save``, ``th.load`` and ``state_dicts`` instead of the default
-        pickling strategy. This is to handle device placement correctly.
-
-        Names can point to specific variables under classes, e.g.
-        "policy.optimizer" would point to ``optimizer`` object of ``self.policy``
-        if this object.
-
-        :return:
-            List of Torch variables whose state dicts to save (e.g. th.nn.Modules),
-            and list of other Torch variables to store with ``th.save``.
-        """
-        state_dicts = ["policy.actor", "policy.critic"]
-
-        return state_dicts, []
 
 
 @dataclass

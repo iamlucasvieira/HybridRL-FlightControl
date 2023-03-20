@@ -129,14 +129,14 @@ class BaseEnv(gym.Env, ABC):
         self.error.append(e)
         self.sq_error.append(e_2)
 
-        done = False
-
+        terminated = False
+        truncated = False
         reward = self.get_reward(self)
 
-        reward, done, info = self._check_constraints(reward, done, info)
+        reward, terminated, info = self._check_constraints(reward, terminated, info)
 
         if self.current_time + self.dt > self.episode_length:
-            done = True
+            terminated = True
             info = {"message": f"Episode length exceeded: {self.current_time} = {self.episode_length}"}
 
         # Make sure reward is not an array
@@ -145,13 +145,13 @@ class BaseEnv(gym.Env, ABC):
 
         observation = self.get_obs(self)
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def reset(self):
         self.initialize()
         self._reset()
         observation = self.get_obs(self)
-        return observation  # reward, done, info can't be included
+        return observation, {}
 
     def initialize(self):
         """Initializes the environment."""
@@ -189,4 +189,3 @@ class BaseEnv(gym.Env, ABC):
     def set_observation_function(self, observation_type: str) -> None:
         self.get_obs = get_observation(observation_type)
         self.observation_space = self._observation_space()
-

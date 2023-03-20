@@ -28,9 +28,8 @@ class TestIDHPPolicy:
     def test_predict(self, env, policy):
         """Test the IDHP policy."""
         env = env()
-        obs = env.reset()
-        action, obs_ = policy.predict(obs)
-        assert np.alltrue(obs == obs_)
+        obs, _ = env.reset()
+        action = policy.predict(obs)
         assert action.shape == env.action_space.shape
 
     def test_actor_kwargs(self, env):
@@ -65,7 +64,7 @@ class TestActor:
         """Test the actor network."""
         env = env()
         actor = Actor(env.observation_space, env.action_space)
-        obs = env.reset()
+        obs, _ = env.reset()
         action = actor(obs)
         assert action.shape == env.action_space.shape
 
@@ -99,7 +98,7 @@ class TestCritic:
         """Test the critic network forward pass."""
         env = env()
         critic = Critic(env.observation_space, env.action_space)
-        obs = env.reset()
+        obs, _ = env.reset()
         value = critic(obs)
         assert value.shape == (env.observation_space.shape[0] - 1,)
 
