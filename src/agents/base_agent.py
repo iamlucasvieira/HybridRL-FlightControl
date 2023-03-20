@@ -50,6 +50,7 @@ class BaseAgent(ABC):
         self.run_name = None
         self.episode_buffer = None
         self.policy = policy(self.observation_space, self.action_space, **self.policy_kwargs)
+        self.log_interval = None
 
         # Setup learn variables
         self.total_steps = None
@@ -100,7 +101,7 @@ class BaseAgent(ABC):
 
         self.episode_buffer.push(rollout)
         self.logger.record("rollout/episode_reward", reward)
-        return obs, reward, terminated, truncated, info
+        return obs_tp1, reward, terminated, truncated, info
 
     def _setup_learn(self,
                      total_steps: int,
@@ -149,6 +150,7 @@ class BaseAgent(ABC):
             log_interval: Log interval.
         """
         # Set up learn
+        self.log_interval = log_interval
         callback = self._setup_learn(total_steps, run_name, callback=callback)
         callback.on_training_start(locals(), globals())
 
