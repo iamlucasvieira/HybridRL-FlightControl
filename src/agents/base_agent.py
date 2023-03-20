@@ -5,7 +5,6 @@ import random
 import time
 from abc import ABC
 from abc import abstractmethod
-from typing import TYPE_CHECKING
 from typing import Any
 from typing import List
 from typing import Optional

@@ -81,10 +81,10 @@ class OnlineCallback(BaseCallback):
             self.agent.actor.state_dict()["ff.0.weight"].flatten()[:3].numpy()
         )
         wandb.log(
-            {f"actor/loss": self.agent.learning_data.loss_a[-1], "train/step": step}
+            {"actor/loss": self.agent.learning_data.loss_a[-1], "train/step": step}
         )
         wandb.log(
-            {f"actor/w_{idx}": i for idx, i in enumerate(actor_weights)}
+            {"actor/w_{idx}": i for idx, i in enumerate(actor_weights)}
             | {"train/step": step}
         )
 
@@ -93,10 +93,10 @@ class OnlineCallback(BaseCallback):
             self.agent.critic.state_dict()["ff.0.weight"].flatten()[:3].numpy()
         )
         wandb.log(
-            {f"critic/loss": self.agent.learning_data.loss_c[-1], "train/step": step}
+            {"critic/loss": self.agent.learning_data.loss_c[-1], "train/step": step}
         )
         wandb.log(
-            {f"critic/w_{idx}": i for idx, i in enumerate(critic_weights)}
+            {"critic/w_{idx}": i for idx, i in enumerate(critic_weights)}
             | {"train/step": step}
         )
         return True
@@ -106,7 +106,7 @@ class OnlineCallback(BaseCallback):
         This event is triggered before exiting the `learn()` method.
         """
         if wandb.run is not None:
-            wandb.log({f"mean_error": np.mean(self.env.sq_error)})
+            wandb.log({"mean_error": np.mean(self.env.sq_error)})
         return True
 
 
