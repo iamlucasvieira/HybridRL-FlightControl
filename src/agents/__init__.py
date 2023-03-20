@@ -7,3 +7,4 @@ from agents.callbacks import AVAILABLE_CALLBACKS
 from agents.sac.sac import SAC
 from agents.idhp.idhp import IDHP
 from agents.idhp_sac.idhp_sac import IDHPSAC
+from agents.dsac.dsac import DSAC
