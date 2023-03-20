@@ -1,7 +1,7 @@
 """Creates a replay buffer for the SAC algorithm."""
-import numpy as np
 from collections import namedtuple, deque
 import random
+from typing import Optional
 
 Transition = namedtuple('Transition', ('obs', 'action', 'reward', 'obs_', 'done'))
 
@@ -47,8 +47,9 @@ class ReplayBuffer(deque):
         """Check if the replay buffer has enough samples to sample from."""
         return len(self) >= batch_size
 
-    def sample_buffer(self, batch_size):
+    def sample_buffer(self, batch_size: Optional[int] = None):
         """Sample a batch of transitions from the replay buffer."""
+        batch_size = batch_size if batch_size is not None else len(self)
         if self.empty():
             raise ValueError('Cannot sample from an empty replay buffer.')
         elif batch_size == 0:

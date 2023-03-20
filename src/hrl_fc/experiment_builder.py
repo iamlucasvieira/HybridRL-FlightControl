@@ -74,7 +74,8 @@ class Sweep:
         # Agent args and kwargs
         replace("env", self.env)
         replace("verbose", self.config.verbose)
-        replace("tensorboard_log", self.LOGS_PATH)
+        replace("log_dir", self.LOGS_PATH)
+        replace("save_dir", self.MODELS_PATH)
         replace("seed", self.config.seed)
 
         # Learn kwargs
@@ -126,7 +127,7 @@ class Sweep:
 
     def load_model(self, model_name):
         """Load a model file."""
-        model = self.agent.load(self.MODELS_PATH / model_name / "model.zip")
+        model = self.agent.load(self.MODELS_PATH / model_name)
         self.agent = model
 
     def save_model(self, model_name=None):

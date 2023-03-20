@@ -20,7 +20,8 @@ class ConfigIDHPKwargs(BaseModel):
     discount_factor: Optional[float | List[float]] = 0.6
     discount_factor_model: Optional[float | List[float]] = 0.8
     verbose: Optional[int | List[int]] = get_auto("verbose")
-    tensorboard_log: Optional[str | List[str]] = get_auto("tensorboard_log")
+    log_dir: Optional[str | List[str]] = get_auto("log_dir")
+    save_dir: Optional[str | List[str]] = get_auto("save_dir")
     seed: Optional[int | List[int]] = get_auto("seed")
     learning_rate: Optional[float | List[float]] = 0.08
     hidden_size: Optional[int | List[int]] = 10

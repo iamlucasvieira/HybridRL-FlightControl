@@ -19,7 +19,8 @@ class ConfigSACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
     learning_rate: Optional[float | List[float]] = 3e-4
     policy_kwargs: Optional[dict | List[dict]] = None
-    tensorboard_log: Optional[str | List[str]] = get_auto("tensorboard_log")
+    log_dir: Optional[str | List[str]] = get_auto("log_dir")
+    save_dir: Optional[str | List[str]] = get_auto("save_dir")
     verbose: Optional[int | List[int]] = get_auto("verbose")
     seed: Optional[int | List[int]] = get_auto("seed")
     _init_setup_model: Optional[bool | List[bool]] = True

@@ -7,7 +7,7 @@ import gymnasium as gym
 import numpy as np
 import torch as th
 
-from agents.sac.buffer import ReplayBuffer, Transition
+from agents.buffer import ReplayBuffer, Transition
 from agents.sac.policy import SACPolicy
 from helpers.torch_helpers import get_device, to_tensor, freeze, unfreeze
 from agents.base_agent import BaseAgent
@@ -24,7 +24,8 @@ class SAC(BaseAgent):
                  env: Union[gym.Env, str],
                  learning_rate: float = 3e-4,
                  policy_kwargs: Optional[dict] = None,
-                 tensorboard_log: Optional[str] = None,
+                 log_dir: Optional[str] = None,
+                 save_dir: Optional[str] = None,
                  verbose: int = 1,
                  seed: Optional[int] = None,
                  _init_setup_model: bool = True,
@@ -45,7 +46,8 @@ class SAC(BaseAgent):
             policy: Policy.
             learning_rate: Learning rate.
             policy_kwargs: Policy keyword arguments.
-            tensorboard_log: Tensorboard log directory.
+            log_dir: Log directory.
+            save_dir: Save directory.
             verbose: Verbosity.
             seed: Random seed.
             _init_setup_model: Whether to initialize the model.
@@ -78,7 +80,8 @@ class SAC(BaseAgent):
         super(SAC, self).__init__(policy,
                                   env,
                                   policy_kwargs=policy_kwargs,
-                                  tensorboard_log=tensorboard_log,
+                                  log_dir=log_dir,
+                                  save_dir=save_dir,
                                   verbose=verbose,
                                   seed=seed,
                                   device=device, )
@@ -90,8 +93,6 @@ class SAC(BaseAgent):
             log_interval: int,
     ) -> None:
         """Learn from the environment."""
-        callback.on_rollout_start()
-
         env = self.env
         obs, _ = env.reset()
 
@@ -104,8 +105,9 @@ class SAC(BaseAgent):
             else:
                 action = self.policy.get_action(obs)
 
-            obs_tp1, reward, terminated, truncated, info = env.step(action)
+            obs_tp1, reward, terminated, truncated, info = self.get_rollout(action, obs, callback)
             done = terminated or truncated
+
             self.replay_buffer.push(Transition(obs=obs,
                                                action=action,
                                                reward=reward,
@@ -119,17 +121,14 @@ class SAC(BaseAgent):
 
                 if self._episode_num % log_interval == 0:
                     # self._dump_logs()
-                    self.logger.dump(step=self.num_steps)
+                    self.dump_logs()
             else:
                 obs = obs_tp1
 
             if step >= self.learning_starts:
                 for gradient_step in range(self.gradient_steps):
-                    callback.on_step()
                     self.update()
                     self.update_target_networks()
-
-        callback.on_training_end()
 
     def update(self) -> None:
         """Update the policy."""
@@ -199,27 +198,6 @@ class SAC(BaseAgent):
             self.log_ent_coef = th.log(th.ones(1) * self.entropy_coefficient).requires_grad_(True)
             self.ent_coef_optimizer = th.optim.Adam([self.log_ent_coef], lr=self.learning_rate)
             self.target_entropy = -np.prod(self.action_space.shape).astype(np.float32)
-
-    def _dump_logs(self) -> None:
-        """
-        Write log.
-        """
-        time_elapsed = max((time.time_ns() - self.start_time) / 1e9, sys.float_info.epsilon)
-        fps = int((self.num_timesteps - self._num_timesteps_at_start) / time_elapsed)
-        self.logger.record("time/episodes", self._episode_num, exclude="tensorboard")
-        if len(self.ep_info_buffer) > 0 and len(self.ep_info_buffer[0]) > 0:
-            self.logger.record("rollout/ep_rew_mean", safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]))
-            self.logger.record("rollout/ep_len_mean", safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer]))
-        self.logger.record("time/fps", fps)
-        self.logger.record("time/time_elapsed", int(time_elapsed), exclude="tensorboard")
-        self.logger.record("time/total_timesteps", self.num_timesteps, exclude="tensorboard")
-        if self.use_sde:
-            self.logger.record("train/std", (self.actor.get_std()).mean().item())
-
-        if len(self.ep_success_buffer) > 0:
-            self.logger.record("rollout/success_rate", safe_mean(self.ep_success_buffer))
-        # Pass the number of timesteps for tensorboard
-        self.logger.dump(step=self.num_timesteps)
 
     def get_critic_loss(self, transition: Transition) -> th.Tensor:
         """Get the critic loss.

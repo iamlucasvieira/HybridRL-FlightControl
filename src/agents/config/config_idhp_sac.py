@@ -23,7 +23,8 @@ class ConfigIDHPSACKwargs(BaseModel):
     buffer_size: Optional[int | List[int]] = 1_000_000
     batch_size: Optional[int | List[int]] = 256
     policy_kwargs: Optional[dict | List[dict]] = None
-    tensorboard_log: Optional[str | List[str]] = get_auto("tensorboard_log")
+    log_dir: Optional[str | List[str]] = get_auto("log_dir")
+    save_dir: Optional[str | List[str]] = get_auto("save_dir")
     verbose: Optional[int | List[int]] = get_auto("verbose")
     seed: Optional[int | List[int]] = get_auto("seed")
     device: Optional[str | List[str]] = None

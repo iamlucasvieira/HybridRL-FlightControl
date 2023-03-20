@@ -39,6 +39,22 @@ class Logger:
         table = Table(title=f"Step {steps}")
         table.add_column("Key")
         table.add_column("Value")
-        for key, value in self.data.items():
-            table.add_row(key, str(value))
+
+        data_group = {}
+        for key in sorted(self.data.keys()):
+            if "/" in key:
+                category_name, value = key.split("/")
+            else:
+                category_name = "Misc"
+                value = key
+
+            if category_name not in data_group:
+                data_group[category_name] = {}
+            else:
+                data_group[category_name][value] = self.data[key]
+
+        for key in sorted(data_group.keys()):
+            table.add_row(f"[bold]{key}[/bold]", "")
+            for value in sorted(data_group[key].keys()):
+                table.add_row(value, str(data_group[key][value]))
         console.print(table)
