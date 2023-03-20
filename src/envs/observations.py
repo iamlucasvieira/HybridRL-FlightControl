@@ -19,38 +19,38 @@ class Observations:
         return np.hstack((
             self.states[-1],
             self.reference[-1],
-            self.sq_error[-1])).astype(np.float32)
+            self.sq_error[-1])).astype(np.float32).flatten()
 
     @staticmethod
     def error(self):
         """Returns the squared error."""
-        return self.sq_error[-1].astype(np.float32)
+        return self.sq_error[-1].astype(np.float32).flatten()
 
     @staticmethod
     def ref_state(self):
         """Returns the reference and the value of the tracked state"""
         return np.hstack((
             self.reference[-1],
-            self.track[-1])).astype(np.float32)
+            self.track[-1])).astype(np.float32).flatten()
 
     @staticmethod
     def state_error(self):
         """Returns the tracked state and the tracking error"""
         return np.hstack((
             self.track[-1],
-            self.sq_error[-1])).astype(np.float32)
+            self.sq_error[-1])).astype(np.float32).flatten()
 
     @staticmethod
     def states(self):
         """Returns the all states"""
-        return self.states[-1].astype(np.float32)
+        return self.states[-1].astype(np.float32).flatten()
 
     @staticmethod
     def states_ref(self):
         """Returns the all states and the reference state"""
         return np.hstack((
             self.states[-1],
-            self.reference[-1])).astype(np.float32)
+            self.reference[-1])).astype(np.float32).flatten()
 
 
 observations_dict = {

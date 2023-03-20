@@ -16,6 +16,7 @@ import pickle
 from agents.buffer import ReplayBuffer, Transition
 from envs.base_env import BaseEnv
 
+
 class BaseAgent(ABC):
     """Base agent class."""
 
@@ -135,12 +136,12 @@ class BaseAgent(ABC):
         return callback
 
     @abstractmethod
-    def _learn(self, total_steps: int, callback: ListCallback, log_interval: int) -> None:
+    def _learn(self, total_steps: int, callback: ListCallback, log_interval: int, **kwargs) -> None:
         """Learn method."""
         pass
 
-    def learn(self, total_steps: int, run_name: str = "run", callback: Optional[List[BaseCallback]] = None,
-              log_interval: int = 4) -> None:
+    def learn(self, total_steps: int = 1_000, run_name: str = "run", callback: Optional[List[BaseCallback]] = None,
+              log_interval: int = 4, **kwargs) -> None:
         """Learn method.
 
         Args:
@@ -155,7 +156,7 @@ class BaseAgent(ABC):
         callback.on_training_start(locals(), globals())
 
         # Run user defined learn
-        self._learn(total_steps, callback, log_interval)
+        self._learn(total_steps, callback, log_interval, **kwargs)
 
         callback.on_training_end()
 

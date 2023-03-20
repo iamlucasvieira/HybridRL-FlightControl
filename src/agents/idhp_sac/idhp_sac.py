@@ -5,25 +5,25 @@ from typing import List, Tuple, Optional
 from agents.base_agent import BaseAgent
 from agents import IDHP, SAC
 from agents.idhp_sac.policy import IDHPSACPolicy, IDHPSACActor
+from agents.base_callback import ListCallback
 from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
+from helpers.callbacks import TensorboardCallback, OnlineCallback
 
 
 class IDHPSAC(BaseAgent):
     """Class that implements the hybrid IDHP-SAC agent."""
 
-    policy_aliases = {"default": IDHPSACPolicy}
-
     def __init__(self,
-                 policy: str,
                  env: str,
                  learning_rate: float = 3e-4,
                  learning_starts: int = 100,
                  buffer_size: int = 1_000_000,
                  batch_size: int = 256,
                  policy_kwargs: dict = None,
-                 tensorboard_log: str = None,
+                 log_dir: Optional[str] = None,
+                 save_dir: Optional[str] = None,
                  verbose: int = 1,
                  seed: int = 1,
                  device: str = None,
@@ -44,18 +44,19 @@ class IDHPSAC(BaseAgent):
 
         actor_kwargs = {"hidden_layers": idhp_hidden_layers}
         critic_kwargs = {"hidden_layers": idhp_hidden_layers}
+
         # Make sure environment follows IDHP requirements
         env = IDHP._setup_env(env)
 
         # Make copies of env for SAC and IDHP
         env_sac, env_idhp = copy(env), copy(env)
-        self.idhp = IDHP("default", env_idhp,
+        self.idhp = IDHP(env_idhp,
                          learning_rate=learning_rate,
                          verbose=verbose,
                          actor_kwargs=actor_kwargs,
                          critic_kwargs=critic_kwargs, )
 
-        self.sac = SAC("default", env_sac,
+        self.sac = SAC(env_sac,
                        learning_rate=learning_rate,
                        verbose=verbose,
                        learning_starts=learning_starts,
@@ -63,17 +64,21 @@ class IDHPSAC(BaseAgent):
                        batch_size=batch_size,
                        policy_kwargs={"hidden_layers": sac_hidden_layers}, )
 
-        super(IDHPSAC, self).__init__(policy,
+        super(IDHPSAC, self).__init__(IDHPSACPolicy,
                                       env,
-                                      learning_rate=learning_rate,
+                                      log_dir=log_dir,
+                                      save_dir=save_dir,
                                       policy_kwargs=policy_kwargs,
-                                      tensorboard_log=tensorboard_log,
                                       verbose=verbose,
                                       seed=seed,
                                       device=device, )
 
         if _init_setup_model:
             self._setup_model()
+
+    def setup_model(self):
+        """Set up the model."""
+        pass
 
     def _setup_idhp(self):
         """Set up the IDHP model."""
@@ -84,20 +89,14 @@ class IDHPSAC(BaseAgent):
         # Update the IDHP layers
         self.idhp.policy.actor = IDHPSACActor(idhp_actor, sac_actor)
 
-    def _setup_model(self):
-        """Set up the model."""
-        pass
-
-    def learn(self,
-              sac_timesteps: int = 1_000_000,
-              idhp_timesteps: int = 1_000_000,
-              sac_model: Optional[str] = None,
-              callback = None,
-              log_interval: int = 4,
-              tb_log_name: str = "run",
-              reset_num_timesteps: bool = True,
-              progress_bar: bool = False,
-              ) -> None:
+    def _learn(self,
+               total_steps: int,
+               callback: ListCallback,
+               log_interval: int,
+               sac_timesteps: int = 1_000_000,
+               idhp_timesteps: int = 1_000_000,
+               sac_model: Optional[str] = None,
+               ) -> None:
         """Learn the agent."""
 
         if sac_model is not None:
@@ -105,46 +104,21 @@ class IDHPSAC(BaseAgent):
             self.sac = load_agent(sac_model).sac
         else:
             self.print("Learning SAC")
-            self.sac.learn(total_timesteps=sac_timesteps,
+            self.sac.learn(sac_timesteps,
+                           run_name="SAC",
                            callback=[TensorboardCallback(verbose=self.verbose)],
-                           log_interval=log_interval,
-                           tb_log_name=tb_log_name,
-                           reset_num_timesteps=reset_num_timesteps,
-                           progress_bar=progress_bar)
+                           log_interval=log_interval)
 
         # Evaluae SAC
         self.print("Evaluating SAC")
-        evaluate(self.sac, self.sac._env)
+        evaluate(self.sac, self.sac.env)
 
         self.print("Tranfering learning from SAC -> IDHP")
         self._setup_idhp()
 
         self.print("Learning IDHP")
-        self.idhp.learn(total_timesteps=idhp_timesteps,
+        self.idhp.learn(idhp_timesteps,
+                        run_name="IDHP",
                         callback=[OnlineCallback(verbose=self.verbose), TensorboardCallback(verbose=self.verbose)],
-                        log_interval=log_interval,
-                        tb_log_name=tb_log_name,
-                        reset_num_timesteps=reset_num_timesteps,
-                        progress_bar=progress_bar)
+                        log_interval=log_interval, )
         self.print("done 🎉")
-
-    @property
-    def _env(self):
-        """Return the environment."""
-        return self.env
-
-    def print(self, message):
-        """Prints message based on verbosity."""
-        if self.verbose > 0:
-            print(message)
-
-    def _excluded_save_params(self) -> List[str]:
-        default_excluded_params = super()._excluded_save_params()
-        if 'env' in default_excluded_params:
-            default_excluded_params.remove('env')
-
-        return default_excluded_params + ["idhp", "sac"]
-
-    def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
-        """Return the parameters to save."""
-        return ["sac.policy"], []

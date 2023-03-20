@@ -3,6 +3,7 @@ from gymnasium import spaces
 
 from abc import ABC
 import numpy as np
+from typing import Optional
 
 from envs.reference_signals import get_reference_signal
 from envs.observations import get_observation
@@ -147,7 +148,9 @@ class BaseEnv(gym.Env, ABC):
 
         return observation, reward, terminated, truncated, info
 
-    def reset(self):
+    def reset(self, seed: Optional[int] = None):
+        """Resets the environment."""
+        super().reset(seed=seed)
         self.initialize()
         self._reset()
         observation = self.get_obs(self)

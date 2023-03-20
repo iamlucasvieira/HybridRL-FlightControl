@@ -70,8 +70,6 @@ class IDHP(BaseAgent):
         self.learning_data = IDHPLearningData([0],
                                               [0], )
 
-        self.log_interval = None
-
     def setup_model(self):
         """Setup model."""
         pass
@@ -101,7 +99,7 @@ class IDHP(BaseAgent):
     ):
         """Learn the policy."""
         obs_t, _ = self.env.reset()
-        obs_t = th.tensor(np.array([obs_t]), requires_grad=True, dtype=th.float32)
+        obs_t = th.tensor(obs_t, requires_grad=True, dtype=th.float32)
 
         while self.num_steps < total_steps:
             ###############################################
@@ -119,11 +117,11 @@ class IDHP(BaseAgent):
             # Get losses #
             ##############
             da_ds = []
-            for i in range(action.shape[1]):
-                grad_i = th.autograd.grad(action[:, i], obs_t, grad_outputs=th.ones_like(action[:, i]),
+            for i in range(action.shape[0]):
+                grad_i = th.autograd.grad(action[i], obs_t, grad_outputs=th.ones_like(action[i]),
                                           retain_graph=True)
                 da_ds.append(grad_i[0])
-            da_ds = th.cat(da_ds)
+            da_ds = th.stack(da_ds)
 
             with th.no_grad():
                 # Step environment
@@ -134,7 +132,7 @@ class IDHP(BaseAgent):
                 done = terminated or truncated
 
                 if done:
-                    self.print(f"Episode done with total steps {self.num_steps}")
+                    self.print(f"Episode done with total steps {self.num_steps} '{info}'")
                     break
                 callback.on_step()
 

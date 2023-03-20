@@ -38,12 +38,16 @@ class ConfigIDHPSACKwargs(BaseModel):
 
 class ConfigIDHPSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
+    total_steps: Optional[int] = 1_000
     sac_steps: Optional[int] = 1_000
     idhp_steps: Optional[int] = 1_000
     sac_model: Optional[str] = None
     callback: Optional[list] = ["tensorboard"]
     log_interval: Optional[int] = 1
     run_name: Optional[str] = get_auto("run_name")
+
+    class Config:
+        extra = Extra.forbid
 
 
 class ConfigIDHPSAC(BaseModel):

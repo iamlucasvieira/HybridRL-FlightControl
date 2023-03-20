@@ -6,6 +6,8 @@ import torch.nn as nn
 from agents.idhp.policy import Actor as IDHPActor
 from agents.sac.policy import ActorNetwork as SACActor
 from helpers.torch_helpers import freeze, mlp
+from agents.base_policy import BasePolicy
+from gymnasium import spaces
 
 
 class IDHPSACActor(IDHPActor):
@@ -40,7 +42,16 @@ class IDHPSACActor(IDHPActor):
         return action
 
 
-class IDHPSACPolicy(nn.Module):
+class IDHPSACPolicy(BasePolicy):
 
-    def __init__(self):
+    def __init__(self, observation_space: spaces.Space, action_space: spaces.Space):
+        """Initialize the policy."""
+        super(IDHPSACPolicy, self).__init__(observation_space, action_space)
+
+    def _setup_policy(self):
+        """Setup the policy."""
+        pass
+
+    def predict(self, observation, deterministic: bool = True):
+        """Predict the action."""
         pass
