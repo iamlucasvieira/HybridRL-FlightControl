@@ -87,6 +87,7 @@ class SAC(BaseAgent):
             total_steps: int,
             callback: ListCallback,
             log_interval: int,
+            **kwargs,
     ) -> None:
         """Learn from the environment."""
         env = self.env
@@ -116,7 +117,6 @@ class SAC(BaseAgent):
                 self._episode_num += 1
 
                 if self._episode_num % log_interval == 0:
-                    # self._dump_logs()
                     self.dump_logs()
             else:
                 obs = obs_tp1

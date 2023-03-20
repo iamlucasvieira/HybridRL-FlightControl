@@ -6,13 +6,12 @@ import random
 
 import yaml
 
-from helpers.callbacks import AVAILABLE_CALLBACKS
 from helpers.config_auto import validate_auto
 from helpers.misc import get_name
 from helpers.paths import Path
 from helpers.wandb_helpers import evaluate
 from hrl_fc.experiment_config import ConfigExperiment
-from agents.base_agent import BaseAgent
+from agents import BaseAgent, AVAILABLE_CALLBACKS
 
 
 class Sweep:

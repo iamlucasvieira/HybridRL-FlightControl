@@ -9,7 +9,7 @@ from agents.base_callback import ListCallback
 from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
-from helpers.callbacks import TensorboardCallback, OnlineCallback
+from agents.callbacks import TensorboardCallback, OnlineCallback
 
 
 class IDHPSAC(BaseAgent):

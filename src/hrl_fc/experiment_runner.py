@@ -104,7 +104,7 @@ class Evaluator:
 
 
 def main():
-    Runner('exp_idhp_learning').run()
+    Runner('exp_sac_gym').run()
 
 
 if __name__ == "__main__":
