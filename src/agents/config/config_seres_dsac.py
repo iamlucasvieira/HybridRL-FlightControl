@@ -1,7 +1,9 @@
 """Module with Seres' DSAC configuration."""
-from typing import Optional, Literal
+from typing import Literal
+from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
+from pydantic import Extra
 
 from agents.base_agent import BaseAgent
 from agents.seres_dsac.seres_dsac_agent import DSAC

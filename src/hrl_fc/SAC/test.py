@@ -1,10 +1,11 @@
-import pybullet_envs
 import gym
 import numpy as np
-from sac_torch import Agent
+import pybullet_envs
 
 # from utils import plot_learning_curve
 from gym import wrappers
+from sac_torch import Agent
+
 
 if __name__ == "__main__":
     env = gym.make("InvertedPendulumBulletEnv-v0")

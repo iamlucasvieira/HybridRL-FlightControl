@@ -1,6 +1,8 @@
 import pytest
-from envs.config.gym_env import ConfigGymEnv, ConfigGymKwargs
 from pydantic import ValidationError
+
+from envs.config.gym_env import ConfigGymEnv
+from envs.config.gym_env import ConfigGymKwargs
 
 
 class TestConfigGymEnv:

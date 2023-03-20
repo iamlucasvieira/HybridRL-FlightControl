@@ -8,4 +8,4 @@ class DSACPolicy(BasePolicy):
 
     def __init__(self):
         """Initialize DSAC policy."""
-        super(DSACPolicy, self).__init__()
+        super().__init__()

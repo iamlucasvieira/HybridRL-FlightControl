@@ -1,6 +1,7 @@
-from helpers.paths import Path
-import wandb
 import pandas as pd
+import wandb
+
+from helpers.paths import Path
 
 
 def get_wandb_data(project_name):

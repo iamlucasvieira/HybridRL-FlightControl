@@ -1,8 +1,10 @@
 """Module that contains helper functions for PyTorch."""
 
 import pathlib as pl
-from abc import ABC, abstractmethod
-from typing import Union, Tuple
+from abc import ABC
+from abc import abstractmethod
+from typing import Tuple
+from typing import Union
 
 import numpy as np
 import torch as th
@@ -35,7 +37,7 @@ class BaseNetwork(nn.Module, ABC):
             chkpt_dir: Checkpoint directory.
 
         """
-        super(BaseNetwork, self).__init__()
+        super().__init__()
         if hidden_layers is None:
             hidden_layers = [256, 256]
 

@@ -1,6 +1,7 @@
+from dataclasses import dataclass
+
 import numpy as np
 from numpy.random import seed
-from dataclasses import dataclass
 
 
 class GridWorld:

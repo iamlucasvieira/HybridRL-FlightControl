@@ -1,12 +1,17 @@
 """Module that configures the LTI environment."""
-import gymnasium as gym
-from pydantic import BaseModel, validator, Extra
-from typing import Optional, List, Literal
+from typing import List
+from typing import Literal
+from typing import Optional
 
+import gymnasium as gym
+from pydantic import BaseModel
+from pydantic import Extra
+from pydantic import validator
+
+from envs.lti_citation.lti_env import LTIEnv
+from envs.observations import AVAILABLE_OBSERVATIONS
 from envs.reference_signals import AVAILABLE_REFERENCES
 from envs.rewards import AVAILABLE_REWARDS
-from envs.observations import AVAILABLE_OBSERVATIONS
-from envs.lti_citation.lti_env import LTIEnv
 
 
 class ConfigLTIKwargs(BaseModel):

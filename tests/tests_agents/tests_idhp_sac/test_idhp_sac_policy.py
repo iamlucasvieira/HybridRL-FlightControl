@@ -5,7 +5,8 @@ import torch as th
 from agents.idhp.policy import Actor as IDHPActor
 from agents.idhp_sac.policy import IDHPSACActor
 from agents.sac.policy import ActorNetwork as SACActor
-from envs import LTIEnv, CitationEnv
+from envs import CitationEnv
+from envs import LTIEnv
 
 
 @pytest.fixture

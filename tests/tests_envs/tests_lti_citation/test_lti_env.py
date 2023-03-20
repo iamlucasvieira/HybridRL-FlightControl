@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from envs.lti_citation.lti_env import LTIEnv
 
 

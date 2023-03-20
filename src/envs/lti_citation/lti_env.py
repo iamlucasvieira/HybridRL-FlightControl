@@ -1,8 +1,9 @@
 """Creates a gym environment for the aircraft model"""
-from envs.lti_citation.models.lti_model import Aircraft
-from envs.base_env import BaseEnv
-from gymnasium import spaces
 import numpy as np
+from gymnasium import spaces
+
+from envs.base_env import BaseEnv
+from envs.lti_citation.models.lti_model import Aircraft
 
 
 class LTIEnv(BaseEnv):
@@ -30,7 +31,7 @@ class LTIEnv(BaseEnv):
                 f"Tracked state {tracked_state} not in model states {self.aircraft.states}"
             )
 
-        super(LTIEnv, self).__init__(
+        super().__init__(
             dt=dt,
             episode_steps=episode_steps,
             reward_scale=reward_scale,

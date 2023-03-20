@@ -1,10 +1,12 @@
-from setuptools import find_packages, setup
+from setuptools import find_packages
+from setuptools import setup
+
 
 setup(
-    name='thesis_pilot',
+    name="thesis_pilot",
     packages=find_packages(),
-    version='0.1.0',
-    description='Preliminary work for my control systems with RL MSc thesis',
-    author='Lucas Vieira dos Santos',
-    license='MIT',
+    version="0.1.0",
+    description="Preliminary work for my control systems with RL MSc thesis",
+    author="Lucas Vieira dos Santos",
+    license="MIT",
 )

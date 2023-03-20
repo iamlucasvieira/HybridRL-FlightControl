@@ -1,9 +1,13 @@
-from pydantic import BaseModel, validator, Extra
 from typing import Optional
+
+from pydantic import BaseModel
+from pydantic import Extra
+from pydantic import validator
 
 
 class SymmetricDerivatives(BaseModel):
     """Symmetric derivatives."""
+
     o: Optional[float]
     u: float
     a: float
@@ -17,6 +21,7 @@ class SymmetricDerivatives(BaseModel):
 
 class AsymmetricDerivative(BaseModel):
     """Asymmetric derivatives."""
+
     b: float
     p: float
     r: float
@@ -29,6 +34,7 @@ class AsymmetricDerivative(BaseModel):
 
 class SymmetricData(BaseModel):
     """Data validation for the symmetric aircraft model."""
+
     c_bar: float
     mu_c: float
     ky_2: float
@@ -37,10 +43,10 @@ class SymmetricData(BaseModel):
     cz: SymmetricDerivatives
     cm: SymmetricDerivatives
 
-    @validator('cx', 'cz')
+    @validator("cx", "cz")
     def check_zero_derivative(cls, v: SymmetricDerivatives) -> SymmetricDerivatives:
         if v.o is None:
-            raise ValueError(f'A value for _o must be provided.')
+            raise ValueError(f"A value for _o must be provided.")
         return v
 
     class Config:
@@ -49,6 +55,7 @@ class SymmetricData(BaseModel):
 
 class AssymmetricData(BaseModel):
     """Data validation for the asymmetric aircraft model."""
+
     b: float
     mu_b: float
     kx_2: float
@@ -65,6 +72,7 @@ class AssymmetricData(BaseModel):
 
 class AircraftData(BaseModel):
     """Aircraft _data validation."""
+
     name: str
     v: float
     m: float
@@ -76,9 +84,9 @@ class AircraftData(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    @validator('asymmetric', always=True)
+    @validator("asymmetric", always=True)
     def check_type(cls, v: AsymmetricDerivative, values: dict) -> AsymmetricDerivative:
         """Required either symmetric or asymmetric variables"""
-        if not values.get('symmetric') and not v:
-            raise ValueError('Either symmetric or asymmetric must be provided.')
+        if not values.get("symmetric") and not v:
+            raise ValueError("Either symmetric or asymmetric must be provided.")
         return v

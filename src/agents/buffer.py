@@ -1,7 +1,9 @@
 """Creates a replay buffer for the SAC algorithm."""
 import random
-from collections import namedtuple, deque
+from collections import deque
+from collections import namedtuple
 from typing import Optional
+
 
 Transition = namedtuple("Transition", ("obs", "action", "reward", "obs_", "done"))
 
@@ -15,7 +17,7 @@ class ReplayBuffer(deque):
         args:
             buffer_size: Maximum size of the replay buffer.
         """
-        super(ReplayBuffer, self).__init__(maxlen=buffer_size)
+        super().__init__(maxlen=buffer_size)
 
     @property
     def len(self) -> int:
@@ -37,7 +39,7 @@ class ReplayBuffer(deque):
 
     def push(self, transition: tuple) -> None:
         """Append a new transition to the replay buffer."""
-        super(ReplayBuffer, self).append(Transition(*transition))
+        super().append(Transition(*transition))
 
     def append(self):
         """Raise an error if the user tries to append to the replay buffer."""

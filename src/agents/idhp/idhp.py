@@ -1,6 +1,7 @@
 """Module that implements the IDHP agent."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import torch as th
 
@@ -54,7 +55,7 @@ class IDHP(BaseAgent):
         critic_kwargs = critic_kwargs | default_policy_kwargs
         policy_kwargs = {"actor_kwargs": actor_kwargs, "critic_kwargs": critic_kwargs}
 
-        super(IDHP, self).__init__(
+        super().__init__(
             IDHPPolicy,
             env,
             verbose=verbose,

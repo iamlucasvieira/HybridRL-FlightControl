@@ -4,9 +4,12 @@ and a dictionary that maps these keys to DistortionFn callables.
 All distortion functions take a tau tensor and a xi scalar distortion parameter.
 """
 
+from typing import Callable
+from typing import Dict
+
 import numpy as np
 import torch
-from typing import Dict, Callable
+
 
 DistortionFn = Callable[[torch.Tensor, float], torch.Tensor]
 

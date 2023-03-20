@@ -1,6 +1,7 @@
 """Module that creates the SAC algorithm."""
 from copy import deepcopy
-from typing import Union, Optional
+from typing import Optional
+from typing import Union
 
 import gymnasium as gym
 import numpy as np
@@ -8,9 +9,13 @@ import torch as th
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
-from agents.buffer import ReplayBuffer, Transition
+from agents.buffer import ReplayBuffer
+from agents.buffer import Transition
 from agents.sac.policy import SACPolicy
-from helpers.torch_helpers import get_device, to_tensor, freeze, unfreeze
+from helpers.torch_helpers import freeze
+from helpers.torch_helpers import get_device
+from helpers.torch_helpers import to_tensor
+from helpers.torch_helpers import unfreeze
 
 
 class SAC(BaseAgent):
@@ -73,7 +78,7 @@ class SAC(BaseAgent):
         self.ent_coef_optimizer = None
         self.target_entropy = None
 
-        super(SAC, self).__init__(
+        super().__init__(
             SACPolicy,
             env,
             policy_kwargs=policy_kwargs,

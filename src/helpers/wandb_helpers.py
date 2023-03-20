@@ -1,6 +1,7 @@
 """Module that defines helper functions for wandb."""
-import wandb
 import torch
+import wandb
+
 from envs import BaseEnv
 
 

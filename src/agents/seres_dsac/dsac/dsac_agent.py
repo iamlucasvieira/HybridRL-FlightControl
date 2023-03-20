@@ -1,15 +1,22 @@
 from __future__ import annotations
+
 import os
+
 import numpy as np
 import torch
 import torch.nn as nn
-from torch import optim
 import torch.nn.functional as F
-from agents.seres_dsac.dsac.critic import ZNet
-from agents.seres_dsac.dsac.risk_distortions import DistortionFn, distortion_functions
+from torch import optim
+
 from agents.seres_dsac.base_agent import BaseAgent
+from agents.seres_dsac.dsac.critic import ZNet
+from agents.seres_dsac.dsac.risk_distortions import DistortionFn
+from agents.seres_dsac.dsac.risk_distortions import distortion_functions
+from agents.seres_dsac.experience_replay import Batch
+from agents.seres_dsac.experience_replay import ReplayBuffer
+from agents.seres_dsac.experience_replay import Transition
 from agents.seres_dsac.sac.actor import NormalPolicyNet
-from agents.seres_dsac.experience_replay import Batch, ReplayBuffer, Transition
+
 
 CLIP_GRAD = 1.0
 CAPS_STD = 0.05

@@ -7,7 +7,8 @@ from gymnasium import spaces
 from agents import BasePolicy
 from agents.idhp.policy import Actor as IDHPActor
 from agents.sac.policy import ActorNetwork as SACActor
-from helpers.torch_helpers import freeze, mlp
+from helpers.torch_helpers import freeze
+from helpers.torch_helpers import mlp
 
 
 class IDHPSACActor(IDHPActor):
@@ -15,7 +16,7 @@ class IDHPSACActor(IDHPActor):
 
     def __init__(self, idhp_actor: IDHPActor, sac_actor: SACActor, *args, **kwargs):
         """Initialize the actor network."""
-        super(IDHPSACActor, self).__init__(
+        super().__init__(
             *args,
             **kwargs,
             observation_space=idhp_actor.observation_space,
@@ -56,7 +57,7 @@ class IDHPSACActor(IDHPActor):
 class IDHPSACPolicy(BasePolicy):
     def __init__(self, observation_space: spaces.Space, action_space: spaces.Space):
         """Initialize the policy."""
-        super(IDHPSACPolicy, self).__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space)
 
     def _setup_policy(self):
         """Setup the policy."""

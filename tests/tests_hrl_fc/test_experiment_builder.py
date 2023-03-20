@@ -1,8 +1,12 @@
-import pytest
-from hrl_fc.experiment_builder import ExperimentBuilder, Sweep
-from hrl_fc.experiment_config import ConfigExperiment
-from helpers.paths import Path
 import pathlib as pl
+
+import pytest
+
+from helpers.paths import Path
+from hrl_fc.experiment_builder import ExperimentBuilder
+from hrl_fc.experiment_builder import Sweep
+from hrl_fc.experiment_config import ConfigExperiment
+
 
 TESTS_PATH = pl.Path(__file__).parent
 

@@ -1,12 +1,15 @@
 """Module with helper functions for the SB3 agents."""
 import importlib
 import pathlib as pl
-from typing import Union, Tuple
+from typing import Tuple
+from typing import Union
+
+from helpers.paths import Path
+
 
 # from stable_baselines3.common.base_class import BaseAlgorithm
 # from stable_baselines3.common.save_util import load_from_zip_file
 
-from helpers.paths import Path
 
 
 def load_agent(

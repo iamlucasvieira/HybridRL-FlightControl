@@ -2,7 +2,9 @@
 import pytest
 
 from agents.idhp.incremental_model import IncrementalCitation
-from envs import BaseEnv, CitationEnv, LTIEnv
+from envs import BaseEnv
+from envs import CitationEnv
+from envs import LTIEnv
 
 
 @pytest.mark.parametrize("env", [CitationEnv, LTIEnv])

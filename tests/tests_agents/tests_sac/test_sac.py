@@ -1,15 +1,17 @@
 """Module that tests the implementation of the SAC algorithm."""
 
-import pytest
+from copy import deepcopy
 
-from agents.sac.sac import SAC
+import pytest
+import torch as th
+
+from agents.base_logger import Logger
+from agents.buffer import ReplayBuffer
+from agents.buffer import Transition
 from agents.sac.policy import SACPolicy
-from agents.buffer import ReplayBuffer, Transition
+from agents.sac.sac import SAC
 from envs.citation.citation_env import CitationEnv
 from envs.lti_citation.lti_env import LTIEnv
-from agents.base_logger import Logger
-import torch as th
-from copy import deepcopy
 
 
 @pytest.fixture

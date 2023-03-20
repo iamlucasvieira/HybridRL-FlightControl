@@ -1,5 +1,7 @@
-from envs.lti_citation.lti_model import Aircraft
 import matplotlib.pyplot as plt
+
+from envs.lti_citation.lti_model import Aircraft
+
 
 acft = Aircraft(configuration="sp", dt=0.1)
 

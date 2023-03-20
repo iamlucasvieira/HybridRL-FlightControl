@@ -1,8 +1,10 @@
-import sys
 import platform
-import torch
+import sys
+
 import pandas as pd
 import sklearn as sk
+import torch
+
 
 REQUIRED_PYTHON = "python3"
 
@@ -14,20 +16,26 @@ def main():
     elif REQUIRED_PYTHON == "python3":
         required_major = 3
     else:
-        raise ValueError("Unrecognized python interpreter: {}".format(
-            REQUIRED_PYTHON))
+        raise ValueError(f"Unrecognized python interpreter: {REQUIRED_PYTHON}")
 
     if system_major != required_major:
         raise TypeError(
             "This project requires Python {}. Found: Python {}".format(
-                required_major, sys.version))
+                required_major, sys.version
+            )
+        )
     else:
         print(">>> Development environment passes all tests!")
 
     has_gpu = torch.cuda.is_available()
-    has_mps = getattr(torch, 'has_mps', False)
-    device = "mps" if getattr(torch, 'has_mps', False) \
-        else "gpu" if torch.cuda.is_available() else "cpu"
+    has_mps = getattr(torch, "has_mps", False)
+    device = (
+        "mps"
+        if getattr(torch, "has_mps", False)
+        else "gpu"
+        if torch.cuda.is_available()
+        else "cpu"
+    )
 
     print(f"Python Platform: {platform.platform()}")
     print(f"PyTorch Version: {torch.__version__}")
@@ -40,5 +48,5 @@ def main():
     print(f"Target device is {device}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

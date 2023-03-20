@@ -3,6 +3,7 @@ This module defines a multi-layer perceptron (MLP) builder.
 """
 import typing
 from typing import Optional
+
 from torch import nn as nn
 
 

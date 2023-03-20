@@ -1,6 +1,7 @@
 import pytest
 
-from envs import LTIEnv, CitationEnv
+from envs import CitationEnv
+from envs import LTIEnv
 from helpers.torch_helpers import BaseNetwork
 
 

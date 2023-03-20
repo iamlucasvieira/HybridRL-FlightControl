@@ -1,9 +1,15 @@
 """Module that define configuration of algorithms."""
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
-from pydantic import BaseModel, Field, Extra
+from pydantic import BaseModel
+from pydantic import Extra
+from pydantic import Field
 
-from agents.config import ConfigIDHP, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC
+from agents.config import ConfigIDHP
+from agents.config import ConfigIDHPSAC
+from agents.config import ConfigSAC
+from agents.config import ConfigSDSAC
 from envs.config.config_citation_env import ConfigCitationEnv
 from envs.config.config_lti_env import ConfigLTIEnv
 from envs.config.gym_env import ConfigGymEnv

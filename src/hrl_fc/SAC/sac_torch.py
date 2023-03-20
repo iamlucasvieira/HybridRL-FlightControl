@@ -1,10 +1,13 @@
 """SAC implemmenation using PyTorch."""
 import os
+
+import numpy as np
 import torch as T
 import torch.nn.functional as F
-import numpy as np
 from buffer import ReplayBuffer
-from networks import CriticNetwork, ValueNetwork, ActorNetwork
+from networks import ActorNetwork
+from networks import CriticNetwork
+from networks import ValueNetwork
 
 
 class Agent:

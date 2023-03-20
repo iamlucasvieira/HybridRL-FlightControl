@@ -9,7 +9,8 @@ from torch.distributions import Normal
 from torch.nn.functional import softplus
 
 from agents import BasePolicy
-from helpers.torch_helpers import mlp, BaseNetwork
+from helpers.torch_helpers import BaseNetwork
+from helpers.torch_helpers import mlp
 
 
 class CriticNetwork(BaseNetwork):
@@ -28,7 +29,7 @@ class CriticNetwork(BaseNetwork):
             fc2_dims_: Number of neurons in the second layer.
         """
         # Input layer of critic's neural network in SAC uses state-action pairs
-        super(CriticNetwork, self).__init__(observation_space, action_space, **kwargs)
+        super().__init__(observation_space, action_space, **kwargs)
 
     def _build_network(self) -> nn.Sequential:
         """Build network."""
@@ -63,7 +64,7 @@ class ActorNetwork(BaseNetwork):
             sigma_min: Minimum value of the standard deviation.
             sigma_max: Maximum value of the standard deviation.
         """
-        super(ActorNetwork, self).__init__(observation_space, action_space, **kwargs)
+        super().__init__(observation_space, action_space, **kwargs)
         self.mu = nn.Linear(self.hidden_layers[-1], self.action_dim)
         self.log_sigma = nn.Linear(self.hidden_layers[-1], self.action_dim)
         self.action_max = float(action_space.high[0])
@@ -144,7 +145,7 @@ class SACPolicy(BasePolicy):
 
         self.learning_rate = learning_rate
         self.hidden_layers = hidden_layers
-        super(SACPolicy, self).__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space)
 
     def _setup_policy(self):
         """Setup policy."""

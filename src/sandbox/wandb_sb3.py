@@ -1,9 +1,10 @@
 """Module that send sb3 data to wandb"""
 import gym
+import wandb
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
-import wandb
+from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import VecVideoRecorder
 from wandb.integration.sb3 import WandbCallback
 
 

@@ -1,7 +1,8 @@
 """Class that creates LTI aircraft model."""
+from pathlib import Path
+
 import numpy as np
 import yaml
-from pathlib import Path
 
 from envs.lti_citation.models.config_lti import AircraftData
 
@@ -9,10 +10,20 @@ from envs.lti_citation.models.config_lti import AircraftData
 class Aircraft:
     """Class that creates the LTI aircraft state space model."""
 
-    CONFIGURATIONS = ['symmetric', 'sp', 'asymmetric']  # Available aircraft configurations
+    CONFIGURATIONS = [
+        "symmetric",
+        "sp",
+        "asymmetric",
+    ]  # Available aircraft configurations
 
-    def __init__(self, filename: str = "citation.yaml", auto_build: bool = True, configuration: str = "symmetric",
-                 dt: float = 0.01, tracked_state="") -> None:
+    def __init__(
+        self,
+        filename: str = "citation.yaml",
+        auto_build: bool = True,
+        configuration: str = "symmetric",
+        dt: float = 0.01,
+        tracked_state="",
+    ) -> None:
         """Initialize aircraft model.
 
         Args:
@@ -53,14 +64,16 @@ class Aircraft:
         if configuration not in self.CONFIGURATIONS:
             raise ValueError(f"Invalid configuration: {configuration}")
 
-        if configuration == 'symmetric' and has_symmetric_data:
+        if configuration == "symmetric" and has_symmetric_data:
             self.ss = Symmetric(self.data)
-        elif configuration == 'sp' and has_symmetric_data:
+        elif configuration == "sp" and has_symmetric_data:
             self.ss = SymmetricShortPeriod(self.data)
-        elif configuration == 'asymmetric' and has_asymmetric_data:
+        elif configuration == "asymmetric" and has_asymmetric_data:
             self.ss = Asymmetric(self.data)
         else:
-            raise ValueError(f"No data available for {self.configuration} configuration")
+            raise ValueError(
+                f"No data available for {self.configuration} configuration"
+            )
 
         self.current_state = np.zeros((self.ss.nstates, 1))
         self.states = [self.current_state]
@@ -105,7 +118,9 @@ class StateSpace:
     x_names: list[str]
     u_names: list[str]
 
-    def __init__(self, a: np.ndarray, b: np.ndarray, x_names: list[str], u_names: list[str]) -> None:
+    def __init__(
+        self, a: np.ndarray, b: np.ndarray, x_names: list[str], u_names: list[str]
+    ) -> None:
         """Initialize state space model."""
         self.A = a
         self.B = b
@@ -132,12 +147,12 @@ class Symmetric(StateSpace):
         a = self.build_a(data)
         b = self.build_b(data)
 
-        super(Symmetric, self).__init__(a, b, x_names, u_names)
+        super().__init__(a, b, x_names, u_names)
 
     def get_names(self):
         """Get state and input names."""
-        x_names = ['u_hat', 'alpha', 'theta', 'q']
-        u_names = ['de']
+        x_names = ["u_hat", "alpha", "theta", "q"]
+        u_names = ["de"]
         return x_names, u_names
 
     @staticmethod
@@ -171,15 +186,12 @@ class Symmetric(StateSpace):
 
         mu = v_c * (cm.u + cz.u * cm_a_mu_c) / mu_c_ky_2
         ma = v_c * (cm.a + cz.a * cm_a_mu_c) / mu_c_cz_a
-        mt = - v_c * (cx.o * cm_a_mu_c) / mu_c_ky_2
+        mt = -v_c * (cx.o * cm_a_mu_c) / mu_c_ky_2
         mq = v_c * (cm.q + cm.a_dot * (2 * mu_c + cz.q) / mu_c_cz_a) / mu_c_cz_a
 
-        a = np.array([
-            [xu, xa, xt, 0],
-            [zu, za, zt, zq],
-            [0, 0, 0, v_c],
-            [mu, ma, mt, mq]
-        ])
+        a = np.array(
+            [[xu, xa, xt, 0], [zu, za, zt, zq], [0, 0, 0, v_c], [mu, ma, mt, mq]]
+        )
 
         # unormalize qc/v by doing multiplying the last row by v_c
         a[3, :] *= v_c
@@ -209,12 +221,7 @@ class Symmetric(StateSpace):
         z_de = v_c * cz.de / mu_c_cz_a
         m_de = v_c * (cm.de + cz.de * cm.a_dot / mu_c_cz_a) / (2 * mu_c * ky_2)
 
-        b = np.array([
-            [x_de],
-            [z_de],
-            [0],
-            [m_de]
-        ])
+        b = np.array([[x_de], [z_de], [0], [m_de]])
 
         # unormalize qcv
         b[3, :] *= v_c
@@ -231,12 +238,12 @@ class Asymmetric(StateSpace):
         args:
             data: AircraftData object
         """
-        x_names = ['beta', 'phi', 'pb_2v', 'rb_2v']
-        u_names = ['da', 'dr']
+        x_names = ["beta", "phi", "pb_2v", "rb_2v"]
+        u_names = ["da", "dr"]
         a = self.build_a(data)
         b = self.build_b(data)
 
-        super(Asymmetric, self).__init__(a, b, x_names, u_names)
+        super().__init__(a, b, x_names, u_names)
 
     @staticmethod
     def build_a(data: AircraftData) -> np.ndarray:
@@ -257,7 +264,7 @@ class Asymmetric(StateSpace):
 
         # Declare repetitive calculations
         v_b = v / b
-        mu_b_k = 4 * mu_b * (kx_2 * kz_2 - kxz ** 2)
+        mu_b_k = 4 * mu_b * (kx_2 * kz_2 - kxz**2)
 
         yb = v_b * cy.b / (2 * mu_b)
         yphi = v_b * c_l / (2 * mu_b)
@@ -272,12 +279,9 @@ class Asymmetric(StateSpace):
         n_p = v_b * (cl.p * kxz + cn.p * kx_2) / mu_b_k
         nr = v_b * (cl.r * kxz + cn.r * kx_2) / mu_b_k
 
-        a = np.array([
-            [yb, yphi, yp, yr],
-            [0, 0, 2 * v_b, 0],
-            [lb, 0, lp, lr],
-            [nb, 0, n_p, nr]
-        ])
+        a = np.array(
+            [[yb, yphi, yp, yr], [0, 0, 2 * v_b, 0], [lb, 0, lp, lr], [nb, 0, n_p, nr]]
+        )
 
         return a
 
@@ -298,7 +302,7 @@ class Asymmetric(StateSpace):
 
         # Declare repetitive calculations
         v_b = v / mu_b
-        mu_b_k = 4 * mu_b * (kx_2 * kz_2 - kxz ** 2)
+        mu_b_k = 4 * mu_b * (kx_2 * kz_2 - kxz**2)
 
         y_dr = v_b * cy.dr / (2 * mu_b)
 
@@ -308,12 +312,7 @@ class Asymmetric(StateSpace):
         n_da = v_b * (cl.da * kxz + cn.da * kx_2) / mu_b_k
         n_dr = v_b * (cl.dr * kxz + cn.dr * kx_2) / mu_b_k
 
-        b = np.array([
-            [0, y_dr],
-            [0, 0],
-            [l_da, l_dr],
-            [n_da, n_dr]
-        ])
+        b = np.array([[0, y_dr], [0, 0], [l_da, l_dr], [n_da, n_dr]])
 
         return b
 
@@ -341,8 +340,8 @@ class SymmetricShortPeriod(Symmetric):
 
     def get_names(self):
         """Get names of states and inputs."""
-        x_names = ['alpha', 'q']
-        u_names = ['de']
+        x_names = ["alpha", "q"]
+        u_names = ["de"]
         return x_names, u_names
 
     def build_a(self, data: AircraftData) -> np.ndarray:

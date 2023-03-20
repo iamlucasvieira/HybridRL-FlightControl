@@ -1,6 +1,7 @@
 """Module that defines the base policy class."""
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 
 import numpy as np
 from gymnasium import spaces
@@ -22,7 +23,7 @@ class BasePolicy(nn.Module, ABC):
             observation_space: Observation space.
             action_space: Action space.
         """
-        super(BasePolicy, self).__init__()
+        super().__init__()
         self.observation_space = observation_space
         self.action_space = action_space
 

@@ -1,12 +1,13 @@
 """Module that defines the DSAC algorithm."""
 
-from typing import Union, Optional
+from typing import Optional
+from typing import Union
 
 import gymnasium as gym
 
 from agents import BaseAgent
-from agents.dsac.policy import DSACPolicy
 from agents.base_callback import ListCallback
+from agents.dsac.policy import DSACPolicy
 from envs import BaseEnv
 
 
@@ -36,7 +37,7 @@ class DSAC(BaseAgent):
             policy_kwargs: Policy keyword arguments.
             _init_setup_model: Whether to initialize the model.
         """
-        super(DSAC, self).__init__(
+        super().__init__(
             DSACPolicy,
             env,
             device=device,

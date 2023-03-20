@@ -2,7 +2,9 @@
 import pytest
 
 from agents import IDHP
-from envs import LTIEnv, CitationEnv, BaseEnv
+from envs import BaseEnv
+from envs import CitationEnv
+from envs import LTIEnv
 from envs.observations import get_observation
 from envs.rewards import get_reward
 

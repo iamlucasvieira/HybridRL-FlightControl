@@ -1,7 +1,13 @@
 """Module that defines the Base class for callbacks."""
 
-from abc import ABC, abstractmethod
-from typing import List, Optional, Dict, Any, TYPE_CHECKING
+from abc import ABC
+from abc import abstractmethod
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
 
 # Only import BaseAgent if type checking
 if TYPE_CHECKING:
@@ -13,7 +19,7 @@ class BaseCallback(ABC):
 
     def __init__(self, verbose: int = 0):
         """Initialize the callback."""
-        super(BaseCallback, self).__init__()
+        super().__init__()
         self.verbose = verbose
         self.agent = None
         self.env = None
@@ -87,7 +93,7 @@ class ListCallback(BaseCallback):
 
     def __init__(self, callbacks: Optional[List[BaseCallback]], verbose: int = 0):
         """Initialize the callback list."""
-        super(ListCallback, self).__init__(verbose=verbose)
+        super().__init__(verbose=verbose)
         self.callbacks = callbacks if callbacks is not None else []
 
     def _init_callback(self) -> None:

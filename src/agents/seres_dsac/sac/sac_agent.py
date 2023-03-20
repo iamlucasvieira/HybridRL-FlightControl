@@ -1,15 +1,21 @@
 from __future__ import annotations
+
 import os
 from typing import Tuple
+
 import numpy as np
 import torch
 import torch.nn as nn
-from torch import optim
 import torch.nn.functional as F
+from torch import optim
+
 from agents.seres_dsac.base_agent import BaseAgent
-from agents.seres_dsac.sac.critic import QNet
+from agents.seres_dsac.experience_replay import Batch
+from agents.seres_dsac.experience_replay import ReplayBuffer
+from agents.seres_dsac.experience_replay import Transition
 from agents.seres_dsac.sac.actor import NormalPolicyNet
-from agents.seres_dsac.experience_replay import Batch, ReplayBuffer, Transition
+from agents.seres_dsac.sac.critic import QNet
+
 
 CLIP_GRAD = 1.0
 CAPS_STD = 0.05
@@ -119,7 +125,7 @@ class SACAgent(BaseAgent):
 
     def sample(
         self, state: torch.tensor, reparameterize: bool
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Stochastic action: sample from the gaussian and calculate log probs."""
 
         # Normal distribution:

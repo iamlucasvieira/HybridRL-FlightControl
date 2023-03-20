@@ -3,17 +3,25 @@ import pathlib as pl
 import pickle
 import random
 import time
-from abc import ABC, abstractmethod
-from typing import Optional, List, Any, Union, SupportsFloat, TYPE_CHECKING
+from abc import ABC
+from abc import abstractmethod
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import SupportsFloat
+from typing import Union
 
 import gymnasium as gym
 import numpy as np
 import torch as th
 
-from agents.base_policy import BasePolicy
-from agents.base_callback import ListCallback, BaseCallback
+from agents.base_callback import BaseCallback
+from agents.base_callback import ListCallback
 from agents.base_logger import Logger
-from agents.buffer import ReplayBuffer, Transition
+from agents.base_policy import BasePolicy
+from agents.buffer import ReplayBuffer
+from agents.buffer import Transition
 from envs import BaseEnv
 from helpers.torch_helpers import get_device
 from hrl_fc.console import console

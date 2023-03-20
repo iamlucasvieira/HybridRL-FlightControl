@@ -1,8 +1,9 @@
 """Creates a gym environment for the high fidelity citation  model."""
-from envs.base_env import BaseEnv
-from envs.citation.models.model_loader import load_model
 import numpy as np
 from gymnasium import spaces
+
+from envs.base_env import BaseEnv
+from envs.citation.models.model_loader import load_model
 
 
 class CitationEnv(BaseEnv):
@@ -30,7 +31,7 @@ class CitationEnv(BaseEnv):
         self._states = [
             self._initial_state().reshape(-1, 1)
         ]  # the .states stores the states flattened
-        super(CitationEnv, self).__init__(
+        super().__init__(
             dt=dt,
             episode_steps=episode_steps,
             reward_scale=reward_scale,

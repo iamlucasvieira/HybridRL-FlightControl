@@ -1,8 +1,9 @@
 """Project paths"""
 
+import os
 import pathlib as pl
 from dataclasses import dataclass
-import os
+
 
 # Project root
 ROOT = pl.Path(__file__).resolve().parents[2]

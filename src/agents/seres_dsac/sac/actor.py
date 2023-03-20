@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
-from torch.distributions import Independent, Normal
+from torch.distributions import Independent
+from torch.distributions import Normal
+
 from agents.seres_dsac.mlp import make_mlp
+
 
 LOG_STD_MAX = 2
 LOG_STD_MIN = -20

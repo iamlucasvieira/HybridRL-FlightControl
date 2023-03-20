@@ -8,7 +8,7 @@ agent:
   learn:
     total_timesteps: 15_000
   sweep:
-    discount_factor: [ 0.7, 0.8, 0.9 ]
+    discount_factor: [0.7, 0.8, 0.9]
 
 env:
   name: "LTI"
@@ -17,6 +17,6 @@ env:
     reference_type: sin
     tracked_state: q
   sweep:
-    dt: [ 0.1, 0.01, 0.001 ]
+    dt: [0.1, 0.01, 0.001]
 
 seed: 54

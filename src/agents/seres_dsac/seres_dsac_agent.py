@@ -1,9 +1,10 @@
-from agents.seres_dsac.dsac.dsac_agent import DSACAgent
+import random
 
 import numpy as np
-import wandb
 import torch
-import random
+import wandb
+
+from agents.seres_dsac.dsac.dsac_agent import DSACAgent
 
 
 def torchify(x: np.ndarray) -> torch.Tensor:

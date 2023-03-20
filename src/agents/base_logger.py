@@ -1,7 +1,8 @@
 """Module that defines  the logger for the agents."""
 import pathlib as pl
 from collections import defaultdict
-from typing import Optional, Any
+from typing import Any
+from typing import Optional
 
 from rich.table import Table
 

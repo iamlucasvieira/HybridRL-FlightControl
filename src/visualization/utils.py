@@ -1,11 +1,12 @@
 """Utility functions for visualization."""
 
-import pandas as pd
-import numpy as np
-from helpers.paths import Path
 import matplotlib.pyplot as plt
-import seaborn as sns
+import numpy as np
+import pandas as pd
 import plotly.express as px
+import seaborn as sns
+
+from helpers.paths import Path
 
 
 def make_defaults():

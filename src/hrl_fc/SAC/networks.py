@@ -1,14 +1,16 @@
 """Create networks for SAC algorithm."""
 import os
+
+import numpy as np
 import torch as T
-import torch.nn.functional as F
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Normal
-import numpy as np
 
-from src.helpers.paths import Path
 from src.helpers.misc import get_device
+from src.helpers.paths import Path
+
 
 MODELS_PATH = Path.root / "envs"
 TEMP_PATH = MODELS_PATH / "custom_sac"
@@ -36,7 +38,7 @@ class BaseNetwork(nn.Module):
             name: Name of the network.
             chkpt_dir: Checkpoint directory.
         """
-        super(BaseNetwork, self).__init__()
+        super().__init__()
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
@@ -85,7 +87,7 @@ class CriticNetwork(BaseNetwork):
         """
         # Input layer of critic's neural network in SAC uses state-action pairs
         input_dims = (input_dims[0] + n_actions,)
-        super(CriticNetwork, self).__init__(
+        super().__init__(
             beta,
             input_dims,
             fc1_dims=fc1_dims,
@@ -132,7 +134,7 @@ class ValueNetwork(BaseNetwork):
             name: Name of the network.
             chkpt_dir: Checkpoint directory.
         """
-        super(ValueNetwork, self).__init__(
+        super().__init__(
             beta,
             input_dims,
             fc1_dims=fc1_dims,
@@ -178,7 +180,7 @@ class ActorNetwork(BaseNetwork):
             name: Name of the network.
             chkpt_dir: Checkpoint directory.
         """
-        super(ActorNetwork, self).__init__(
+        super().__init__(
             alpha,
             input_dims,
             fc1_dims=fc1_dims,

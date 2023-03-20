@@ -1,5 +1,7 @@
 import pytest
-from envs.citation.models.model_loader import AVAILABLE_MODELS, load_model
+
+from envs.citation.models.model_loader import AVAILABLE_MODELS
+from envs.citation.models.model_loader import load_model
 
 
 class TestModelLoader:

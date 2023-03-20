@@ -1,7 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from sac_torch import Agent
+
 from envs.lti_citation.lti_env import LTIEnv
-import matplotlib.pyplot as plt
+
 
 if __name__ == "__main__":
     env = LTIEnv()  # gym.make('MountainCarContinuous-v0')

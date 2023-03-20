@@ -1,5 +1,7 @@
 """Module that defines the IDHP agent, including the actor and the critic."""
-from typing import Type, List, Optional
+from typing import List
+from typing import Optional
+from typing import Type
 
 import numpy as np
 import torch as th
@@ -8,7 +10,8 @@ import torch.optim as optim
 from gymnasium import spaces
 
 from agents import BasePolicy
-from helpers.torch_helpers import mlp, BaseNetwork
+from helpers.torch_helpers import BaseNetwork
+from helpers.torch_helpers import mlp
 
 
 class BaseNetworkIDHP(BaseNetwork):
@@ -30,7 +33,7 @@ class BaseNetworkIDHP(BaseNetwork):
         if hidden_layers is None:
             hidden_layers = [10, 10]
 
-        super(BaseNetworkIDHP, self).__init__(
+        super().__init__(
             *args, **kwargs, hidden_layers=hidden_layers, learning_rate=learning_rate
         )
         self.flatten = nn.Flatten()
@@ -56,7 +59,7 @@ class Actor(BaseNetworkIDHP):
 
     def __init__(self, *args, **kwargs):
         """Initialize the actor network."""
-        super(Actor, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
@@ -77,7 +80,7 @@ class Actor(BaseNetworkIDHP):
 
     def forward(self, x, to_scale: bool = True):
         """Forward pass."""
-        action = super(Actor, self).forward(x)
+        action = super().forward(x)
         if to_scale:
             action = scale_action(action, self.action_space) * 10
         return action
@@ -88,7 +91,7 @@ class Critic(BaseNetworkIDHP):
 
     def __init__(self, *args, **kwargs):
         """Initialize the critic network."""
-        super(Critic, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
@@ -122,7 +125,7 @@ class IDHPPolicy(BasePolicy):
         """Initialize the IDHP policy."""
         self.actor_kwargs = {} if actor_kwargs is None else actor_kwargs
         self.critic_kwargs = {} if critic_kwargs is None else critic_kwargs
-        super(IDHPPolicy, self).__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space)
 
     def _setup_policy(self):
         """Set up the policy."""

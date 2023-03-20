@@ -13,5 +13,5 @@ algorithm:
 
 task_type:
   - "step_q"
-#  - "sin_q"
+  #  - "sin_q"
   - "square_q"

@@ -3,8 +3,11 @@ import numpy as np
 import pytest
 from torch import nn
 
-from agents.idhp.policy import IDHPPolicy, Actor, Critic
-from envs import LTIEnv, CitationEnv
+from agents.idhp.policy import Actor
+from agents.idhp.policy import Critic
+from agents.idhp.policy import IDHPPolicy
+from envs import CitationEnv
+from envs import LTIEnv
 
 
 @pytest.mark.parametrize("env", [LTIEnv, CitationEnv])

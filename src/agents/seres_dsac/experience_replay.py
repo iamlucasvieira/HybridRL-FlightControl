@@ -2,18 +2,21 @@
 This module defnines a simple a replay buffer that stores transitions in the MDP.
 """
 
-import torch
-import numpy as np
-import random
 import functools
-from collections import namedtuple, deque
+import random
+from collections import deque
+from collections import namedtuple
+
+import numpy as np
+import torch
+
 
 # Transition and batch are all tuples of <s, a, r, s', done> data:
 Transition = namedtuple("Transition", "s a r ns d")
 Batch = namedtuple("Batch", "s a r ns d")
 
 
-class ReplayBuffer(object):
+class ReplayBuffer:
     def __init__(self, buffer_size: int, device: torch.device):
         self.device = device
         self.buffer_size = buffer_size

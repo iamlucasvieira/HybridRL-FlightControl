@@ -1,9 +1,13 @@
 """Module with IHDP configuration."""
-from typing import Optional, Literal, List
+from typing import List
+from typing import Literal
+from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
+from pydantic import Extra
 
-from agents import BaseAgent, IDHP
+from agents import IDHP
+from agents import BaseAgent
 from helpers.config_auto import get_auto
 
 

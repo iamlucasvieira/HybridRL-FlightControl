@@ -2,10 +2,14 @@
 from copy import copy
 from typing import Optional
 
-from agents import IDHP, SAC, BaseAgent
+from agents import IDHP
+from agents import SAC
+from agents import BaseAgent
 from agents.base_callback import ListCallback
-from agents.callbacks import TensorboardCallback, OnlineCallback
-from agents.idhp_sac.policy import IDHPSACPolicy, IDHPSACActor
+from agents.callbacks import OnlineCallback
+from agents.callbacks import TensorboardCallback
+from agents.idhp_sac.policy import IDHPSACActor
+from agents.idhp_sac.policy import IDHPSACPolicy
 from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
@@ -68,7 +72,7 @@ class IDHPSAC(BaseAgent):
             policy_kwargs={"hidden_layers": sac_hidden_layers},
         )
 
-        super(IDHPSAC, self).__init__(
+        super().__init__(
             IDHPSACPolicy,
             env,
             log_dir=log_dir,

@@ -3,21 +3,23 @@
 [1] https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 """
 
-import gym
 import math
 import random
-import numpy as np
+from collections import deque
+from collections import namedtuple
+from itertools import count
+
+import gym
 import matplotlib
 import matplotlib.pyplot as plt
-from collections import namedtuple, deque
-from itertools import count
-from PIL import Image
-
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
+import torch.optim as optim
 import torchvision.transforms as T
+from PIL import Image
+
 
 if gym.__version__ < "0.26":
     env = gym.make(
@@ -39,7 +41,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 Transition = namedtuple("Transition", ("state", "action", "next_state", "reward"))
 
 
-class ReplayMemory(object):
+class ReplayMemory:
     def __init__(self, capacity):
         self.memory = deque([], maxlen=capacity)
 
@@ -56,7 +58,7 @@ class ReplayMemory(object):
 
 class DQN(nn.Module):
     def __init__(self, h, w, outputs):
-        super(DQN, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
         self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)

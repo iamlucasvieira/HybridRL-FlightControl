@@ -1,9 +1,13 @@
 """Module that defines the DSAC configuration."""
-from typing import Literal, Optional, List
+from typing import List
+from typing import Literal
+from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
+from pydantic import Extra
 
-from agents import BaseAgent, DSAC
+from agents import DSAC
+from agents import BaseAgent
 from helpers.config_auto import get_auto
 
 

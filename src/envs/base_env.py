@@ -1,12 +1,12 @@
-import gymnasium as gym
-from gymnasium import spaces
-
 from abc import ABC
-import numpy as np
 from typing import Optional
 
-from envs.reference_signals import get_reference_signal
+import gymnasium as gym
+import numpy as np
+from gymnasium import spaces
+
 from envs.observations import get_observation
+from envs.reference_signals import get_reference_signal
 from envs.rewards import get_reward
 
 
@@ -26,7 +26,7 @@ class BaseEnv(gym.Env, ABC):
         observation_type: str = "states + ref + error",
     ):
         """Initialize the environment."""
-        super(BaseEnv, self).__init__()
+        super().__init__()
 
         # Set parameters
         self.dt = dt

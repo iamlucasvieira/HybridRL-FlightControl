@@ -150,7 +150,7 @@ class IncrementalCitation(IncrementalModelBase):
         """Initialize the model."""
         n_states = env.n_states
         n_inputs = env.n_inputs
-        super(IncrementalCitation, self).__init__(n_states, n_inputs, **kwargs)
+        super().__init__(n_states, n_inputs, **kwargs)
 
     def increment(self, env: BaseEnv) -> None:
         """Increment the model."""
@@ -166,5 +166,5 @@ class IncrementalCitation(IncrementalModelBase):
         """Update the model."""
         # Only update if two data points are available
         if self.ready:
-            super(IncrementalCitation, self).update(env.current_aircraft_state)
+            super().update(env.current_aircraft_state)
         self.increment(env)
