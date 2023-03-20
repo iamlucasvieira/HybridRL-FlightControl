@@ -49,7 +49,7 @@ class Logger:
                 value = key
 
             if category_name not in data_group:
-                data_group[category_name] = {}
+                data_group[category_name] = {value: self.data[key]}
             else:
                 data_group[category_name][value] = self.data[key]
 
