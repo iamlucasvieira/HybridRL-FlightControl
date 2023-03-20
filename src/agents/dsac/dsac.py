@@ -6,6 +6,7 @@ import gymnasium as gym
 
 from agents import BaseAgent
 from agents.dsac.policy import DSACPolicy
+from agents.base_callback import ListCallback
 from envs import BaseEnv
 
 
@@ -41,3 +42,11 @@ class DSAC(BaseAgent):
                                    save_dir=save_dir,
                                    policy_kwargs=policy_kwargs,
                                    _init_setup_model=_init_setup_model)
+
+    def _learn(self, total_steps: int, callback: Optional[ListCallback], log_interval: int, **kwargs) -> None:
+        """Method that implements the learning algorithm."""
+        pass
+
+    def setup_model(self):
+        """Method that sets up the model."""
+        pass

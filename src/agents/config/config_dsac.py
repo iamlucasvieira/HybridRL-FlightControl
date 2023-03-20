@@ -1,5 +1,5 @@
 """Module that defines the DSAC configuration."""
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 
 from pydantic import BaseModel, Extra
 
