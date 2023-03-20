@@ -10,7 +10,6 @@ from agents.idhp.idhp import IDHP
 from agents.idhp_sac.policy import IDHPSACActor
 from agents.idhp_sac.policy import IDHPSACPolicy
 from agents.sac.sac import SAC
-from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
 
@@ -112,7 +111,7 @@ class IDHPSAC(BaseAgent):
 
         if sac_model is not None:
             self.print("Loading SAC")
-            self.sac = load_agent(sac_model).sac
+            raise NotImplementedError
         else:
             self.print("Learning SAC")
             self.sac.learn(
