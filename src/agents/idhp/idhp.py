@@ -14,18 +14,20 @@ from envs import BaseEnv
 class IDHP(BaseAgent):
     """Class that implements the IDHP algorithm."""
 
-    def __init__(self,
-                 env: BaseEnv,
-                 discount_factor: float = 0.6,
-                 discount_factor_model: float = 0.8,
-                 verbose: int = 1,
-                 log_dir: Optional[str] = None,
-                 save_dir: Optional[str] = None,
-                 seed: int = None,
-                 learning_rate: float = 0.08,
-                 actor_kwargs: Optional[dict] = None,
-                 critic_kwargs: Optional[dict] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        env: BaseEnv,
+        discount_factor: float = 0.6,
+        discount_factor_model: float = 0.8,
+        verbose: int = 1,
+        log_dir: Optional[str] = None,
+        save_dir: Optional[str] = None,
+        seed: int = None,
+        learning_rate: float = 0.08,
+        actor_kwargs: Optional[dict] = None,
+        critic_kwargs: Optional[dict] = None,
+        **kwargs,
+    ):
         """Initialize the IDHP algorithm.
 
         Args:
@@ -52,21 +54,25 @@ class IDHP(BaseAgent):
         critic_kwargs = critic_kwargs | default_policy_kwargs
         policy_kwargs = {"actor_kwargs": actor_kwargs, "critic_kwargs": critic_kwargs}
 
-        super(IDHP, self).__init__(IDHPPolicy,
-                                   env,
-                                   verbose=verbose,
-                                   log_dir=log_dir,
-                                   save_dir=save_dir,
-                                   seed=seed,
-                                   policy_kwargs=policy_kwargs, )
+        super(IDHP, self).__init__(
+            IDHPPolicy,
+            env,
+            verbose=verbose,
+            log_dir=log_dir,
+            save_dir=save_dir,
+            seed=seed,
+            policy_kwargs=policy_kwargs,
+        )
 
         self.gamma = discount_factor
 
         # Initialize model
         self.model = IncrementalCitation(self.env, gamma=discount_factor_model)
 
-        self.learning_data = IDHPLearningData([0],
-                                              [0], )
+        self.learning_data = IDHPLearningData(
+            [0],
+            [0],
+        )
 
     def setup_model(self):
         """Setup model."""
@@ -75,8 +81,8 @@ class IDHP(BaseAgent):
     @staticmethod
     def _setup_env(env: BaseEnv) -> BaseEnv:
         """Adds the required reward and observation fucntion to env."""
-        env.set_reward_function('sq_error')
-        env.set_observation_function('states + ref')
+        env.set_reward_function("sq_error")
+        env.set_observation_function("states + ref")
         return env
 
     @property
@@ -90,11 +96,11 @@ class IDHP(BaseAgent):
         return self.policy.critic
 
     def _learn(
-            self,
-            total_steps: int,
-            callback: ListCallback,
-            log_interval: int,
-            **kwargs,
+        self,
+        total_steps: int,
+        callback: ListCallback,
+        log_interval: int,
+        **kwargs,
     ):
         """Learn the policy."""
         obs_t, _ = self.env.reset()
@@ -117,21 +123,28 @@ class IDHP(BaseAgent):
             ##############
             da_ds = []
             for i in range(action.shape[0]):
-                grad_i = th.autograd.grad(action[i], obs_t, grad_outputs=th.ones_like(action[i]),
-                                          retain_graph=True)
+                grad_i = th.autograd.grad(
+                    action[i],
+                    obs_t,
+                    grad_outputs=th.ones_like(action[i]),
+                    retain_graph=True,
+                )
                 da_ds.append(grad_i[0])
             da_ds = th.stack(da_ds)
 
             with th.no_grad():
                 # Step environment
 
-                obs_t1, rew_t1, terminated, truncated, info = self.get_rollout(action.detach().numpy(),
-                                                                               obs_t.detach().numpy(), callback)
+                obs_t1, rew_t1, terminated, truncated, info = self.get_rollout(
+                    action.detach().numpy(), obs_t.detach().numpy(), callback
+                )
 
                 done = terminated or truncated
 
                 if done:
-                    self.print(f"Episode done with total steps {self.num_steps} '{info}'")
+                    self.print(
+                        f"Episode done with total steps {self.num_steps} '{info}'"
+                    )
                     break
                 callback.on_step()
 
@@ -140,7 +153,7 @@ class IDHP(BaseAgent):
                 error_t1 = th.tensor(self.env.error[-1], dtype=th.float32)
 
                 # Get the reward gradient with respect to the state at time t+1
-                dr1_ds1 = - 2 * error_t1 * self.env.tracked_state_mask
+                dr1_ds1 = -2 * error_t1 * self.env.tracked_state_mask
 
                 critic_t1 = self.critic(obs_t1)
 
@@ -149,8 +162,12 @@ class IDHP(BaseAgent):
                 G_t_1 = th.tensor(self.model.G, dtype=th.float32)
 
                 # Get loss gradients for actor and critic
-                loss_gradient_a = self.actor.get_loss(dr1_ds1, self.gamma, critic_t1, G_t_1)
-                loss_gradient_c = self.critic.get_loss(dr1_ds1, self.gamma, critic_t, critic_t1, F_t_1, G_t_1, da_ds)
+                loss_gradient_a = self.actor.get_loss(
+                    dr1_ds1, self.gamma, critic_t1, G_t_1
+                )
+                loss_gradient_c = self.critic.get_loss(
+                    dr1_ds1, self.gamma, critic_t, critic_t1, F_t_1, G_t_1, da_ds
+                )
 
             ########################
             # Update IDHP elements #
@@ -197,5 +214,6 @@ class IDHP(BaseAgent):
 @dataclass
 class IDHPLearningData:
     """Class that stores the data used for learning."""
+
     loss_a: List[float]
     loss_c: List[float]

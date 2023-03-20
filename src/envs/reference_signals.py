@@ -40,7 +40,9 @@ class ReferenceSignals:
         length = env.episode_length
         rectangle_length = length / 4
 
-        if env.current_time < rectangle_length or env.current_time > (length - rectangle_length):
+        if env.current_time < rectangle_length or env.current_time > (
+            length - rectangle_length
+        ):
             reference = 0
 
         return np.array([reference])
@@ -53,7 +55,9 @@ class ReferenceSignals:
         square_length = length / 4
 
         if env.current_time <= square_length or (
-                (env.current_time > 2 * square_length) and env.current_time <= 3 * square_length):
+            (env.current_time > 2 * square_length)
+            and env.current_time <= 3 * square_length
+        ):
             reference = 0.1
 
         return np.array([reference])

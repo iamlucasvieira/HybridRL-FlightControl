@@ -2,20 +2,24 @@ import pybullet_envs
 import gym
 import numpy as np
 from sac_torch import Agent
+
 # from utils import plot_learning_curve
 from gym import wrappers
 
-if __name__ == '__main__':
-    env = gym.make('InvertedPendulumBulletEnv-v0')
-    agent = Agent(input_dims=env.observation_space.shape, env=env,
-            n_actions=env.action_space.shape[0])
+if __name__ == "__main__":
+    env = gym.make("InvertedPendulumBulletEnv-v0")
+    agent = Agent(
+        input_dims=env.observation_space.shape,
+        env=env,
+        n_actions=env.action_space.shape[0],
+    )
     n_games = 250
     # uncomment this line and do a mkdir tmp && mkdir video if you want to
     # record video of the agent playing the game.
-    #env = wrappers.Monitor(env, 'tmp/video', video_callable=lambda episode_id: True, force=True)
-    filename = 'inverted_pendulum.png'
+    # env = wrappers.Monitor(env, 'tmp/video', video_callable=lambda episode_id: True, force=True)
+    filename = "inverted_pendulum.png"
 
-    figure_file = 'plots/' + filename
+    figure_file = "plots/" + filename
 
     best_score = env.reward_range[0]
     score_history = []
@@ -23,7 +27,7 @@ if __name__ == '__main__':
 
     if load_checkpoint:
         agent.load_models()
-        env.render(mode='human')
+        env.render(mode="human")
 
     for i in range(n_games):
         observation = env.reset()
@@ -45,8 +49,8 @@ if __name__ == '__main__':
             if not load_checkpoint:
                 agent.save_models()
 
-        print('episode ', i, 'score %.1f' % score, 'avg_score %.1f' % avg_score)
+        print("episode ", i, "score %.1f" % score, "avg_score %.1f" % avg_score)
 
     if not load_checkpoint:
-        x = [i+1 for i in range(n_games)]
+        x = [i + 1 for i in range(n_games)]
         # plot_learning_curve(x, score_history, figure_file)

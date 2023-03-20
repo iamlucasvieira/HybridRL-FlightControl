@@ -7,7 +7,14 @@ from envs.observations import AVAILABLE_OBSERVATIONS, get_observation
 from envs.rewards import AVAILABLE_REWARDS, get_reward
 from envs.reference_signals import AVAILABLE_REFERENCES, get_reference_signal
 
-env_storage_parameters = ["actions", "reference", "track", "states", "error", "sq_error"]
+env_storage_parameters = [
+    "actions",
+    "reference",
+    "track",
+    "states",
+    "error",
+    "sq_error",
+]
 
 
 @pytest.fixture
@@ -40,14 +47,18 @@ class TestChildEnvs:
     def test_ini_storage(self, env_constructor, parameter, env_kwargs):
         """Tests if parameters used to store values start with initial value."""
         env = env_constructor(**env_kwargs)
-        assert len(getattr(env, parameter)) == 1, f"env.{parameter} should not be an empty list."
+        assert (
+            len(getattr(env, parameter)) == 1
+        ), f"env.{parameter} should not be an empty list."
 
     @pytest.mark.parametrize("parameter", env_storage_parameters)
     def test_step_storage(self, env_constructor, parameter, env_kwargs):
         """Tests if parameters used to store value are updated after a step."""
         env = env_constructor(**env_kwargs)
         env.step(np.array([0] * env.action_space.shape[0]))
-        assert len(getattr(env, parameter)) == 2, f"env.{parameter} should be updated after an environmnet step"
+        assert (
+            len(getattr(env, parameter)) == 2
+        ), f"env.{parameter} should be updated after an environmnet step"
 
     @pytest.mark.parametrize("parameter", env_storage_parameters)
     def test_reset_storage(self, env_constructor, parameter, env_kwargs):
@@ -55,7 +66,9 @@ class TestChildEnvs:
         env = env_constructor(**env_kwargs)
         env.step(np.array([0] * env.action_space.shape[0]))
         env.reset()
-        assert len(getattr(env, parameter)) == 1, f"env.{parameter} should be reset after an environmnet reset"
+        assert (
+            len(getattr(env, parameter)) == 1
+        ), f"env.{parameter} should be reset after an environmnet reset"
 
     @pytest.mark.parametrize("observation_type", AVAILABLE_OBSERVATIONS)
     def test_observation_space(self, env_constructor, observation_type, env_kwargs):
@@ -65,9 +78,12 @@ class TestChildEnvs:
 
         obs_function_shape = env.get_obs(env).shape
         observation_space_shape = env.observation_space.shape
-        assert obs_function_shape == observation_space_shape, \
-            f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
-        assert env.get_obs == get_observation(observation_type), f"Observation function is not set correctly."
+        assert (
+            obs_function_shape == observation_space_shape
+        ), f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
+        assert env.get_obs == get_observation(
+            observation_type
+        ), f"Observation function is not set correctly."
 
     def test_invalid_observation_type(self, env_constructor, env_kwargs):
         """Tests if error is raised when invalid observation type is given."""
@@ -82,7 +98,9 @@ class TestChildEnvs:
         env = env_constructor(**env_kwargs)
         reward = env.get_reward(env)
         assert reward == 0, "Reward should be 0 at the beginning of the episode."
-        assert env.get_reward == get_reward(reward_type), f"Reward function is not set correctly."
+        assert env.get_reward == get_reward(
+            reward_type
+        ), f"Reward function is not set correctly."
 
     def test_invalid_reward_type(self, env_constructor, env_kwargs):
         """Tests if error is raised when invalid reward type is given."""
@@ -97,7 +115,9 @@ class TestChildEnvs:
         env = env_constructor(**env_kwargs)
         reference = env.get_reference(env)
         assert isinstance(reference, np.ndarray), "Reference should be a numpy array."
-        assert env.get_reference == get_reference_signal(reference_type), f"Reference function is not set correctly."
+        assert env.get_reference == get_reference_signal(
+            reference_type
+        ), f"Reference function is not set correctly."
 
     def test_invalid_reference_type(self, env_constructor, env_kwargs):
         """Tests if error is raised when invalid reference type is given."""
@@ -110,14 +130,18 @@ class TestChildEnvs:
         """Tests if using set_reference_signal changes the reference function"""
         env = env_constructor(**env_kwargs)
         env.set_reference_signal(reference_type)
-        assert env.get_reference == get_reference_signal(reference_type), f"Reference function is not set correctly."
+        assert env.get_reference == get_reference_signal(
+            reference_type
+        ), f"Reference function is not set correctly."
 
     @pytest.mark.parametrize("reward_type", AVAILABLE_REWARDS)
     def test_set_reward(self, env_constructor, reward_type, env_kwargs):
         """Tests if using set_reward_function changes the reward function"""
         env = env_constructor(**env_kwargs)
         env.set_reward_function(reward_type)
-        assert env.get_reward == get_reward(reward_type), f"Reward function is not set correctly."
+        assert env.get_reward == get_reward(
+            reward_type
+        ), f"Reward function is not set correctly."
 
     @pytest.mark.parametrize("observation_type", AVAILABLE_OBSERVATIONS)
     def test_set_observation(self, env_constructor, observation_type, env_kwargs):
@@ -126,9 +150,12 @@ class TestChildEnvs:
         env.set_observation_function(observation_type)
         obs_function_shape = env.get_obs(env).shape
         observation_space_shape = env.observation_space.shape
-        assert env.get_obs == get_observation(observation_type), f"Observation function is not set correctly."
-        assert obs_function_shape == observation_space_shape, \
-            f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
+        assert env.get_obs == get_observation(
+            observation_type
+        ), f"Observation function is not set correctly."
+        assert (
+            obs_function_shape == observation_space_shape
+        ), f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
 
     def test_shapes(self, env_constructor, env_kwargs):
         """Tests if the shapes of the state, action and observation spaces are correct."""

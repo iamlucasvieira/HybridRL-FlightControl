@@ -10,7 +10,7 @@ class GridWorld:
         self.n = 5
         self.grid = np.zeros((self.n, self.n))
         self.actions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        self.actions_symbols = ['↓', '↑', '→', '←']
+        self.actions_symbols = ["↓", "↑", "→", "←"]
         self.policy = np.ones((self.n, self.n, len(self.actions))) / len(self.actions)
 
     def print_policy(self):
@@ -51,7 +51,9 @@ class GridWorld:
         new_value = 0
         for idx_action, action in enumerate(self.actions):
             new_state, reward = self.state_transition(state, action)
-            new_value += self.policy[tuple(new_state) + (idx_action,)] * (reward + gamma * value[tuple(new_state)])
+            new_value += self.policy[tuple(new_state) + (idx_action,)] * (
+                reward + gamma * value[tuple(new_state)]
+            )
 
         return new_value
 
@@ -64,7 +66,6 @@ class GridWorld:
         new_values = np.zeros((self.n, self.n))
 
         while delta > theta:
-
             values = new_values.copy()
 
             for row in range(self.n):
@@ -129,6 +130,7 @@ class GridWorld:
 @dataclass
 class Episode:
     """Class that represents an episode."""
+
     state: float
     action: float
     reward: float

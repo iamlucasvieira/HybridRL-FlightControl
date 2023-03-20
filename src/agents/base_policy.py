@@ -10,10 +10,12 @@ from torch import nn
 class BasePolicy(nn.Module, ABC):
     """Base policy class."""
 
-    def __init__(self,
-                 observation_space: spaces.Space,
-                 action_space: spaces.Space,
-                 _init_setup_policy: bool = True):
+    def __init__(
+        self,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        _init_setup_policy: bool = True,
+    ):
         """Initialize policy.
 
         args:
@@ -32,7 +34,8 @@ class BasePolicy(nn.Module, ABC):
         pass
 
     @abstractmethod
-    def predict(self, observation: np.ndarray,
-                deterministic: bool = False) -> np.ndarray:
+    def predict(
+        self, observation: np.ndarray, deterministic: bool = False
+    ) -> np.ndarray:
         """Predict action."""
         pass

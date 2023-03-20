@@ -7,7 +7,7 @@ from envs.observations import get_observation
 from envs.rewards import get_reward
 
 
-@pytest.mark.parametrize('env', [LTIEnv, CitationEnv])
+@pytest.mark.parametrize("env", [LTIEnv, CitationEnv])
 class TestIDHP:
     """Tests the IDHP agent."""
 
@@ -28,8 +28,8 @@ class TestIDHP:
         """Tests the IDHP agent."""
         agent = IDHP(env())
         assert agent.env is not None
-        assert agent.env.get_reward == get_reward('sq_error')
-        assert agent.env.get_obs == get_observation('states + ref')
+        assert agent.env.get_reward == get_reward("sq_error")
+        assert agent.env.get_obs == get_observation("states + ref")
 
     def test_learn(self, env: BaseEnv):
         """Tests the IDHP agent."""
@@ -39,8 +39,10 @@ class TestIDHP:
 
     def test_policy_kwargs(self, env: BaseEnv):
         """Tests the IDHP agent with kwargs for policy."""
-        agent = IDHP(env(),
-                     actor_kwargs={"hidden_layers": [10, 15, 20]},
-                     critic_kwargs={"hidden_layers": [15]})
+        agent = IDHP(
+            env(),
+            actor_kwargs={"hidden_layers": [10, 15, 20]},
+            critic_kwargs={"hidden_layers": [15]},
+        )
         assert agent.actor.num_hidden_layers == 3
         assert agent.critic.num_hidden_layers == 1

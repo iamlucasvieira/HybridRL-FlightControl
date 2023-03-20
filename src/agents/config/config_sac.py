@@ -9,6 +9,7 @@ from helpers.config_auto import get_auto
 
 class ConfigSACArgs(BaseModel):
     """Arguments for IDHP object."""
+
     env: Optional[str] = get_auto("env")
 
     class Config:
@@ -17,6 +18,7 @@ class ConfigSACArgs(BaseModel):
 
 class ConfigSACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
+
     learning_rate: Optional[float | List[float]] = 3e-4
     policy_kwargs: Optional[dict | List[dict]] = None
     log_dir: Optional[str | List[str]] = get_auto("log_dir")
@@ -40,6 +42,7 @@ class ConfigSACKwargs(BaseModel):
 
 class ConfigSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
+
     total_steps: Optional[int] = 1_000
     callback: Optional[list] = ["tensorboard"]
     log_interval: Optional[int] = 1
@@ -52,7 +55,8 @@ class ConfigSACLearn(BaseModel):
 # Configuration of Agents
 class ConfigSAC(BaseModel):
     """Configuration of SAC."""
-    name: Literal['SAC'] = "SAC"
+
+    name: Literal["SAC"] = "SAC"
     args: Optional[ConfigSACArgs] = ConfigSACArgs()
     kwargs: Optional[ConfigSACKwargs] = ConfigSACKwargs()
     sweep: Optional[ConfigSACKwargs] = ConfigSACKwargs()

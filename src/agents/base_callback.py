@@ -32,7 +32,9 @@ class BaseCallback(ABC):
         """Initialize the callback."""
         pass
 
-    def on_training_start(self, locals_: Dict[str, Any], globals_: Dict[str, Any]) -> None:
+    def on_training_start(
+        self, locals_: Dict[str, Any], globals_: Dict[str, Any]
+    ) -> None:
         """Method called before training for callbacks."""
         self.locals = locals_
         self.globals = globals_

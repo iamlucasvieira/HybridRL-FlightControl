@@ -6,25 +6,29 @@ import numpy as np
 
 
 class LTIEnv(BaseEnv):
-
-    def __init__(self,
-                 filename: str = "citation.yaml",
-                 configuration: str = "sp",
-                 dt: float = 0.1,
-                 episode_steps: int = 100,
-                 tracked_state: str = "q",
-                 reference_type: str = "sin",
-                 reward_type: str = "sq_error",
-                 observation_type: str = "states + ref + error",
-                 reward_scale: float = 1.0,
-                 ):
-        self.aircraft = Aircraft(filename=filename,
-                                 dt=dt,
-                                 configuration=configuration,
-                                 tracked_state=tracked_state)
+    def __init__(
+        self,
+        filename: str = "citation.yaml",
+        configuration: str = "sp",
+        dt: float = 0.1,
+        episode_steps: int = 100,
+        tracked_state: str = "q",
+        reference_type: str = "sin",
+        reward_type: str = "sq_error",
+        observation_type: str = "states + ref + error",
+        reward_scale: float = 1.0,
+    ):
+        self.aircraft = Aircraft(
+            filename=filename,
+            dt=dt,
+            configuration=configuration,
+            tracked_state=tracked_state,
+        )
 
         if tracked_state not in self.aircraft.ss.x_names:
-            raise ValueError(f"Tracked state {tracked_state} not in model states {self.aircraft.states}")
+            raise ValueError(
+                f"Tracked state {tracked_state} not in model states {self.aircraft.states}"
+            )
 
         super(LTIEnv, self).__init__(
             dt=dt,
@@ -43,8 +47,9 @@ class LTIEnv(BaseEnv):
 
     def _action_space(self) -> spaces.Box:
         """The action space of the environment."""
-        return spaces.Box(low=-0.3, high=0.3,
-                          shape=(self.aircraft.ss.ninputs,), dtype=np.float32)
+        return spaces.Box(
+            low=-0.3, high=0.3, shape=(self.aircraft.ss.ninputs,), dtype=np.float32
+        )
 
     def state_transition(self, action):
         """The state transition function of the environment."""

@@ -22,10 +22,12 @@ class IncrementalModelBase(ABC):
         theta: Parameter matrix.
     """
 
-    def __init__(self,
-                 n_states,
-                 n_inputs: int,
-                 gamma: float = 0.8, ) -> None:
+    def __init__(
+        self,
+        n_states,
+        n_inputs: int,
+        gamma: float = 0.8,
+    ) -> None:
         """Initialize the incremental model.
 
         Args:
@@ -60,10 +62,12 @@ class IncrementalModelBase(ABC):
     @property
     def ready(self):
         """Return if the model is ready to be update."""
-        READY = (self.action_k is not None) and \
-                (self.state_k is not None) and \
-                (self.action_k_1 is not None) and \
-                (self.state_k_1 is not None)
+        READY = (
+            (self.action_k is not None)
+            and (self.state_k is not None)
+            and (self.action_k_1 is not None)
+            and (self.state_k_1 is not None)
+        )
         return READY
 
     def update(self, future_state) -> None:
@@ -73,9 +77,9 @@ class IncrementalModelBase(ABC):
             future_state: The state from the environment after the current action is taken.
         """
         # Get the predicted change in state
-        dx_hat, X = self.predict(self.state_k, self.state_k_1,
-                                 self.action_k, self.action_k_1,
-                                 increment=True)
+        dx_hat, X = self.predict(
+            self.state_k, self.state_k_1, self.action_k, self.action_k_1, increment=True
+        )
 
         dx = future_state - self.state_k
 
@@ -90,22 +94,30 @@ class IncrementalModelBase(ABC):
 
         # Update the parameter matrix theta
         theta_k1 = self.theta + (cov_at_x / (self.gamma + x_at_cov_at_x)) * e
-        cov_k1 = (1 / self.gamma) * (self.cov - (cov_at_x @ x_at_cov) / (self.gamma + x_at_cov_at_x))
+        cov_k1 = (1 / self.gamma) * (
+            self.cov - (cov_at_x @ x_at_cov) / (self.gamma + x_at_cov_at_x)
+        )
 
         self.theta, self.cov = theta_k1, cov_k1
 
     @property
     def F(self) -> np.ndarray:
         """Return the state transition matrix."""
-        return self.theta[:self.n_states, :].T
+        return self.theta[: self.n_states, :].T
 
     @property
     def G(self) -> np.ndarray:
         """Return the input matrix."""
-        return self.theta[self.n_states:, :].T
+        return self.theta[self.n_states :, :].T
 
-    def predict(self, state: np.ndarray, state_before: np.ndarray, action: np.ndarray, action_before: np.ndarray,
-                increment=False) -> np.ndarray:
+    def predict(
+        self,
+        state: np.ndarray,
+        state_before: np.ndarray,
+        action: np.ndarray,
+        action_before: np.ndarray,
+        increment=False,
+    ) -> np.ndarray:
         """Predict the next state given the current state and action.
 
         Args:

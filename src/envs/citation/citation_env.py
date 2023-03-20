@@ -4,26 +4,32 @@ from envs.citation.models.model_loader import load_model
 import numpy as np
 from gymnasium import spaces
 
+
 class CitationEnv(BaseEnv):
     """Citation Environment that follows gym interface"""
 
-    def __init__(self,
-                 model: str = "default",
-                 dt: float = 0.1,
-                 episode_steps: int = 100,
-                 reward_scale: float = 1.0,
-                 tracked_state: str = "q",
-                 reference_type: str = "sin",
-                 reward_type: str = "sq_error",
-                 observation_type: str = "states + ref + error",
-                 ):
+    def __init__(
+        self,
+        model: str = "default",
+        dt: float = 0.1,
+        episode_steps: int = 100,
+        reward_scale: float = 1.0,
+        tracked_state: str = "q",
+        reference_type: str = "sin",
+        reward_type: str = "sq_error",
+        observation_type: str = "states + ref + error",
+    ):
         self.model = load_model(model)
         if tracked_state not in self.model.states:
-            raise ValueError(f"Tracked state {tracked_state} not in model states {self.model.states}")
+            raise ValueError(
+                f"Tracked state {tracked_state} not in model states {self.model.states}"
+            )
 
         self.model.initialize()
 
-        self._states = [self._initial_state().reshape(-1, 1)]  # the .states stores the states flattened
+        self._states = [
+            self._initial_state().reshape(-1, 1)
+        ]  # the .states stores the states flattened
         super(CitationEnv, self).__init__(
             dt=dt,
             episode_steps=episode_steps,
@@ -44,8 +50,9 @@ class CitationEnv(BaseEnv):
 
     def _action_space(self):
         """The action space of the environment."""
-        return spaces.Box(low=-0.3, high=0.3,
-                          shape=(self.model.n_inputs,), dtype=np.float32)
+        return spaces.Box(
+            low=-0.3, high=0.3, shape=(self.model.n_inputs,), dtype=np.float32
+        )
 
     def state_transition(self, action):
         """The state transition function of the environment."""

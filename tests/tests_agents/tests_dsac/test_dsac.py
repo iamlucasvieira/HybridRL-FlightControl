@@ -5,7 +5,7 @@ from agents import DSAC
 from envs import LTIEnv, CitationEnv, BaseEnv
 
 
-@pytest.mark.parametrize('env', [LTIEnv, CitationEnv])
+@pytest.mark.parametrize("env", [LTIEnv, CitationEnv])
 class TestDSAC:
     """Class that tests the DSAC objct."""
 

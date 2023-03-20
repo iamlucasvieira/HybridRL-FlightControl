@@ -28,9 +28,13 @@ class TestCitationEnv:
 
         first_response, _, _, _, _ = env.step(np.array([0] * env.action_space.shape[0]))
         env.reset()
-        second_response, _, _, _, _ = env.step(np.array([0] * env.action_space.shape[0]))
+        second_response, _, _, _, _ = env.step(
+            np.array([0] * env.action_space.shape[0])
+        )
 
-        assert (first_response == second_response).all(), f"env.model should be reset after an environment reset"
+        assert (
+            first_response == second_response
+        ).all(), f"env.model should be reset after an environment reset"
 
     def test_unsupported_model(self, env_kwargs):
         """Tests if unsupported model raises an error."""

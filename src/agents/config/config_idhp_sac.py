@@ -9,6 +9,7 @@ from helpers.config_auto import get_auto
 
 class ConfigIDHPSACArgs(BaseModel):
     """Arguments for IDHP-SAC object."""
+
     policy: Optional[str] = "default"
     env: Optional[str] = get_auto("env")
 
@@ -18,6 +19,7 @@ class ConfigIDHPSACArgs(BaseModel):
 
 class ConfigIDHPSACKwargs(BaseModel):
     """Keyword arguments for IDHP-SAC object."""
+
     learning_rate: Optional[float | List[float]] = 3e-4
     learning_starts: Optional[int | List[int]] = 100
     buffer_size: Optional[int | List[int]] = 1_000_000
@@ -38,6 +40,7 @@ class ConfigIDHPSACKwargs(BaseModel):
 
 class ConfigIDHPSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
+
     total_steps: Optional[int] = 1_000
     sac_steps: Optional[int] = 1_000
     idhp_steps: Optional[int] = 1_000
@@ -52,7 +55,8 @@ class ConfigIDHPSACLearn(BaseModel):
 
 class ConfigIDHPSAC(BaseModel):
     """Configuration of SAC."""
-    name: Literal['IDHP-SAC'] = "IDHP-SAC"
+
+    name: Literal["IDHP-SAC"] = "IDHP-SAC"
     args: Optional[ConfigIDHPSACArgs] = ConfigIDHPSACArgs()
     kwargs: Optional[ConfigIDHPSACKwargs] = ConfigIDHPSACKwargs()
     sweep: Optional[ConfigIDHPSACKwargs] = ConfigIDHPSACKwargs()

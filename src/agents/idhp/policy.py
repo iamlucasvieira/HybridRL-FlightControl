@@ -14,11 +14,13 @@ from helpers.torch_helpers import mlp, BaseNetwork
 class BaseNetworkIDHP(BaseNetwork):
     """Base network class for the IDHP agent."""
 
-    def __init__(self,
-                 *args,
-                 hidden_layers: List[int] = None,
-                 learning_rate: float = 0.08,
-                 **kwargs):
+    def __init__(
+        self,
+        *args,
+        hidden_layers: List[int] = None,
+        learning_rate: float = 0.08,
+        **kwargs
+    ):
         """Initialize the base network.
 
         Args:
@@ -28,13 +30,12 @@ class BaseNetworkIDHP(BaseNetwork):
         if hidden_layers is None:
             hidden_layers = [10, 10]
 
-        super(BaseNetworkIDHP, self).__init__(*args, **kwargs,
-                                              hidden_layers=hidden_layers,
-                                              learning_rate=learning_rate
-                                              )
+        super(BaseNetworkIDHP, self).__init__(
+            *args, **kwargs, hidden_layers=hidden_layers, learning_rate=learning_rate
+        )
         self.flatten = nn.Flatten()
         self.optimizer = optim.SGD(self.parameters(), lr=learning_rate)
-        self.device = 'cpu'  # Having issues not using cpu with get_device()
+        self.device = "cpu"  # Having issues not using cpu with get_device()
         self.to(self.device)
 
     def forward(self, x):
@@ -53,18 +54,20 @@ class BaseNetworkIDHP(BaseNetwork):
 class Actor(BaseNetworkIDHP):
     """Class that implements the actor network for the IDHP agent."""
 
-    def __init__(self,
-                 *args,
-                 **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize the actor network."""
         super(Actor, self).__init__(*args, **kwargs)
 
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
-        ff = mlp([self.observation_space.shape[0]] + self.hidden_layers + [self.action_space.shape[0]],
-                 activation=nn.Tanh,
-                 output_activation=nn.Tanh,
-                 bias=False)
+        ff = mlp(
+            [self.observation_space.shape[0]]
+            + self.hidden_layers
+            + [self.action_space.shape[0]],
+            activation=nn.Tanh,
+            output_activation=nn.Tanh,
+            bias=False,
+        )
 
         return ff
 
@@ -83,33 +86,39 @@ class Actor(BaseNetworkIDHP):
 class Critic(BaseNetworkIDHP):
     """Class that implements the critic network for the IDHP agent."""
 
-    def __init__(self,
-                 *args,
-                 **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize the critic network."""
         super(Critic, self).__init__(*args, **kwargs)
 
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
         # Minus 1 in the observation states to include only the states and not the reference signal
-        ff = mlp([self.observation_space.shape[0]] + self.hidden_layers + [self.observation_space.shape[0] - 1],
-                 activation=nn.Tanh,
-                 bias=False)
+        ff = mlp(
+            [self.observation_space.shape[0]]
+            + self.hidden_layers
+            + [self.observation_space.shape[0] - 1],
+            activation=nn.Tanh,
+            bias=False,
+        )
         return ff
 
     def get_loss(self, dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad):
         """Gets the network loss."""
-        return critic_t - (dr1_ds1 + gamma * critic_t1) @ (F_t_1 + G_t_1 @ obs_grad[:, :-1])
+        return critic_t - (dr1_ds1 + gamma * critic_t1) @ (
+            F_t_1 + G_t_1 @ obs_grad[:, :-1]
+        )
 
 
 class IDHPPolicy(BasePolicy):
     """Class that implements the IDHP policy."""
 
-    def __init__(self,
-                 observation_space: spaces.Space,
-                 action_space: spaces.Space,
-                 actor_kwargs: Optional[dict] = None,
-                 critic_kwargs: Optional[dict] = None, ):
+    def __init__(
+        self,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        actor_kwargs: Optional[dict] = None,
+        critic_kwargs: Optional[dict] = None,
+    ):
         """Initialize the IDHP policy."""
         self.actor_kwargs = {} if actor_kwargs is None else actor_kwargs
         self.critic_kwargs = {} if critic_kwargs is None else critic_kwargs
@@ -117,8 +126,12 @@ class IDHPPolicy(BasePolicy):
 
     def _setup_policy(self):
         """Set up the policy."""
-        self.actor = Actor(self.observation_space, self.action_space, **self.actor_kwargs)
-        self.critic = Critic(self.observation_space, self.action_space, **self.critic_kwargs)
+        self.actor = Actor(
+            self.observation_space, self.action_space, **self.actor_kwargs
+        )
+        self.critic = Critic(
+            self.observation_space, self.action_space, **self.critic_kwargs
+        )
 
     def predict(self, observation, deterministic: bool = True):
         """Predict the action."""

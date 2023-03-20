@@ -7,7 +7,6 @@ class Robot:
 
 
 class Room:
-
     def __init__(self):
         self.n = 15
         self.actions = [1, -1]
@@ -17,10 +16,10 @@ class Room:
     def print_policy(self):
         """Print the policy."""
         policy = np.zeros(self.n, dtype=str)
-        policy[self.policy == 1] = '→'
-        policy[self.policy == -1] = '←'
-        policy[0] = 'X'
-        policy[-1] = 'x'
+        policy[self.policy == 1] = "→"
+        policy[self.policy == -1] = "←"
+        policy[0] = "X"
+        policy[-1] = "x"
 
         return " ".join(policy)
 
@@ -52,7 +51,6 @@ class Room:
         delta = np.inf
 
         while delta > theta:
-
             values = new_values.copy()
 
             for state in range(self.n):

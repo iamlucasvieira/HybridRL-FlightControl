@@ -6,11 +6,15 @@ from helpers.paths import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+
+
 def make_defaults():
     """Set up default matplotlib settings."""
     sns.set()
     # sns.set_context("paper")
     sns.set_palette(px.colors.qualitative.D3)
+
+
 def make_smooth(_df, step=100, on=None, columns=[], info=[], group="run"):
     """Makes columns of the dataframe smooth by averaging over moving steps.
 
@@ -21,7 +25,7 @@ def make_smooth(_df, step=100, on=None, columns=[], info=[], group="run"):
         columns: Columns to smooth.
         info: Columns with _data about the group.
         group: Column to group by.
-        """
+    """
     start = _df[on].min()
     stop = _df[on].max() + start
     all_data = []
@@ -30,7 +34,9 @@ def make_smooth(_df, step=100, on=None, columns=[], info=[], group="run"):
         # information about the run
         info_dict = {}
         for info_item in info:
-            info_dict[info_item] = _df.loc[_df[group] == run_name, info_item].unique()[0]
+            info_dict[info_item] = _df.loc[_df[group] == run_name, info_item].unique()[
+                0
+            ]
 
         # Data from the run
         for t in np.arange(start, stop, step):
@@ -47,17 +53,19 @@ def make_smooth(_df, step=100, on=None, columns=[], info=[], group="run"):
     return pd.DataFrame.from_records(all_data)
 
 
-def save_pgf(fig, name, path=None, tight_layout=True, padding=.5, w=3, h=3.5):
+def save_pgf(fig, name, path=None, tight_layout=True, padding=0.5, w=3, h=3.5):
     """Sets matplotlib to pgf and saves figure."""
     if path is None:
         path = Path.figures
     elif path == "paper":
         path = Path.paper_figures
-    plt.rcParams.update({
-        "pgf.texsystem": "pdflatex",
-        "text.usetex": True,  # use inline math for ticks
-        "pgf.rcfonts": False,  # don't setup fonts from rc parameters
-    })
+    plt.rcParams.update(
+        {
+            "pgf.texsystem": "pdflatex",
+            "text.usetex": True,  # use inline math for ticks
+            "pgf.rcfonts": False,  # don't setup fonts from rc parameters
+        }
+    )
 
     if tight_layout:
         fig.tight_layout(pad=padding)
@@ -67,4 +75,3 @@ def save_pgf(fig, name, path=None, tight_layout=True, padding=.5, w=3, h=3.5):
     # reset plt params
     # plt.rcParams.update(plt.rcParamsDefault)
     # make_defaults()
-

@@ -24,17 +24,25 @@ def evaluate(agent, env, n_times=1):
             env.render()
 
             if wandb.run is not None:
-                wandb.log({"reward": reward,
-                           "episode_step": steps})
-                wandb.log({"action": action,
-                           "episode_step": steps, })
+                wandb.log({"reward": reward, "episode_step": steps})
+                wandb.log(
+                    {
+                        "action": action,
+                        "episode_step": steps,
+                    }
+                )
 
                 if isinstance(env, BaseEnv):
-                    wandb.log({"reference": env.reference[-1],
-                               "state": env.track[-1],
-                               "episode_step": steps})
-                    wandb.log({"tracking_error": env.sq_error[-1],
-                               "episode_step": steps})
+                    wandb.log(
+                        {
+                            "reference": env.reference[-1],
+                            "state": env.track[-1],
+                            "episode_step": steps,
+                        }
+                    )
+                    wandb.log(
+                        {"tracking_error": env.sq_error[-1], "episode_step": steps}
+                    )
 
             steps += 1
         print(f"finished at {steps - 1}")

@@ -16,10 +16,11 @@ class Observations:
     @staticmethod
     def states_ref_error(self):
         """Returns the all states, the reference state, and the tracking error."""
-        return np.hstack((
-            self.states[-1],
-            self.reference[-1],
-            self.sq_error[-1])).astype(np.float32).flatten()
+        return (
+            np.hstack((self.states[-1], self.reference[-1], self.sq_error[-1]))
+            .astype(np.float32)
+            .flatten()
+        )
 
     @staticmethod
     def error(self):
@@ -29,16 +30,16 @@ class Observations:
     @staticmethod
     def ref_state(self):
         """Returns the reference and the value of the tracked state"""
-        return np.hstack((
-            self.reference[-1],
-            self.track[-1])).astype(np.float32).flatten()
+        return (
+            np.hstack((self.reference[-1], self.track[-1])).astype(np.float32).flatten()
+        )
 
     @staticmethod
     def state_error(self):
         """Returns the tracked state and the tracking error"""
-        return np.hstack((
-            self.track[-1],
-            self.sq_error[-1])).astype(np.float32).flatten()
+        return (
+            np.hstack((self.track[-1], self.sq_error[-1])).astype(np.float32).flatten()
+        )
 
     @staticmethod
     def states(self):
@@ -48,9 +49,11 @@ class Observations:
     @staticmethod
     def states_ref(self):
         """Returns the all states and the reference state"""
-        return np.hstack((
-            self.states[-1],
-            self.reference[-1])).astype(np.float32).flatten()
+        return (
+            np.hstack((self.states[-1], self.reference[-1]))
+            .astype(np.float32)
+            .flatten()
+        )
 
 
 observations_dict = {

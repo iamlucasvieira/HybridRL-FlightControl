@@ -9,6 +9,7 @@ from helpers.config_auto import get_auto
 
 class ConfigIDHPArgs(BaseModel):
     """Arguments for IDHP object."""
+
     env: Optional[str] = get_auto("env")
 
     class Config:
@@ -17,6 +18,7 @@ class ConfigIDHPArgs(BaseModel):
 
 class ConfigIDHPKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
+
     discount_factor: Optional[float | List[float]] = 0.6
     discount_factor_model: Optional[float | List[float]] = 0.8
     verbose: Optional[int | List[int]] = get_auto("verbose")
@@ -32,6 +34,7 @@ class ConfigIDHPKwargs(BaseModel):
 
 class ConfigIDHPLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
+
     total_steps: Optional[int] = 1_000
     callback: Optional[list] = ["online", "tensorboard"]
     log_interval: Optional[int] = 1
@@ -42,7 +45,7 @@ class ConfigIDHPLearn(BaseModel):
 
 
 class ConfigIDHP(BaseModel):
-    name: Optional[Literal['IDHP']] = "IDHP"
+    name: Optional[Literal["IDHP"]] = "IDHP"
     args: Optional[ConfigIDHPArgs] = ConfigIDHPArgs()
     kwargs: Optional[ConfigIDHPKwargs] = ConfigIDHPKwargs()
     sweep: Optional[ConfigIDHPKwargs] = ConfigIDHPKwargs()

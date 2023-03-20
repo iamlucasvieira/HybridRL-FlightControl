@@ -22,9 +22,11 @@ def available_experiment_files():
 
 
 @app.command()
-def main(filename: Optional[str] = typer.Argument(None, help="Experiment file name"),
-         filepath: Optional[pl.Path] = typer.Argument(Path.exp, help="Experiment file path"),
-         offline: Optional[bool] = typer.Option(False, help="Run experiment offline"), ):
+def main(
+    filename: Optional[str] = typer.Argument(None, help="Experiment file name"),
+    filepath: Optional[pl.Path] = typer.Argument(Path.exp, help="Experiment file path"),
+    offline: Optional[bool] = typer.Option(False, help="Run experiment offline"),
+):
     """Runs an experiment from a config file."""
     if filename is None:
         table = Table(header_style="bold magenta")
@@ -34,13 +36,20 @@ def main(filename: Optional[str] = typer.Argument(None, help="Experiment file na
         for idx, file in enumerate(experiments):
             table.add_row(str(idx + 1), file)
 
-        panel = Panel(table, title="Available experiments to run", title_align="center", border_style="magenta",
-                      expand=False)
+        panel = Panel(
+            table,
+            title="Available experiments to run",
+            title_align="center",
+            border_style="magenta",
+            expand=False,
+        )
         console.print(panel)
 
         if Confirm.ask("Do you want to run an experiment? :test_tube:"):
-            idx = IntPrompt.ask("Select an experiment :robot:",
-                                choices=[str(i) for i in range(1, len(experiments) + 1)])
+            idx = IntPrompt.ask(
+                "Select an experiment :robot:",
+                choices=[str(i) for i in range(1, len(experiments) + 1)],
+            )
             filename = experiments[idx - 1]
         else:
             raise typer.Exit()
@@ -54,12 +63,20 @@ def main(filename: Optional[str] = typer.Argument(None, help="Experiment file na
 
 
 @app.command()
-def eval(model_directory: Optional[str] = typer.Argument(None, help="Directory of the model to evaluate"),
-         models_directory: Optional[pl.Path] = typer.Argument(Path.models, help="Models path")):
+def eval(
+    model_directory: Optional[str] = typer.Argument(
+        None, help="Directory of the model to evaluate"
+    ),
+    models_directory: Optional[pl.Path] = typer.Argument(
+        Path.models, help="Models path"
+    ),
+):
     """Evaluates an experiment from a zip file."""
     print("Evaluating experiment...")
     try:
-        evaluator = Evaluator(model_directory=model_directory, models_directory=models_directory)
+        evaluator = Evaluator(
+            model_directory=model_directory, models_directory=models_directory
+        )
         evaluator.evaluate()
         print("Evaluation finished :tada:")
     except FileNotFoundError:

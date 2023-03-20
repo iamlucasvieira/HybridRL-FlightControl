@@ -14,14 +14,16 @@ from torch import nn
 class BaseNetwork(nn.Module, ABC):
     """Base network for Critic and Value networks."""
 
-    def __init__(self,
-                 observation_space: spaces.Box,
-                 action_space: spaces.Box,
-                 learning_rate: float = 3e-4,
-                 hidden_layers=None,
-                 name='base',
-                 save_path: Union[str, pl.Path] = "",
-                 device: Union[str, th.device] = "cpu"):
+    def __init__(
+        self,
+        observation_space: spaces.Box,
+        action_space: spaces.Box,
+        learning_rate: float = 3e-4,
+        hidden_layers=None,
+        name="base",
+        save_path: Union[str, pl.Path] = "",
+        device: Union[str, th.device] = "cpu",
+    ):
         """Initialize critic network.
 
         args:

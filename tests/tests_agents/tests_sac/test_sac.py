@@ -16,14 +16,18 @@ from copy import deepcopy
 def transition(env):
     """Create a Transition instance."""
     obs, _ = env.reset()
-    return Transition(obs=th.from_numpy(obs),
-                      action=th.from_numpy(env.action_space.sample()),
-                      reward=0,
-                      obs_=th.from_numpy(obs),
-                      done=False)
+    return Transition(
+        obs=th.from_numpy(obs),
+        action=th.from_numpy(env.action_space.sample()),
+        reward=0,
+        obs_=th.from_numpy(obs),
+        done=False,
+    )
 
 
-@pytest.mark.parametrize('env', [CitationEnv(), LTIEnv()], ids=['CitationEnv', 'LTIEnv'])
+@pytest.mark.parametrize(
+    "env", [CitationEnv(), LTIEnv()], ids=["CitationEnv", "LTIEnv"]
+)
 class TestSAC:
     """Test SAC class."""
 
@@ -62,33 +66,36 @@ class TestSAC:
 
     def test_update(self, env):
         """Test that SAC update is correctly computed."""
-        sac = SAC(env,
-                  buffer_size=10,
-                  batch_size=5)
+        sac = SAC(env, buffer_size=10, batch_size=5)
         obs, _ = env.reset()
         while not sac.replay_buffer.full():
             action = env.action_space.sample()
             obs_tp1, reward, terminated, truncated, info = env.step(action)
             done = terminated or truncated
 
-            sac.replay_buffer.push(Transition(obs=obs,
-                                              action=action,
-                                              reward=reward,
-                                              obs_=obs_tp1,
-                                              done=done))
+            sac.replay_buffer.push(
+                Transition(
+                    obs=obs, action=action, reward=reward, obs_=obs_tp1, done=done
+                )
+            )
             obs = obs_tp1
         sac._setup_learn(100, "")
         sac.update()
         # After one update gradients should exist
-        assert sac.policy.actor.optimizer.param_groups[0]['params'][0].grad is not None
-        assert sac.policy.critic_1.optimizer.param_groups[0]['params'][0].grad is not None
-        assert sac.policy.critic_2.optimizer.param_groups[0]['params'][0].grad is not None
+        assert sac.policy.actor.optimizer.param_groups[0]["params"][0].grad is not None
+        assert (
+            sac.policy.critic_1.optimizer.param_groups[0]["params"][0].grad is not None
+        )
+        assert (
+            sac.policy.critic_2.optimizer.param_groups[0]["params"][0].grad is not None
+        )
 
-    @pytest.mark.parametrize('polyak, result', [(0, True), (0.5, False)], ids=['0', '0.5'])
+    @pytest.mark.parametrize(
+        "polyak, result", [(0, True), (0.5, False)], ids=["0", "0.5"]
+    )
     def test_update_target(self, env, polyak, result):
         """Test that SAC target update is correctly computed."""
-        sac = SAC(env,
-                  polyak=polyak)
+        sac = SAC(env, polyak=polyak)
 
         # Edit policy parameters
         for param in sac.policy.critic_1.parameters():
@@ -97,17 +104,15 @@ class TestSAC:
         sac.update_target_networks()
 
         # If polyak is 0, target policy should be the same as policy
-        for param, target_param in zip(sac.policy.critic_1.parameters(), sac.target_policy.critic_1.parameters()):
+        for param, target_param in zip(
+            sac.policy.critic_1.parameters(), sac.target_policy.critic_1.parameters()
+        ):
             assert th.allclose(param.data, target_param.data) == result
 
-    @pytest.mark.parametrize('total_steps', [15, 100, 200], ids=['15', '100', '200'])
+    @pytest.mark.parametrize("total_steps", [15, 100, 200], ids=["15", "100", "200"])
     def test_learn(self, env, total_steps):
         """Test that SAC learn is correctly computed."""
-        sac = SAC(env,
-                  buffer_size=10,
-                  batch_size=5,
-                  learning_starts=5,
-                  verbose=1)
+        sac = SAC(env, buffer_size=10, batch_size=5, learning_starts=5, verbose=1)
         sac.learn(total_steps, log_interval=1)
         assert sac.num_steps == total_steps
 

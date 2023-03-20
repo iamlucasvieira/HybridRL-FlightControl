@@ -16,25 +16,26 @@ from helpers.torch_helpers import get_device, to_tensor, freeze, unfreeze
 class SAC(BaseAgent):
     """Implements the Soft Actor-Critic algorithm."""
 
-    def __init__(self,
-                 env: Union[gym.Env, str],
-                 learning_rate: float = 3e-4,
-                 policy_kwargs: Optional[dict] = None,
-                 log_dir: Optional[str] = None,
-                 save_dir: Optional[str] = None,
-                 verbose: int = 1,
-                 seed: Optional[int] = None,
-                 _init_setup_model: bool = True,
-                 buffer_size: int = 1_000_000,
-                 gradient_steps: int = 1,
-                 batch_size: int = 256,
-                 learning_starts: int = 100,
-                 entropy_coefficient: float = 0.2,
-                 entropy_coefficient_update: bool = True,
-                 gamma: float = 0.99,
-                 polyak: float = 0.995,
-                 device: Optional[Union[th.device, str]] = None,
-                 ):
+    def __init__(
+        self,
+        env: Union[gym.Env, str],
+        learning_rate: float = 3e-4,
+        policy_kwargs: Optional[dict] = None,
+        log_dir: Optional[str] = None,
+        save_dir: Optional[str] = None,
+        verbose: int = 1,
+        seed: Optional[int] = None,
+        _init_setup_model: bool = True,
+        buffer_size: int = 1_000_000,
+        gradient_steps: int = 1,
+        batch_size: int = 256,
+        learning_starts: int = 100,
+        entropy_coefficient: float = 0.2,
+        entropy_coefficient_update: bool = True,
+        gamma: float = 0.99,
+        polyak: float = 0.995,
+        device: Optional[Union[th.device, str]] = None,
+    ):
         """Initialize the SAC algorithm.
 
         args:
@@ -72,22 +73,24 @@ class SAC(BaseAgent):
         self.ent_coef_optimizer = None
         self.target_entropy = None
 
-        super(SAC, self).__init__(SACPolicy,
-                                  env,
-                                  policy_kwargs=policy_kwargs,
-                                  log_dir=log_dir,
-                                  save_dir=save_dir,
-                                  verbose=verbose,
-                                  seed=seed,
-                                  device=device,
-                                  _init_setup_model=_init_setup_model)
+        super(SAC, self).__init__(
+            SACPolicy,
+            env,
+            policy_kwargs=policy_kwargs,
+            log_dir=log_dir,
+            save_dir=save_dir,
+            verbose=verbose,
+            seed=seed,
+            device=device,
+            _init_setup_model=_init_setup_model,
+        )
 
     def _learn(
-            self,
-            total_steps: int,
-            callback: ListCallback,
-            log_interval: int,
-            **kwargs,
+        self,
+        total_steps: int,
+        callback: ListCallback,
+        log_interval: int,
+        **kwargs,
     ) -> None:
         """Learn from the environment."""
         env = self.env
@@ -102,14 +105,16 @@ class SAC(BaseAgent):
             else:
                 action = self.policy.get_action(obs)
 
-            obs_tp1, reward, terminated, truncated, info = self.get_rollout(action, obs, callback)
+            obs_tp1, reward, terminated, truncated, info = self.get_rollout(
+                action, obs, callback
+            )
             done = terminated or truncated
 
-            self.replay_buffer.push(Transition(obs=obs,
-                                               action=action,
-                                               reward=reward,
-                                               obs_=obs_tp1,
-                                               done=done))
+            self.replay_buffer.push(
+                Transition(
+                    obs=obs, action=action, reward=reward, obs_=obs_tp1, done=done
+                )
+            )
 
             # If done, reset the environment
             if done:
@@ -162,9 +167,12 @@ class SAC(BaseAgent):
         """Update the target networks."""
         polyak = self.polyak
         with th.no_grad():
-            for param, target_param in zip(self.policy.parameters(),
-                                           self.target_policy.parameters()):
-                new_target_param = polyak * target_param.data + (1 - polyak) * param.data
+            for param, target_param in zip(
+                self.policy.parameters(), self.target_policy.parameters()
+            ):
+                new_target_param = (
+                    polyak * target_param.data + (1 - polyak) * param.data
+                )
                 target_param.data.copy_(new_target_param)
 
     def update_entropy_coefficient(self, buffer) -> None:
@@ -172,7 +180,9 @@ class SAC(BaseAgent):
         obs = to_tensor(buffer.obs)
         _, log_prob = self.policy.actor(obs)
         ent_coef = th.exp(self.log_ent_coef.detach())
-        ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
+        ent_coef_loss = -(
+            self.log_ent_coef * (log_prob + self.target_entropy).detach()
+        ).mean()
 
         self.ent_coef_optimizer.zero_grad()
         ent_coef_loss.backward()
@@ -188,8 +198,12 @@ class SAC(BaseAgent):
         self.replay_buffer = ReplayBuffer(self.buffer_size)
 
         if self.entropy_coefficient_update:
-            self.log_ent_coef = th.log(th.ones(1) * self.entropy_coefficient).requires_grad_(True)
-            self.ent_coef_optimizer = th.optim.Adam([self.log_ent_coef], lr=self.learning_rate)
+            self.log_ent_coef = th.log(
+                th.ones(1) * self.entropy_coefficient
+            ).requires_grad_(True)
+            self.ent_coef_optimizer = th.optim.Adam(
+                [self.log_ent_coef], lr=self.learning_rate
+            )
             self.target_entropy = -np.prod(self.action_space.shape).astype(np.float32)
 
     def get_critic_loss(self, transition: Transition) -> th.Tensor:
@@ -214,7 +228,9 @@ class SAC(BaseAgent):
             critic_2_target = self.target_policy.critic_2(s_tp1, a_tp1)
             critic_target = th.min(critic_1_target, critic_2_target)
             alpha = self.entropy_coefficient
-            target = r_t + self.gamma * (1 - done) * (critic_target - alpha * log_prob_tp1)
+            target = r_t + self.gamma * (1 - done) * (
+                critic_target - alpha * log_prob_tp1
+            )
 
         loss_1 = ((critic_1 - target) ** 2).mean()
         loss_2 = ((critic_2 - target) ** 2).mean()

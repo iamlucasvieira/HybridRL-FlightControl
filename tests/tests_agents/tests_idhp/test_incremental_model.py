@@ -65,8 +65,9 @@ class TestIncrementalCitation:
         env.step(env.action_space.sample())
         model.update(env)
 
-        prediction = model.predict(model.state_k, model.state_k_1,
-                                   model.action_k, model.action_k_1)
+        prediction = model.predict(
+            model.state_k, model.state_k_1, model.action_k, model.action_k_1
+        )
         assert prediction.shape == (model.n_states, 1)
 
     def test_predict_increment(self, env):
@@ -76,8 +77,12 @@ class TestIncrementalCitation:
         env.step(env.action_space.sample())
         model.update(env)
 
-        dx_hat, X = model.predict(model.state_k, model.state_k_1,
-                                              model.action_k, model.action_k_1,
-                                              increment=True)
+        dx_hat, X = model.predict(
+            model.state_k,
+            model.state_k_1,
+            model.action_k,
+            model.action_k_1,
+            increment=True,
+        )
         assert dx_hat.shape == (model.n_states, 1)
         assert X.shape == (model.n_states + model.n_inputs, 1)

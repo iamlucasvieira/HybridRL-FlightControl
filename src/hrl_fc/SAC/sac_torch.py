@@ -10,9 +10,21 @@ from networks import CriticNetwork, ValueNetwork, ActorNetwork
 class Agent:
     """Agent class for SAC algorithm."""
 
-    def __init__(self, alpha=0.0003, beta=0.0003, input_dims=[8], tau=0.005, env=None, gamma=0.99,
-                 n_actions=2, max_size=1000000, layer1_size=256,
-                 layer2_size=256, batch_size=256, reward_scale=2):
+    def __init__(
+        self,
+        alpha=0.0003,
+        beta=0.0003,
+        input_dims=[8],
+        tau=0.005,
+        env=None,
+        gamma=0.99,
+        n_actions=2,
+        max_size=1000000,
+        layer1_size=256,
+        layer2_size=256,
+        batch_size=256,
+        reward_scale=2,
+    ):
         """Initialize agent.
         args:
             alpha: Learning rate for actor network.
@@ -36,11 +48,17 @@ class Agent:
         self.reward_scale = reward_scale
 
         # Define networks
-        self.actor = ActorNetwork(alpha, input_dims, n_actions=n_actions, max_action=env.action_space.high)
-        self.critic_1 = CriticNetwork(beta, input_dims, n_actions=n_actions, name='critic_1')
-        self.critic_2 = CriticNetwork(beta, input_dims, n_actions=n_actions, name='critic_2')
+        self.actor = ActorNetwork(
+            alpha, input_dims, n_actions=n_actions, max_action=env.action_space.high
+        )
+        self.critic_1 = CriticNetwork(
+            beta, input_dims, n_actions=n_actions, name="critic_1"
+        )
+        self.critic_2 = CriticNetwork(
+            beta, input_dims, n_actions=n_actions, name="critic_2"
+        )
         self.value = ValueNetwork(beta, input_dims)
-        self.target_value = ValueNetwork(beta, input_dims, name='target_value')
+        self.target_value = ValueNetwork(beta, input_dims, name="target_value")
 
         self.update_network_parameters(tau=1)
 
@@ -80,14 +98,16 @@ class Agent:
         value_state_dict = dict(value_params)
 
         for name in value_state_dict:
-            value_state_dict[name] = tau * value_state_dict[name].clone() + \
-                                     (1 - tau) * target_value_state_dict[name].clone()
+            value_state_dict[name] = (
+                tau * value_state_dict[name].clone()
+                + (1 - tau) * target_value_state_dict[name].clone()
+            )
 
         self.target_value.load_state_dict(value_state_dict)
 
     def save_models(self):
         """Save models."""
-        print('... saving models ...')
+        print("... saving models ...")
         self.actor.save_checkpoint()
         self.critic_1.save_checkpoint()
         self.critic_2.save_checkpoint()
@@ -96,7 +116,7 @@ class Agent:
 
     def load_models(self):
         """Load models."""
-        print('... loading models ...')
+        print("... loading models ...")
         self.actor.load_checkpoint()
         self.critic_1.load_checkpoint()
         self.critic_2.load_checkpoint()
@@ -109,7 +129,9 @@ class Agent:
         if self.memory.mem_cntr < self.batch_size:
             return
 
-        state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size)
+        state, action, reward, new_state, done = self.memory.sample_buffer(
+            self.batch_size
+        )
 
         reward = T.tensor(reward, dtype=T.float).to(self.actor.device)
         done = T.tensor(done).to(self.actor.device)
@@ -128,7 +150,9 @@ class Agent:
             returns:
                 critic_value: Critic value.
             """
-            actions, _log_probs = self.actor.sample_normal(_state, reparamterize=_reparamterize)
+            actions, _log_probs = self.actor.sample_normal(
+                _state, reparamterize=_reparamterize
+            )
             _log_probs = _log_probs.view(-1)
             q1_new_policy = self.critic_1(_state, actions)
             q2_new_policy = self.critic_2(_state, actions)

@@ -28,15 +28,19 @@ def get_wandb_data(project_name):
                 get_columns(run, ["episode_step", "action"]),
             ]
 
-            df_episode = pd.concat([df.set_index('episode_step') for df in episode_data_list], axis=1).reset_index()
+            df_episode = pd.concat(
+                [df.set_index("episode_step") for df in episode_data_list], axis=1
+            ).reset_index()
 
             # Training _data
             learning_data_list = [
                 get_columns(run, ["rollout/ep_len_mean", "global_step"]),
-                get_columns(run, ["rollout/ep_rew_mean", "global_step"])
+                get_columns(run, ["rollout/ep_rew_mean", "global_step"]),
             ]
 
-            df_learning = pd.concat([df.set_index('global_step') for df in learning_data_list], axis=1).reset_index()
+            df_learning = pd.concat(
+                [df.set_index("global_step") for df in learning_data_list], axis=1
+            ).reset_index()
 
             # Add information to _data
             for df in [df_episode, df_learning]:

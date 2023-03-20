@@ -11,6 +11,7 @@ from envs.config.gym_env import ConfigGymEnv
 
 class ConfigExperiment(BaseModel):
     """Class that defines the configuration of the sweep."""
+
     name: Optional[str]
     description: Optional[str]
     wandb: Optional[bool] = True
@@ -19,11 +20,12 @@ class ConfigExperiment(BaseModel):
     verbose: Optional[int] = 1
     seed: Optional[int] = None
     save_model: Optional[bool] = True
-    env: Union[ConfigLTIEnv, ConfigCitationEnv, ConfigGymEnv] = Field(discriminator='name',
-                                                                      default=ConfigLTIEnv(name="LTI"))
+    env: Union[ConfigLTIEnv, ConfigCitationEnv, ConfigGymEnv] = Field(
+        discriminator="name", default=ConfigLTIEnv(name="LTI")
+    )
     agent: Union[ConfigIDHP, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC] = Field(
-        discriminator='name',
-        default=ConfigSAC(name="SAC"))
+        discriminator="name", default=ConfigSAC(name="SAC")
+    )
 
     class Config:
         extra = Extra.forbid

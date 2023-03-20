@@ -3,7 +3,7 @@ import random
 from collections import namedtuple, deque
 from typing import Optional
 
-Transition = namedtuple('Transition', ('obs', 'action', 'reward', 'obs_', 'done'))
+Transition = namedtuple("Transition", ("obs", "action", "reward", "obs_", "done"))
 
 
 class ReplayBuffer(deque):
@@ -41,7 +41,7 @@ class ReplayBuffer(deque):
 
     def append(self):
         """Raise an error if the user tries to append to the replay buffer."""
-        raise NotImplementedError('Use push instead.')
+        raise NotImplementedError("Use push instead.")
 
     def ready(self, batch_size: int) -> bool:
         """Check if the replay buffer has enough samples to sample from."""
@@ -51,9 +51,9 @@ class ReplayBuffer(deque):
         """Sample a batch of transitions from the replay buffer."""
         batch_size = batch_size if batch_size is not None else len(self)
         if self.empty():
-            raise ValueError('Cannot sample from an empty replay buffer.')
+            raise ValueError("Cannot sample from an empty replay buffer.")
         elif batch_size == 0:
-            raise ValueError('Batch size cannot be zero.')
+            raise ValueError("Batch size cannot be zero.")
         elif batch_size > len(self):
             batch_size = len(self)
 

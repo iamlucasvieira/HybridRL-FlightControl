@@ -41,7 +41,7 @@ class TestBuffer:
         buffer.push((1, 2, 3, 4, 5))
         assert buffer.len == 10
 
-    @pytest.mark.parametrize('batch_size', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    @pytest.mark.parametrize("batch_size", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     def test_sample_buffer(self, batch_size):
         """Test the sample buffer method."""
         buffer = ReplayBuffer(10)

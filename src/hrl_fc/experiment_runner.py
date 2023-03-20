@@ -31,7 +31,6 @@ class Runner:
         self.print("Running experiment...")
 
         for sweep in track(self.experiment.sweeps, description=":brain: Learning..."):
-
             sweep_config = sweep.config
 
             wandb_run = wandb.init(
@@ -39,7 +38,7 @@ class Runner:
                 config=sweep_config.dict(),
                 sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
                 save_code=False,  # optional
-                monitor_gym=True
+                monitor_gym=True,
             )
 
             # Learn
@@ -73,16 +72,24 @@ class Runner:
 class Evaluator:
     """Class responsible for replaying evaluation of stored models."""
 
-    def __init__(self, model_directory: str, models_directory: str = None, zip_name: str = None, verbose=0):
+    def __init__(
+        self,
+        model_directory: str,
+        models_directory: str = None,
+        zip_name: str = None,
+        verbose=0,
+    ):
         """Initialize the evaluator."""
         os.environ["WANDB_DIR"] = Path.logs.as_posix()
         self.verbose = verbose
 
         self.print("Initializing evaluator...")
-        self.agent, self.data = load_agent(model_directory=model_directory,
-                                           models_directory=models_directory,
-                                           zip_name=zip_name,
-                                           with_data=True)
+        self.agent, self.data = load_agent(
+            model_directory=model_directory,
+            models_directory=models_directory,
+            zip_name=zip_name,
+            with_data=True,
+        )
 
     def evaluate(self):
         """Evaluate a sweep."""
@@ -104,7 +111,7 @@ class Evaluator:
 
 
 def main():
-    Runner('exp_sac_lti').run()
+    Runner("exp_sac_lti").run()
 
 
 if __name__ == "__main__":

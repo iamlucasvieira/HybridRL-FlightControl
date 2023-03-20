@@ -22,15 +22,18 @@ from hrl_fc.console import console
 class BaseAgent(ABC):
     """Base agent class."""
 
-    def __init__(self, policy: BasePolicy, env: Union[BaseEnv, gym.Env],
-                 device: Optional[str] = None,
-                 verbose: int = 0,
-                 seed: Optional[int] = None,
-                 log_dir: Optional[str] = None,
-                 save_dir: Optional[str] = None,
-                 policy_kwargs: Optional[dict] = None,
-                 _init_setup_model: bool = True, ) -> None:
-
+    def __init__(
+        self,
+        policy: BasePolicy,
+        env: Union[BaseEnv, gym.Env],
+        device: Optional[str] = None,
+        verbose: int = 0,
+        seed: Optional[int] = None,
+        log_dir: Optional[str] = None,
+        save_dir: Optional[str] = None,
+        policy_kwargs: Optional[dict] = None,
+        _init_setup_model: bool = True,
+    ) -> None:
         """Initialize the base agent.
 
         Args:
@@ -52,7 +55,9 @@ class BaseAgent(ABC):
         self._n_updates = 0
         self.run_name = None
         self.episode_buffer = None
-        self.policy = policy(self.observation_space, self.action_space, **self.policy_kwargs)
+        self.policy = policy(
+            self.observation_space, self.action_space, **self.policy_kwargs
+        )
         self.log_interval = None
 
         # Setup learn variables
@@ -70,7 +75,9 @@ class BaseAgent(ABC):
     def print(self, message: str, identifier=True, **kwargs):
         """Print only if verbosity is enabled."""
         if self.verbose > 0:
-            console.print(f"{'Agent: ' if identifier else ''}{message}", style="blue", **kwargs)
+            console.print(
+                f"{'Agent: ' if identifier else ''}{message}", style="blue", **kwargs
+            )
 
     def _setup_model(self):
         """Set up the model."""
@@ -79,8 +86,9 @@ class BaseAgent(ABC):
         self.setup_model()
         self.print("Done :heavy_check_mark:", identifier=False)
 
-    def get_rollout(self, action: np.ndarray, obs: np.ndarray, callback: ListCallback) \
-            -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
+    def get_rollout(
+        self, action: np.ndarray, obs: np.ndarray, callback: ListCallback
+    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
         """Get the rollout.
 
         Args:
@@ -96,22 +104,25 @@ class BaseAgent(ABC):
         callback.on_rollout_end()
 
         # Store rollout data
-        rollout = Transition(obs=obs,
-                             action=action,
-                             reward=reward,
-                             obs_=obs_tp1,
-                             done=terminated or truncated, )
+        rollout = Transition(
+            obs=obs,
+            action=action,
+            reward=reward,
+            obs_=obs_tp1,
+            done=terminated or truncated,
+        )
 
         self.episode_buffer.push(rollout)
         self.logger.record("rollout/episode_reward", reward)
         return obs_tp1, reward, terminated, truncated, info
 
-    def _setup_learn(self,
-                     total_steps: int,
-                     run_name: str,
-                     callback: Optional[List[BaseCallback]] = None,
-                     buffer_factor: int = .2
-                     ) -> ListCallback:
+    def _setup_learn(
+        self,
+        total_steps: int,
+        run_name: str,
+        callback: Optional[List[BaseCallback]] = None,
+        buffer_factor: int = 0.2,
+    ) -> ListCallback:
         """Set up the learn method.
 
         Args:
@@ -138,12 +149,20 @@ class BaseAgent(ABC):
         return callback
 
     @abstractmethod
-    def _learn(self, total_steps: int, callback: ListCallback, log_interval: int, **kwargs) -> None:
+    def _learn(
+        self, total_steps: int, callback: ListCallback, log_interval: int, **kwargs
+    ) -> None:
         """Learn method."""
         pass
 
-    def learn(self, total_steps: int = 1_000, run_name: str = "run", callback: Optional[List[BaseCallback]] = None,
-              log_interval: int = 4, **kwargs) -> None:
+    def learn(
+        self,
+        total_steps: int = 1_000,
+        run_name: str = "run",
+        callback: Optional[List[BaseCallback]] = None,
+        log_interval: int = 4,
+        **kwargs,
+    ) -> None:
         """Learn method.
 
         Args:
@@ -170,7 +189,9 @@ class BaseAgent(ABC):
         self.logger.record("rollout/reward_std", np.std(rollout.reward))
         self.logger.record("rollout/n_episodes", self._episode_num)
         self.logger.record("rollout/total_steps", self.num_steps)
-        self.logger.record("rollout/total_time", (time.time_ns() - self.start_time) / 1e9)
+        self.logger.record(
+            "rollout/total_time", (time.time_ns() - self.start_time) / 1e9
+        )
         self.logger.dump(step=self.num_steps)
 
     def _init_callback(self, callback: List[BaseCallback]) -> ListCallback:
@@ -214,8 +235,8 @@ class BaseAgent(ABC):
             raise ValueError("Run name not set. Agent needs to 'learn' before saving.")
         path = path / self.run_name
 
-        policy_path = path / 'policy.pt'
-        env_path = path / 'env.pkl'
+        policy_path = path / "policy.pt"
+        env_path = path / "env.pkl"
 
         # Make directory for files
         path.mkdir(parents=True, exist_ok=True)
@@ -224,7 +245,7 @@ class BaseAgent(ABC):
 
         # Save environment as pickle
         try:
-            with open(env_path, 'wb') as f:
+            with open(env_path, "wb") as f:
                 pickle.dump(self.env, f)
         except Exception as e:
             self.print(f"Not able to pickle the environment '{e}'")
@@ -239,8 +260,8 @@ class BaseAgent(ABC):
             path: Path to the model.
         """
         path = path
-        policy_path = path / 'policy.pt'
-        env_path = path / 'env.pkl'
+        policy_path = path / "policy.pt"
+        env_path = path / "env.pkl"
 
         # Load the policy
         if policy_path.is_file():
@@ -250,12 +271,14 @@ class BaseAgent(ABC):
 
         # Load the environment
         if env_path.is_file():
-            with open(env_path, 'rb') as f:
+            with open(env_path, "rb") as f:
                 self.env = pickle.load(f)
         else:
             self.print("Environment file not found.")
 
-    def predict(self, observation: np.ndarray, deterministic: bool = False) -> np.ndarray:
+    def predict(
+        self, observation: np.ndarray, deterministic: bool = False
+    ) -> np.ndarray:
         """Predict the action.
 
         Args:

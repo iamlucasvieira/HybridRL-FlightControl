@@ -24,11 +24,9 @@ def critic_kwargs():
 class TestCriticNetwork:
     """Test CriticNetwork class."""
 
-    @pytest.mark.parametrize("hidden_layers",
-                             [[256, 257, 258, 259],
-                              [256, 256],
-                              [1, 2, 3],
-                              [256]])
+    @pytest.mark.parametrize(
+        "hidden_layers", [[256, 257, 258, 259], [256, 256], [1, 2, 3], [256]]
+    )
     def test_structure(self, env, critic_kwargs, hidden_layers):
         """Test if network creates correct layers."""
         observation_space = env.observation_space
@@ -80,11 +78,9 @@ def actor_kwargs():
 class TestActorNetwork:
     """Test ActorNetwork class."""
 
-    @pytest.mark.parametrize("hidden_layers",
-                             [[256, 257, 258, 259],
-                              [256, 256],
-                              [1, 2, 3],
-                              [256]])
+    @pytest.mark.parametrize(
+        "hidden_layers", [[256, 257, 258, 259], [256, 256], [1, 2, 3], [256]]
+    )
     def test_structure(self, env, actor_kwargs, hidden_layers):
         """Test if network creates correct layers."""
         observation_space = env.observation_space
@@ -196,8 +192,12 @@ class TestSACPolicy:
 
         state, _ = env.reset()
 
-        action = th.as_tensor(policy.get_action(state, deterministic=True), dtype=th.float32)
-        action_from_actor, _ = policy.actor(th.as_tensor(state, dtype=th.float32), deterministic=True)
+        action = th.as_tensor(
+            policy.get_action(state, deterministic=True), dtype=th.float32
+        )
+        action_from_actor, _ = policy.actor(
+            th.as_tensor(state, dtype=th.float32), deterministic=True
+        )
 
         assert action.shape == action_space.shape
         assert th.allclose(action, action_from_actor)

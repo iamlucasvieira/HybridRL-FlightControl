@@ -3,12 +3,16 @@ from sac_torch import Agent
 from envs.lti_citation.lti_env import LTIEnv
 import matplotlib.pyplot as plt
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     env = LTIEnv()  # gym.make('MountainCarContinuous-v0')
-    agent = Agent(input_dims=env.observation_space.shape, env=env, n_actions=env.action_space.shape[0])
+    agent = Agent(
+        input_dims=env.observation_space.shape,
+        env=env,
+        n_actions=env.action_space.shape[0],
+    )
     n_games = 250
 
-    filename = 'pendulum.png'
+    filename = "pendulum.png"
 
     best_score = env.reward_range[0]
     score_history = []
@@ -16,7 +20,7 @@ if __name__ == '__main__':
 
     if load_checkpoint:
         agent.load_models()
-        env.render(mode='human')
+        env.render(mode="human")
 
     for i in range(3):
         observation = env.reset()
@@ -42,6 +46,8 @@ if __name__ == '__main__':
             best_score = avg_score
             if not load_checkpoint:
                 agent.save_models()
-        print(f"episode {i} score {score} avg score {avg_score} best score {best_score}")
+        print(
+            f"episode {i} score {score} avg score {avg_score} best score {best_score}"
+        )
         plt.plot(observations)
         plt.show()

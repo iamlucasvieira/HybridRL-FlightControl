@@ -35,17 +35,21 @@ class TestIDHPPolicy:
     def test_actor_kwargs(self, env):
         """Test the IDHP policy."""
         env = env()
-        policy = IDHPPolicy(env.observation_space,
-                            env.action_space,
-                            actor_kwargs={"hidden_layers": [10, 15, 20]})
+        policy = IDHPPolicy(
+            env.observation_space,
+            env.action_space,
+            actor_kwargs={"hidden_layers": [10, 15, 20]},
+        )
         assert policy.actor.num_hidden_layers == 3
 
     def test_critic_kwargs(self, env):
         """Test the IDHP policy."""
         env = env()
-        policy = IDHPPolicy(env.observation_space,
-                            env.action_space,
-                            critic_kwargs={"hidden_layers": [15]})
+        policy = IDHPPolicy(
+            env.observation_space,
+            env.action_space,
+            critic_kwargs={"hidden_layers": [15]},
+        )
         assert policy.critic.num_hidden_layers == 1
 
 
@@ -72,7 +76,9 @@ class TestActor:
         """Test the actor network."""
         env = env()
         n_actions = env.action_space.shape[0]
-        n_states = env.observation_space.shape[0] - 1  # Minus 1 to not include the reference
+        n_states = (
+            env.observation_space.shape[0] - 1
+        )  # Minus 1 to not include the reference
         actor = Actor(env.observation_space, env.action_space)
         dr1_ds1 = np.random.rand(1, n_states)
         gamma = 1
@@ -109,7 +115,9 @@ class TestCritic:
 
         # The aircraft states does not include the reference state. That is why the -1
         n_actions = env.action_space.shape[0]
-        n_states = env.observation_space.shape[0] - 1  # Minus 1 to not include the reference
+        n_states = (
+            env.observation_space.shape[0] - 1
+        )  # Minus 1 to not include the reference
         dr1_ds1 = np.random.rand(1, n_states)
         gamma = 1
         critic_t = np.random.rand(1, n_states)
@@ -119,6 +127,8 @@ class TestCritic:
         # The obs grad includes the reference state. That is why the +1
         obs_grad = np.random.rand(n_actions, n_states + 1)
 
-        loss = critic.get_loss(dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad)
+        loss = critic.get_loss(
+            dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad
+        )
         shape_critic_output = (1, n_states)
         assert loss.shape == shape_critic_output

@@ -27,7 +27,7 @@ class DSAC:
         "n_cos": 64,
         "n_taus_exp": 8,  # number of taus used for calculating the expectation
         "risk_distortion": "wang",  # Options: "wang", "", "", ""
-        "risk_measure": -0.5
+        "risk_measure": -0.5,
     }
 
     def __init__(self, policy, env, verbose=0, seed=None, **kwargs):
@@ -48,8 +48,15 @@ class DSAC:
             action_dim=env.action_space.shape[0],
         )
 
-    def learn(self, total_timesteps: int = 1000, callback=None, log_interval: int = 1, tb_log_name="run",
-              progress_bar=False, **kwargs):
+    def learn(
+        self,
+        total_timesteps: int = 1000,
+        callback=None,
+        log_interval: int = 1,
+        tb_log_name="run",
+        progress_bar=False,
+        **kwargs,
+    ):
         """Train the agent through n_steps."""
 
         n_steps = total_timesteps
@@ -73,11 +80,19 @@ class DSAC:
                 mean_length.append(np.mean(episode_length[-log_interval:]))
 
                 if wandb.run is not None:
-                    wandb.log({"rollout/ep_rew_mean": mean_rewards[-1],
-                               "global_step": total_steps})
+                    wandb.log(
+                        {
+                            "rollout/ep_rew_mean": mean_rewards[-1],
+                            "global_step": total_steps,
+                        }
+                    )
 
-                    wandb.log({"rollout/ep_len_mean": mean_length[-1],
-                               "global_step": total_steps})
+                    wandb.log(
+                        {
+                            "rollout/ep_len_mean": mean_length[-1],
+                            "global_step": total_steps,
+                        }
+                    )
 
             self.print(f"Total steps: {total_steps}, reward: {total_reward}")
         self.print(f"Mean reward: {mean_rewards}")
@@ -94,7 +109,6 @@ class DSAC:
         n_steps = 0
 
         while True:
-
             # steps counter
             n_steps += 1
 
@@ -145,11 +159,13 @@ class DSAC:
         self.agent.save_to_file(file_path)
 
     def load(self, file_path):
-        self.agent = self.agent.load(file_path=file_path,
-                                     config=DSAC.agent_config,
-                                     device="cpu",
-                                     obs_dim=self.env.observation_space.shape[0],
-                                     action_dim=self.env.action_space.shape[0], )
+        self.agent = self.agent.load(
+            file_path=file_path,
+            config=DSAC.agent_config,
+            device="cpu",
+            obs_dim=self.env.observation_space.shape[0],
+            action_dim=self.env.action_space.shape[0],
+        )
 
 
 def main():

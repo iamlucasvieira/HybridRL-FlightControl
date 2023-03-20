@@ -27,9 +27,13 @@ class TestLTIEnv:
         env = LTIEnv(**env_kwargs)
 
         env.step(np.array([0]))
-        assert len(env.aircraft.states) == 2, f"env.aircraft.states should be updated after an environmnet step"
+        assert (
+            len(env.aircraft.states) == 2
+        ), f"env.aircraft.states should be updated after an environmnet step"
         env.reset()
-        assert len(env.aircraft.states) == 1, f"env.aircraft.states should be reset after an environmnet reset"
+        assert (
+            len(env.aircraft.states) == 1
+        ), f"env.aircraft.states should be reset after an environmnet reset"
 
     def test_unsupported_configuration(self, env_kwargs):
         """Tests if unsupported configuration raises an error."""

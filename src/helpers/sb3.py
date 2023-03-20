@@ -9,8 +9,12 @@ from typing import Union, Tuple
 from helpers.paths import Path
 
 
-def load_agent(model_directory: str, models_directory: str = None, zip_name: str = None,
-               with_data=False):
+def load_agent(
+    model_directory: str,
+    models_directory: str = None,
+    zip_name: str = None,
+    with_data=False,
+):
     """Loads an agent."""
     file_path = Path.models if models_directory is None else pl.Path(models_directory)
     zip_name = "model.zip" if zip_name is None else zip_name

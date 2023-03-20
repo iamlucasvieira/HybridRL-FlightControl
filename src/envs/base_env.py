@@ -12,17 +12,19 @@ from envs.rewards import get_reward
 
 class BaseEnv(gym.Env, ABC):
     """Aircraft Environment that follows gym interface"""
+
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self,
-                 dt: float = 0.1,
-                 episode_steps: int = 100,
-                 reward_scale: float = 1.0,
-                 tracked_state: str = "q",
-                 reference_type: str = "sin",
-                 reward_type: str = "sq_error",
-                 observation_type: str = "states + ref + error",
-                 ):
+    def __init__(
+        self,
+        dt: float = 0.1,
+        episode_steps: int = 100,
+        reward_scale: float = 1.0,
+        tracked_state: str = "q",
+        reference_type: str = "sin",
+        reward_type: str = "sq_error",
+        observation_type: str = "states + ref + error",
+    ):
         """Initialize the environment."""
         super(BaseEnv, self).__init__()
 
@@ -103,11 +105,9 @@ class BaseEnv(gym.Env, ABC):
 
     def _observation_space(self) -> spaces.Box:
         """The observation space of the environment."""
-        return spaces.Box(low=-1, high=1,
-                          shape=self._get_obs_shape(), dtype=np.float32)
+        return spaces.Box(low=-1, high=1, shape=self._get_obs_shape(), dtype=np.float32)
 
     def step(self, action: np.ndarray) -> tuple:
-
         info = {}
 
         # Advance time
@@ -120,7 +120,7 @@ class BaseEnv(gym.Env, ABC):
 
         # Tracking error
         e = tracked_x_t1 - self.reference[-1]
-        e_2 = e ** 2
+        e_2 = e**2
 
         # Store values
         self.actions.append(action)
@@ -138,7 +138,9 @@ class BaseEnv(gym.Env, ABC):
 
         if self.current_time + self.dt > self.episode_length:
             terminated = True
-            info = {"message": f"Episode length exceeded: {self.current_time} = {self.episode_length}"}
+            info = {
+                "message": f"Episode length exceeded: {self.current_time} = {self.episode_length}"
+            }
 
         # Make sure reward is not an array
         if isinstance(reward, np.ndarray):

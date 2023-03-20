@@ -15,10 +15,9 @@ from helpers.torch_helpers import mlp, BaseNetwork
 class CriticNetwork(BaseNetwork):
     """Creates the critic neural network."""
 
-    def __init__(self,
-                 observation_space: spaces.Box,
-                 action_space: spaces.Box,
-                 **kwargs):
+    def __init__(
+        self, observation_space: spaces.Box, action_space: spaces.Box, **kwargs
+    ):
         """Initialize critic network.
 
         args:
@@ -29,14 +28,14 @@ class CriticNetwork(BaseNetwork):
             fc2_dims_: Number of neurons in the second layer.
         """
         # Input layer of critic's neural network in SAC uses state-action pairs
-        super(CriticNetwork, self).__init__(observation_space,
-                                            action_space,
-                                            **kwargs)
+        super(CriticNetwork, self).__init__(observation_space, action_space, **kwargs)
 
     def _build_network(self) -> nn.Sequential:
         """Build network."""
-        ff = mlp([self.observation_dim + self.action_dim] + self.hidden_layers + [1],
-                 activation=nn.ReLU)
+        ff = mlp(
+            [self.observation_dim + self.action_dim] + self.hidden_layers + [1],
+            activation=nn.ReLU,
+        )
         return ff
 
     def forward(self, state, action):
@@ -48,12 +47,14 @@ class CriticNetwork(BaseNetwork):
 class ActorNetwork(BaseNetwork):
     """Actor network in SAC."""
 
-    def __init__(self,
-                 observation_space: spaces.Box,
-                 action_space: spaces.Box,
-                 sigma_min: float = -30,
-                 sigma_max: float = 2,
-                 **kwargs):
+    def __init__(
+        self,
+        observation_space: spaces.Box,
+        action_space: spaces.Box,
+        sigma_min: float = -30,
+        sigma_max: float = 2,
+        **kwargs
+    ):
         """Initialize actor network.
 
         args:
@@ -62,9 +63,7 @@ class ActorNetwork(BaseNetwork):
             sigma_min: Minimum value of the standard deviation.
             sigma_max: Maximum value of the standard deviation.
         """
-        super(ActorNetwork, self).__init__(observation_space,
-                                           action_space,
-                                           **kwargs)
+        super(ActorNetwork, self).__init__(observation_space, action_space, **kwargs)
         self.mu = nn.Linear(self.hidden_layers[-1], self.action_dim)
         self.log_sigma = nn.Linear(self.hidden_layers[-1], self.action_dim)
         self.action_max = float(action_space.high[0])
@@ -74,15 +73,19 @@ class ActorNetwork(BaseNetwork):
 
     def _build_network(self) -> nn.Sequential:
         """Build network."""
-        ff = mlp([self.observation_dim] + self.hidden_layers,
-                 activation=nn.ReLU,
-                 output_activation=nn.ReLU)
+        ff = mlp(
+            [self.observation_dim] + self.hidden_layers,
+            activation=nn.ReLU,
+            output_activation=nn.ReLU,
+        )
         return ff
 
     def output_layer(self, net_output, with_log_prob=True, deterministic=False):
         """The output layer of the SAC agent."""
         mu = self.mu(net_output)
-        log_sigma = th.clamp(self.log_sigma(net_output), min=self.sigma_min, max=self.sigma_max)
+        log_sigma = th.clamp(
+            self.log_sigma(net_output), min=self.sigma_min, max=self.sigma_max
+        )
         sigma = th.exp(log_sigma)
 
         action_distribution = Normal(mu, sigma)
@@ -90,8 +93,9 @@ class ActorNetwork(BaseNetwork):
         action = action_distribution.rsample() if not deterministic else mu
 
         if with_log_prob:  # From OpenAi Spinning Up
-            log_prob = action_distribution.log_prob(action) - \
-                       2 * (np.log(2) - action - softplus(-2 * action))
+            log_prob = action_distribution.log_prob(action) - 2 * (
+                np.log(2) - action - softplus(-2 * action)
+            )
             log_prob = log_prob.sum(axis=-1)
         else:
             log_prob = None
@@ -108,7 +112,9 @@ class ActorNetwork(BaseNetwork):
             with_log_prob: Whether to return the log probability.
         """
         net_output = self.ff(state)
-        action, log_prob = self.output_layer(net_output, with_log_prob=with_log_prob, deterministic=deterministic)
+        action, log_prob = self.output_layer(
+            net_output, with_log_prob=with_log_prob, deterministic=deterministic
+        )
 
         return action, log_prob
 
@@ -116,11 +122,13 @@ class ActorNetwork(BaseNetwork):
 class SACPolicy(BasePolicy):
     """Policy for SAC algorithm."""
 
-    def __init__(self,
-                 observation_space: spaces.Box,
-                 action_space: spaces.Box,
-                 learning_rate: float = 3e-4,
-                 hidden_layers: List[int] = None):
+    def __init__(
+        self,
+        observation_space: spaces.Box,
+        action_space: spaces.Box,
+        learning_rate: float = 3e-4,
+        hidden_layers: List[int] = None,
+    ):
         """Initialize policy.
 
         args:
@@ -145,20 +153,26 @@ class SACPolicy(BasePolicy):
         learning_rate = self.learning_rate
         hidden_layers = self.hidden_layers
 
-        self.actor = ActorNetwork(observation_space,
-                                  action_space,
-                                  learning_rate=learning_rate,
-                                  hidden_layers=hidden_layers, )
+        self.actor = ActorNetwork(
+            observation_space,
+            action_space,
+            learning_rate=learning_rate,
+            hidden_layers=hidden_layers,
+        )
 
-        self.critic_1 = CriticNetwork(observation_space,
-                                      action_space,
-                                      learning_rate=learning_rate,
-                                      hidden_layers=hidden_layers)
+        self.critic_1 = CriticNetwork(
+            observation_space,
+            action_space,
+            learning_rate=learning_rate,
+            hidden_layers=hidden_layers,
+        )
 
-        self.critic_2 = CriticNetwork(observation_space,
-                                      action_space,
-                                      learning_rate=learning_rate,
-                                      hidden_layers=hidden_layers)
+        self.critic_2 = CriticNetwork(
+            observation_space,
+            action_space,
+            learning_rate=learning_rate,
+            hidden_layers=hidden_layers,
+        )
 
     def get_action(self, state: np.ndarray, **kwargs) -> np.ndarray:
         """Get action from the policy.
@@ -174,7 +188,8 @@ class SACPolicy(BasePolicy):
             action, _ = self.actor(state, **kwargs)
         return action.numpy()
 
-    def predict(self, observation: np.ndarray,
-                deterministic: bool = True) -> np.ndarray:
+    def predict(
+        self, observation: np.ndarray, deterministic: bool = True
+    ) -> np.ndarray:
         """Predict action."""
         return self.get_action(observation, deterministic=deterministic)

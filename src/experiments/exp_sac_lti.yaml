@@ -9,7 +9,7 @@ seed: 50
 agent:
   name: SAC
   learn:
-    total_timesteps: 10_000
+    total_steps: 100_000
 
 # Set the environment to use
 env:

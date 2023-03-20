@@ -51,7 +51,9 @@ class Sweep:
         return self.config.env
 
     def build_agent(self) -> BaseAgent:
-        agent_args = tuple(self.replace_auto_config(self.agent_config.args.dict()).values())
+        agent_args = tuple(
+            self.replace_auto_config(self.agent_config.args.dict()).values()
+        )
         agent_kwargs = self.replace_auto_config(self.agent_config.kwargs.dict())
 
         agent = self.agent_config.object(*agent_args, **agent_kwargs)
@@ -84,23 +86,29 @@ class Sweep:
     def get_callbacks(self):
         """Get the callbacks to use."""
         callbacks = []
-        config_callbacks = self.learn_kwargs['callback']
+        config_callbacks = self.learn_kwargs["callback"]
         if "wandb" in config_callbacks:
-            callbacks.append(AVAILABLE_CALLBACKS['wandb'](
-                model_save_freq=100,
-                model_save_path=f"{self.MODELS_PATH / self.run_name}",
-                verbose=self.config.verbose
-            ))
+            callbacks.append(
+                AVAILABLE_CALLBACKS["wandb"](
+                    model_save_freq=100,
+                    model_save_path=f"{self.MODELS_PATH / self.run_name}",
+                    verbose=self.config.verbose,
+                )
+            )
 
         if "tensorboard" in config_callbacks:
-            callbacks.append(AVAILABLE_CALLBACKS['tensorboard'](
-                verbose=self.config.verbose,
-            ))
+            callbacks.append(
+                AVAILABLE_CALLBACKS["tensorboard"](
+                    verbose=self.config.verbose,
+                )
+            )
 
         if "online" in config_callbacks:
-            callbacks.append(AVAILABLE_CALLBACKS['online'](
-                verbose=self.config.verbose,
-            ))
+            callbacks.append(
+                AVAILABLE_CALLBACKS["online"](
+                    verbose=self.config.verbose,
+                )
+            )
 
         self.learn_kwargs["callback"] = callbacks
 
@@ -142,9 +150,10 @@ class ExperimentBuilder:
     """Class that builds an experiment from a config."""
 
     def __init__(self, filename: str, file_path: str = None):
-
         self.file_path = pl.Path(file_path) if file_path else Path.exp
-        self.filename = filename + ".yaml" if not filename.endswith(".yaml") else filename
+        self.filename = (
+            filename + ".yaml" if not filename.endswith(".yaml") else filename
+        )
         self.sweeps = []
         self.sweep_configs = []
 
@@ -177,13 +186,19 @@ class ExperimentBuilder:
             sweep_configurations = list(itertools.product(*sweep.dict().values()))
 
             for sweep_config in sweep_configurations:
-                config_list = [self.config] if len(self.sweep_configs) == 0 else self.sweep_configs
+                config_list = (
+                    [self.config]
+                    if len(self.sweep_configs) == 0
+                    else self.sweep_configs
+                )
 
                 # Loop through existing sweeps
                 for config in config_list:
                     new_config = config.copy(deep=True)
                     sweep_config_dict = dict(zip(sweep.dict().keys(), sweep_config))
-                    operator.attrgetter(default_attr)(new_config).__dict__.update(sweep_config_dict)
+                    operator.attrgetter(default_attr)(new_config).__dict__.update(
+                        sweep_config_dict
+                    )
                     sweep_list.append(new_config)
             return sweep_list
 
@@ -204,4 +219,4 @@ class ExperimentBuilder:
 
     def get_random_seed(self):
         """Get a random seed."""
-        return random.randint(0, 2 ** 32 - 1)
+        return random.randint(0, 2**32 - 1)

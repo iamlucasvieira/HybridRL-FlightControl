@@ -8,7 +8,7 @@ def get_name(file_name):
     if isinstance(file_name, list):
         file_name = "_".join(file_name)
 
-    iso_format = datetime.now().isoformat(timespec='seconds').replace(":", "")
+    iso_format = datetime.now().isoformat(timespec="seconds").replace(":", "")
     return f"{file_name}_{iso_format}"
 
 

@@ -11,7 +11,7 @@ class NormalPolicyNet(nn.Module):
     """Outputs a distribution with parameters learnable by gradient descent."""
 
     def __init__(
-            self, obs_dim: int, action_dim: int, n_hidden_layers: int, n_hidden_units: int
+        self, obs_dim: int, action_dim: int, n_hidden_layers: int, n_hidden_units: int
     ):
         super().__init__()
         self.shared_net = make_mlp(

@@ -1,8 +1,8 @@
 import pytest
 from envs.citation.models.model_loader import AVAILABLE_MODELS, load_model
 
-class TestModelLoader:
 
+class TestModelLoader:
     @pytest.mark.parametrize("model_name", AVAILABLE_MODELS)
     def test_load_model(self, model_name):
         """Test that the model is loaded correctly."""

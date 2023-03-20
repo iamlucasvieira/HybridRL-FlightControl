@@ -19,6 +19,7 @@ FIGURES = ROOT / pl.Path("reports/figures")
 @dataclass
 class Path:
     """Class that contains all project paths."""
+
     root: pl.Path = ROOT
     src: pl.Path = SRC
     data: pl.Path = DATA
@@ -27,7 +28,8 @@ class Path:
     exp: pl.Path = EXP
     figures: pl.Path = FIGURES
     paper_figures: pl.Path = pl.Path(
-        "/Users/lucas/Documents/Thesis Writing/LiteratureReview/figures")  # Path to report figures
+        "/Users/lucas/Documents/Thesis Writing/LiteratureReview/figures"
+    )  # Path to report figures
 
 
 def set_wandb_path():

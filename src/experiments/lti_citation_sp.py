@@ -3,19 +3,21 @@
 from thesis_pilot.core import Sweep
 
 
-def main(algorithm_name: str = "SAC",
-         env_name: str = "citation",
-         configuration: str = "sp",
-         task_name="aoa_sin",
-         seed: int = 1,
-         dt: float = 0.1,
-         episode_steps: int = 100,
-         learning_steps: int = 10_000,
-         verbose: int = 2,
-         name=None,
-         tags=None,
-         TO_PLOT=False,
-         offline=True):
+def main(
+    algorithm_name: str = "SAC",
+    env_name: str = "citation",
+    configuration: str = "sp",
+    task_name="aoa_sin",
+    seed: int = 1,
+    dt: float = 0.1,
+    episode_steps: int = 100,
+    learning_steps: int = 10_000,
+    verbose: int = 2,
+    name=None,
+    tags=None,
+    TO_PLOT=False,
+    offline=True,
+):
     """Main function to run a basic aoa experiementthe experiment.
 
     args:
@@ -24,17 +26,18 @@ def main(algorithm_name: str = "SAC",
 
     """
 
-    exp = Sweep(algorithm_name=algorithm_name,
-                env_name=env_name,
-                configuration=configuration,
-                task_name=task_name,
-                seed=seed,
-                dt=dt,
-                episode_steps=episode_steps,
-                learning_steps=learning_steps,
-                verbose=verbose,
-                offline=offline
-                )
+    exp = Sweep(
+        algorithm_name=algorithm_name,
+        env_name=env_name,
+        configuration=configuration,
+        task_name=task_name,
+        seed=seed,
+        dt=dt,
+        episode_steps=episode_steps,
+        learning_steps=learning_steps,
+        verbose=verbose,
+        offline=offline,
+    )
 
     # Learn the model
     exp.learn(name=name, tags=tags)

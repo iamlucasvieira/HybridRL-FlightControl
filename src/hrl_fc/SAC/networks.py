@@ -17,7 +17,15 @@ TEMP_PATH = MODELS_PATH / "custom_sac"
 class BaseNetwork(nn.Module):
     """Base network for Critic and Value networks."""
 
-    def __init__(self, beta, input_dims, fc1_dims=256, fc2_dims=256, name='base', chkpt_dir=TEMP_PATH):
+    def __init__(
+        self,
+        beta,
+        input_dims,
+        fc1_dims=256,
+        fc2_dims=256,
+        name="base",
+        chkpt_dir=TEMP_PATH,
+    ):
         """Initialize critic network.
 
         args:
@@ -34,7 +42,7 @@ class BaseNetwork(nn.Module):
         self.fc2_dims = fc2_dims
         self.name = name
         self.checkpoint_dir = chkpt_dir
-        self.checkpoint_file = chkpt_dir / f'{name}_sac'
+        self.checkpoint_file = chkpt_dir / f"{name}_sac"
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
@@ -56,7 +64,16 @@ class BaseNetwork(nn.Module):
 class CriticNetwork(BaseNetwork):
     """Creates the critic neural network."""
 
-    def __init__(self, beta, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name='critic', chkpt_dir=TEMP_PATH):
+    def __init__(
+        self,
+        beta,
+        input_dims,
+        n_actions,
+        fc1_dims=256,
+        fc2_dims=256,
+        name="critic",
+        chkpt_dir=TEMP_PATH,
+    ):
         """Initialize critic network.
 
         args:
@@ -68,11 +85,14 @@ class CriticNetwork(BaseNetwork):
         """
         # Input layer of critic's neural network in SAC uses state-action pairs
         input_dims = (input_dims[0] + n_actions,)
-        super(CriticNetwork, self).__init__(beta, input_dims,
-                                            fc1_dims=fc1_dims,
-                                            fc2_dims=fc2_dims,
-                                            name=name,
-                                            chkpt_dir=chkpt_dir)
+        super(CriticNetwork, self).__init__(
+            beta,
+            input_dims,
+            fc1_dims=fc1_dims,
+            fc2_dims=fc2_dims,
+            name=name,
+            chkpt_dir=chkpt_dir,
+        )
 
     def forward(self, state, action):
         """Forward pass of the critic's neural network."""
@@ -93,7 +113,15 @@ class CriticNetwork(BaseNetwork):
 class ValueNetwork(BaseNetwork):
     """Value function network SAC."""
 
-    def __init__(self, beta, input_dims, fc1_dims=256, fc2_dims=256, name='value', chkpt_dir=TEMP_PATH):
+    def __init__(
+        self,
+        beta,
+        input_dims,
+        fc1_dims=256,
+        fc2_dims=256,
+        name="value",
+        chkpt_dir=TEMP_PATH,
+    ):
         """Initialize value network.
 
         args:
@@ -104,11 +132,14 @@ class ValueNetwork(BaseNetwork):
             name: Name of the network.
             chkpt_dir: Checkpoint directory.
         """
-        super(ValueNetwork, self).__init__(beta, input_dims,
-                                           fc1_dims=fc1_dims,
-                                           fc2_dims=fc2_dims,
-                                           name=name,
-                                           chkpt_dir=chkpt_dir)
+        super(ValueNetwork, self).__init__(
+            beta,
+            input_dims,
+            fc1_dims=fc1_dims,
+            fc2_dims=fc2_dims,
+            name=name,
+            chkpt_dir=chkpt_dir,
+        )
 
     def forward(self, state):
         """Forward pass of the value network."""
@@ -126,8 +157,17 @@ class ValueNetwork(BaseNetwork):
 class ActorNetwork(BaseNetwork):
     """Actor network in SAC."""
 
-    def __init__(self, alpha, input_dims, max_action, fc1_dims=256, fc2_dims=256, n_actions=2,
-                 name='actor', chkpt_dir=TEMP_PATH):
+    def __init__(
+        self,
+        alpha,
+        input_dims,
+        max_action,
+        fc1_dims=256,
+        fc2_dims=256,
+        n_actions=2,
+        name="actor",
+        chkpt_dir=TEMP_PATH,
+    ):
         """Initialize actor network.
 
         args:
@@ -138,11 +178,14 @@ class ActorNetwork(BaseNetwork):
             name: Name of the network.
             chkpt_dir: Checkpoint directory.
         """
-        super(ActorNetwork, self).__init__(alpha, input_dims,
-                                           fc1_dims=fc1_dims,
-                                           fc2_dims=fc2_dims,
-                                           name=name,
-                                           chkpt_dir=chkpt_dir)
+        super(ActorNetwork, self).__init__(
+            alpha,
+            input_dims,
+            fc1_dims=fc1_dims,
+            fc2_dims=fc2_dims,
+            name=name,
+            chkpt_dir=chkpt_dir,
+        )
         self.max_action = max_action
         self.n_actions = n_actions
         self.param_noise = 1e-6
