@@ -175,6 +175,6 @@ class SACPolicy(BasePolicy):
         return action.numpy()
 
     def predict(self, observation: np.ndarray,
-                deterministic: bool = False) -> np.ndarray:
+                deterministic: bool = True) -> np.ndarray:
         """Predict action."""
         return self.get_action(observation, deterministic=deterministic)
