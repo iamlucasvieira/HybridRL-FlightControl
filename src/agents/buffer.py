@@ -1,6 +1,6 @@
 """Creates a replay buffer for the SAC algorithm."""
-from collections import namedtuple, deque
 import random
+from collections import namedtuple, deque
 from typing import Optional
 
 Transition = namedtuple('Transition', ('obs', 'action', 'reward', 'obs_', 'done'))

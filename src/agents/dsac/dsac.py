@@ -1,10 +1,12 @@
 """Module that defines the DSAC algorithm."""
 
+from typing import Union, Optional
+
+import gymnasium as gym
+
 from agents import BaseAgent
 from agents.dsac.policy import DSACPolicy
 from envs import BaseEnv
-import gymnasium as gym
-from typing import Union, Optional
 
 
 class DSAC(BaseAgent):

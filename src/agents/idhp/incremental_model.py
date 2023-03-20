@@ -1,6 +1,8 @@
 """IDHP incremental model."""
-import numpy as np
 from abc import ABC
+
+import numpy as np
+
 from envs import BaseEnv
 
 

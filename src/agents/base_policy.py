@@ -1,9 +1,10 @@
 """Module that defines the base policy class."""
 
-from torch import nn
 from abc import ABC, abstractmethod
-from gymnasium import spaces
+
 import numpy as np
+from gymnasium import spaces
+from torch import nn
 
 
 class BasePolicy(nn.Module, ABC):

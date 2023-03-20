@@ -1,10 +1,11 @@
 """Module that defines  the logger for the agents."""
-from helpers.paths import Path
-from typing import Optional, Any
 import pathlib as pl
-from torch.utils.tensorboard import SummaryWriter
 from collections import defaultdict
+from typing import Optional, Any
+
 from rich.table import Table
+
+from helpers.paths import Path
 from hrl_fc.console import console
 
 

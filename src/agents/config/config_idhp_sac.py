@@ -1,9 +1,9 @@
+"""Module that defines the IDHP-SAC configuration."""
 from typing import Optional, Literal, List
 
 from pydantic import BaseModel, Extra
-from agents.base_agent import BaseAgent
 
-from agents import IDHPSAC
+from agents import BaseAgent, IDHPSAC
 from helpers.config_auto import get_auto
 
 

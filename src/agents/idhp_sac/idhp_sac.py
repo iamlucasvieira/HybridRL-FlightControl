@@ -1,15 +1,14 @@
 """Module that builds the hybrid IDHP-SAC agent."""
 from copy import copy
-from typing import List, Tuple, Optional
+from typing import Optional
 
-from agents.base_agent import BaseAgent
-from agents import IDHP, SAC
-from agents.idhp_sac.policy import IDHPSACPolicy, IDHPSACActor
+from agents import IDHP, SAC, BaseAgent
 from agents.base_callback import ListCallback
+from agents.callbacks import TensorboardCallback, OnlineCallback
+from agents.idhp_sac.policy import IDHPSACPolicy, IDHPSACActor
 from helpers.sb3 import load_agent
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
-from agents.callbacks import TensorboardCallback, OnlineCallback
 
 
 class IDHPSAC(BaseAgent):

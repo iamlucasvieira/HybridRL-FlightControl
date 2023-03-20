@@ -1,20 +1,22 @@
 """Module that defines the base agent that is stable-baselines3 like."""
-from abc import ABC, abstractmethod
-import gymnasium as gym
-from agents.base_callback import ListCallback, BaseCallback
-from agents.base_policy import BasePolicy
-from helpers.torch_helpers import get_device
-from typing import Optional, List, Tuple, Any, Union, SupportsFloat
-import random
-import torch as th
-import numpy as np
-import time
-from agents.base_logger import Logger
 import pathlib as pl
-from hrl_fc.console import console
 import pickle
+import random
+import time
+from abc import ABC, abstractmethod
+from typing import Optional, List, Any, Union, SupportsFloat, TYPE_CHECKING
+
+import gymnasium as gym
+import numpy as np
+import torch as th
+
+from agents.base_policy import BasePolicy
+from agents.base_callback import ListCallback, BaseCallback
+from agents.base_logger import Logger
 from agents.buffer import ReplayBuffer, Transition
-from envs.base_env import BaseEnv
+from envs import BaseEnv
+from helpers.torch_helpers import get_device
+from hrl_fc.console import console
 
 
 class BaseAgent(ABC):

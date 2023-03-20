@@ -1,16 +1,14 @@
-"""Module that implemment IDHP agent."""
+"""Module that implements the IDHP agent."""
 from dataclasses import dataclass
-from typing import Type, Tuple, List, Optional
+from typing import List, Optional
 
-import numpy as np
 import torch as th
 
+from agents import BaseAgent
+from agents.base_callback import ListCallback
 from agents.idhp.incremental_model import IncrementalCitation
 from agents.idhp.policy import IDHPPolicy
 from envs import BaseEnv
-# from helpers.callbacks import OnlineCallback
-from agents.base_agent import BaseAgent
-from agents.base_callback import ListCallback
 
 
 class IDHP(BaseAgent):
@@ -96,6 +94,7 @@ class IDHP(BaseAgent):
             total_steps: int,
             callback: ListCallback,
             log_interval: int,
+            **kwargs,
     ):
         """Learn the policy."""
         obs_t, _ = self.env.reset()

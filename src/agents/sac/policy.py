@@ -1,6 +1,5 @@
 """Create policy for SAC algorithm."""
-import pathlib as pl
-from typing import Union, List
+from typing import List
 
 import numpy as np
 import torch as th
@@ -8,7 +7,8 @@ from gymnasium import spaces
 from torch import nn
 from torch.distributions import Normal
 from torch.nn.functional import softplus
-from agents.base_policy import BasePolicy
+
+from agents import BasePolicy
 from helpers.torch_helpers import mlp, BaseNetwork
 
 

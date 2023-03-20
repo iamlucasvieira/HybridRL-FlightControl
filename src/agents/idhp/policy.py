@@ -1,14 +1,14 @@
 """Module that defines the IDHP agent, including the actor and the critic."""
 from typing import Type, List, Optional
 
-from gymnasium import spaces
 import numpy as np
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
+from gymnasium import spaces
 
+from agents import BasePolicy
 from helpers.torch_helpers import mlp, BaseNetwork
-from agents.base_policy import BasePolicy
 
 
 class BaseNetworkIDHP(BaseNetwork):

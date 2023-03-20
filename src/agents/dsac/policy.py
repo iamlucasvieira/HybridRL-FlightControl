@@ -2,7 +2,6 @@
 
 from agents import BasePolicy
 
-import torch as th
 
 class DSACPolicy(BasePolicy):
     """DSAC policy."""

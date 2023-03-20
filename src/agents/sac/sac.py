@@ -1,17 +1,16 @@
-import sys
-import time
+"""Module that creates the SAC algorithm."""
 from copy import deepcopy
-from typing import Union, Optional, List
+from typing import Union, Optional
 
 import gymnasium as gym
 import numpy as np
 import torch as th
 
+from agents import BaseAgent
+from agents.base_callback import ListCallback
 from agents.buffer import ReplayBuffer, Transition
 from agents.sac.policy import SACPolicy
 from helpers.torch_helpers import get_device, to_tensor, freeze, unfreeze
-from agents.base_agent import BaseAgent
-from agents.base_callback import ListCallback
 
 
 class SAC(BaseAgent):
@@ -80,7 +79,8 @@ class SAC(BaseAgent):
                                   save_dir=save_dir,
                                   verbose=verbose,
                                   seed=seed,
-                                  device=device, )
+                                  device=device,
+                                  _init_setup_model=_init_setup_model)
 
     def _learn(
             self,

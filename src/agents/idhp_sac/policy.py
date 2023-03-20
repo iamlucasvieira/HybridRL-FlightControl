@@ -1,13 +1,13 @@
-"""Module that defienes the IDHP-SAC policy."""
+"""Module that defines the IDHP-SAC policy."""
 
 import torch as th
 import torch.nn as nn
+from gymnasium import spaces
 
+from agents import BasePolicy
 from agents.idhp.policy import Actor as IDHPActor
 from agents.sac.policy import ActorNetwork as SACActor
 from helpers.torch_helpers import freeze, mlp
-from agents.base_policy import BasePolicy
-from gymnasium import spaces
 
 
 class IDHPSACActor(IDHPActor):
