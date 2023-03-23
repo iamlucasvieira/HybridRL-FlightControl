@@ -5,13 +5,11 @@ import typer
 from rich import print
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Confirm
-from rich.prompt import IntPrompt
+from rich.prompt import Confirm, IntPrompt
 from rich.table import Table
 
 from helpers.paths import Path
-from hrl_fc.experiment_runner import Evaluator
-from hrl_fc.experiment_runner import Runner
+from hrl_fc.experiment_runner import Evaluator, Runner
 
 
 app = typer.Typer()

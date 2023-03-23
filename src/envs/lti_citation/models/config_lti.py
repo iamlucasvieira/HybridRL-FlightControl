@@ -1,8 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
-from pydantic import Extra
-from pydantic import validator
+from pydantic import BaseModel, Extra, validator
 
 
 class SymmetricDerivatives(BaseModel):

@@ -1,10 +1,8 @@
 """Module that contains helper functions for PyTorch."""
 
 import pathlib as pl
-from abc import ABC
-from abc import abstractmethod
-from typing import Tuple
-from typing import Union
+from abc import ABC, abstractmethod
+from typing import Tuple, Union
 
 import numpy as np
 import torch as th
@@ -18,13 +16,12 @@ class BaseNetwork(nn.Module, ABC):
 
     def __init__(
         self,
-        observation_space: spaces.Box,
-        action_space: spaces.Box,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
         learning_rate: float = 3e-4,
         hidden_layers=None,
-        name="base",
-        save_path: Union[str, pl.Path] = "",
         device: Union[str, th.device] = "cpu",
+        build_network: bool = True,
     ):
         """Initialize critic network.
 
@@ -48,18 +45,20 @@ class BaseNetwork(nn.Module, ABC):
         self.observation_space = observation_space
         self.action_dim = action_space.shape[0]
         self.action_space = action_space
-
-        self.ff = self._build_network()
-        self.name = name
-
-        self.optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         self.device = device
-        self.to(self.device)
 
-    @abstractmethod
+        if build_network:
+            self.ff = self._build_network()
+            self._build_optimizer()
+            self.to(self.device)
+
     def _build_network(self) -> nn.Sequential:
         """Build network."""
         raise NotImplementedError
+
+    def _build_optimizer(self):
+        """Build optimizer."""
+        self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
 
     def save_checkpoint(self):
         """Save checkpoint."""
@@ -127,3 +126,19 @@ def freeze(module: nn.Module):
 def unfreeze(module: nn.Module):
     """Unfreeze the parameters of the given module."""
     update_requires_grad(module, True)
+
+
+def check_shape(tensor: th.Tensor, shape: tuple, name: str = "Tensor"):
+    """Check if tensor has expected shape."""
+    if tensor.shape != shape:
+        raise ValueError(
+            f"{name} expected to have shape {shape}, got {tensor.shape} instead."
+        )
+
+
+def check_dimensions(tensor: th.Tensor, dimensions: int, name: str = "Tensor"):
+    """Check if tensor has expected number of dimensions."""
+    if tensor.ndim != dimensions:
+        raise ValueError(
+            f"'{name}' expected to have {dimensions} dimensions, got {tensor.ndim} instead."
+        )

@@ -1,7 +1,6 @@
 import pytest
 
-from envs import CitationEnv
-from envs import LTIEnv
+from envs import CitationEnv, LTIEnv
 from helpers.torch_helpers import BaseNetwork
 
 
@@ -14,5 +13,5 @@ class TestBaseNetwork:
         env = env()
         observation_space = env.observation_space
         action_space = env.action_space
-        with pytest.raises(TypeError):
+        with pytest.raises(NotImplementedError):
             BaseNetwork(observation_space, action_space)

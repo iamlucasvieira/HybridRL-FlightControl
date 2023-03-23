@@ -4,11 +4,9 @@ from typing import Optional
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
-from agents.callbacks import OnlineCallback
-from agents.callbacks import TensorboardCallback
+from agents.callbacks import OnlineCallback, TensorboardCallback
 from agents.idhp.idhp import IDHP
-from agents.idhp_sac.policy import IDHPSACActor
-from agents.idhp_sac.policy import IDHPSACPolicy
+from agents.idhp_sac.policy import IDHPSACActor, IDHPSACPolicy
 from agents.sac.sac import SAC
 from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate

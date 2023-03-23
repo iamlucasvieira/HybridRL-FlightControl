@@ -10,9 +10,7 @@ import torch.nn.functional as F
 from torch import optim
 
 from agents.seres_dsac.base_agent import BaseAgent
-from agents.seres_dsac.experience_replay import Batch
-from agents.seres_dsac.experience_replay import ReplayBuffer
-from agents.seres_dsac.experience_replay import Transition
+from agents.seres_dsac.experience_replay import Batch, ReplayBuffer, Transition
 from agents.seres_dsac.sac.actor import NormalPolicyNet
 from agents.seres_dsac.sac.critic import QNet
 

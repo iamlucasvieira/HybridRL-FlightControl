@@ -1,11 +1,14 @@
 """Module that defines the base policy class."""
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from typing import Union
 
 import numpy as np
 from gymnasium import spaces
 from torch import nn
+
+
+spaces_type_alias = Union[spaces.Box, spaces.Space]
 
 
 class BasePolicy(nn.Module, ABC):
@@ -13,8 +16,8 @@ class BasePolicy(nn.Module, ABC):
 
     def __init__(
         self,
-        observation_space: spaces.Space,
-        action_space: spaces.Space,
+        observation_space: spaces_type_alias,
+        action_space: spaces_type_alias,
         _init_setup_policy: bool = True,
     ):
         """Initialize policy.

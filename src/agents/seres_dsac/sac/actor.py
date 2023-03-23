@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from torch.distributions import Independent
-from torch.distributions import Normal
+from torch.distributions import Independent, Normal
 
 from agents.seres_dsac.mlp import make_mlp
 

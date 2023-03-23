@@ -10,11 +10,8 @@ from torch import optim
 
 from agents.seres_dsac.base_agent import BaseAgent
 from agents.seres_dsac.dsac.critic import ZNet
-from agents.seres_dsac.dsac.risk_distortions import DistortionFn
-from agents.seres_dsac.dsac.risk_distortions import distortion_functions
-from agents.seres_dsac.experience_replay import Batch
-from agents.seres_dsac.experience_replay import ReplayBuffer
-from agents.seres_dsac.experience_replay import Transition
+from agents.seres_dsac.dsac.risk_distortions import DistortionFn, distortion_functions
+from agents.seres_dsac.experience_replay import Batch, ReplayBuffer, Transition
 from agents.seres_dsac.sac.actor import NormalPolicyNet
 
 

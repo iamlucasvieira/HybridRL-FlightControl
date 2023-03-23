@@ -7,8 +7,7 @@ from gymnasium import spaces
 from agents import BasePolicy
 from agents.idhp.policy import Actor as IDHPActor
 from agents.sac.policy import ActorNetwork as SACActor
-from helpers.torch_helpers import freeze
-from helpers.torch_helpers import mlp
+from helpers.torch_helpers import freeze, mlp
 
 
 class IDHPSACActor(IDHPActor):

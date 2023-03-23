@@ -1,12 +1,8 @@
 """Gym environment configuration."""
-from typing import Callable
-from typing import Literal
-from typing import Optional
+from typing import Callable, Literal, Optional
 
 import gymnasium as gym
-from pydantic import BaseModel
-from pydantic import Extra
-from pydantic import validator
+from pydantic import BaseModel, Extra, validator
 
 
 class ConfigGymKwargs(BaseModel):

@@ -2,9 +2,7 @@ import pytest
 import torch as th
 from torch import nn
 
-from agents.sac.policy import ActorNetwork
-from agents.sac.policy import CriticNetwork
-from agents.sac.policy import SACPolicy
+from agents.sac.policy import ActorNetwork, CriticNetwork, SACPolicy
 from envs.citation.citation_env import CitationEnv
 
 

@@ -5,8 +5,7 @@ import torch as th
 
 from agents import IDHPSAC
 from agents.idhp_sac.policy import IDHPSACActor
-from envs import CitationEnv
-from envs import LTIEnv
+from envs import CitationEnv, LTIEnv
 from envs.observations import get_observation
 from envs.rewards import get_reward
 

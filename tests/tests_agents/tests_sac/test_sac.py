@@ -6,8 +6,7 @@ import pytest
 import torch as th
 
 from agents.base_logger import Logger
-from agents.buffer import ReplayBuffer
-from agents.buffer import Transition
+from agents.buffer import ReplayBuffer, Transition
 from agents.sac.policy import SACPolicy
 from agents.sac.sac import SAC
 from envs.citation.citation_env import CitationEnv

@@ -6,8 +6,7 @@ import random
 
 import yaml
 
-from agents import AVAILABLE_CALLBACKS
-from agents import BaseAgent
+from agents import AVAILABLE_CALLBACKS, BaseAgent
 from helpers.config_auto import validate_auto
 from helpers.misc import get_name
 from helpers.paths import Path

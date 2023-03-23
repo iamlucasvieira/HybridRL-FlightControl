@@ -1,12 +1,7 @@
 """Module that defines the Base class for callbacks."""
 
-from abc import ABC
-from abc import abstractmethod
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 
 # Only import BaseAgent if type checking

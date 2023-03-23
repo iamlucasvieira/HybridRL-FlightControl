@@ -3,12 +3,9 @@ import pytest
 
 from envs.citation.citation_env import CitationEnv
 from envs.lti_citation.lti_env import LTIEnv
-from envs.observations import AVAILABLE_OBSERVATIONS
-from envs.observations import get_observation
-from envs.reference_signals import AVAILABLE_REFERENCES
-from envs.reference_signals import get_reference_signal
-from envs.rewards import AVAILABLE_REWARDS
-from envs.rewards import get_reward
+from envs.observations import AVAILABLE_OBSERVATIONS, get_observation
+from envs.reference_signals import AVAILABLE_REFERENCES, get_reference_signal
+from envs.rewards import AVAILABLE_REWARDS, get_reward
 
 
 env_storage_parameters = [

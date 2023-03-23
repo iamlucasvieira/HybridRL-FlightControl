@@ -1,7 +1,6 @@
 """Module that creates the SAC algorithm."""
 from copy import deepcopy
-from typing import Optional
-from typing import Union
+from typing import Optional, Type, Union
 
 import gymnasium as gym
 import numpy as np
@@ -9,13 +8,10 @@ import torch as th
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
-from agents.buffer import ReplayBuffer
-from agents.buffer import Transition
-from agents.sac.policy import SACPolicy
-from helpers.torch_helpers import freeze
-from helpers.torch_helpers import get_device
-from helpers.torch_helpers import to_tensor
-from helpers.torch_helpers import unfreeze
+from agents.buffer import ReplayBuffer, Transition
+from agents.sac.policy import BasePolicy, SACPolicy
+from envs import BaseEnv
+from helpers.torch_helpers import freeze, get_device, to_tensor, unfreeze
 
 
 class SAC(BaseAgent):
@@ -23,7 +19,7 @@ class SAC(BaseAgent):
 
     def __init__(
         self,
-        env: Union[gym.Env, str],
+        env: Union[gym.Env, Type[BaseEnv]],
         learning_rate: float = 3e-4,
         policy_kwargs: Optional[dict] = None,
         log_dir: Optional[str] = None,
@@ -40,6 +36,7 @@ class SAC(BaseAgent):
         gamma: float = 0.99,
         polyak: float = 0.995,
         device: Optional[Union[th.device, str]] = None,
+        policy: Optional[Type[BasePolicy]] = None,
     ):
         """Initialize the SAC algorithm.
 
@@ -63,6 +60,11 @@ class SAC(BaseAgent):
         """
         if device is None:
             device = get_device()
+        if policy is None:
+            policy = SACPolicy
+        if policy_kwargs is None:
+            policy_kwargs = {}
+        policy_kwargs["learning_rate"] = learning_rate
 
         self.buffer_size = buffer_size
         self.gradient_steps = gradient_steps
@@ -79,7 +81,7 @@ class SAC(BaseAgent):
         self.target_entropy = None
 
         super().__init__(
-            SACPolicy,
+            policy,
             env,
             policy_kwargs=policy_kwargs,
             log_dir=log_dir,

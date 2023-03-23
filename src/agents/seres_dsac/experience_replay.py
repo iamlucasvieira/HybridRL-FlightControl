@@ -4,8 +4,7 @@ This module defnines a simple a replay buffer that stores transitions in the MDP
 
 import functools
 import random
-from collections import deque
-from collections import namedtuple
+from collections import deque, namedtuple
 
 import numpy as np
 import torch

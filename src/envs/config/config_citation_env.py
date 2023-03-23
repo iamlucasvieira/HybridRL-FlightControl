@@ -1,12 +1,8 @@
 """Module that configures the LTI environment."""
-from typing import List
-from typing import Literal
-from typing import Optional
+from typing import List, Literal, Optional
 
 import gymnasium as gym
-from pydantic import BaseModel
-from pydantic import Extra
-from pydantic import validator
+from pydantic import BaseModel, Extra, validator
 
 from envs.citation.citation_env import CitationEnv
 from envs.citation.models.model_loader import AVAILABLE_MODELS

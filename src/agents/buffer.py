@@ -1,7 +1,6 @@
 """Creates a replay buffer for the SAC algorithm."""
 import random
-from collections import deque
-from collections import namedtuple
+from collections import deque, namedtuple
 from typing import Optional
 
 

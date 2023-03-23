@@ -4,8 +4,7 @@ This module defines an abstract class for RL agents.
 
 from __future__ import annotations
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np

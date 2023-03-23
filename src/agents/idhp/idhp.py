@@ -1,7 +1,6 @@
 """Module that implements the IDHP agent."""
 from dataclasses import dataclass
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import torch as th
 
