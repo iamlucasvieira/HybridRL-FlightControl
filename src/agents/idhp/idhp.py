@@ -26,6 +26,7 @@ class IDHP(BaseAgent):
         learning_rate: float = 0.08,
         actor_kwargs: Optional[dict] = None,
         critic_kwargs: Optional[dict] = None,
+        device: Optional[str] = None,
         **kwargs,
     ):
         """Initialize the IDHP algorithm.
@@ -62,6 +63,7 @@ class IDHP(BaseAgent):
             save_dir=save_dir,
             seed=seed,
             policy_kwargs=policy_kwargs,
+            device=device,
         )
 
         self.gamma = discount_factor
@@ -104,7 +106,9 @@ class IDHP(BaseAgent):
     ):
         """Learn the policy."""
         obs_t, _ = self.env.reset()
-        obs_t = th.tensor(obs_t, requires_grad=True, dtype=th.float32)
+        obs_t = th.tensor(
+            obs_t, requires_grad=True, dtype=th.float32, device=self.device
+        )
 
         while self.num_steps < total_steps:
             ###############################################
@@ -136,7 +140,9 @@ class IDHP(BaseAgent):
                 # Step environment
 
                 obs_t1, rew_t1, terminated, truncated, info = self.get_rollout(
-                    action.detach().numpy(), obs_t.detach().numpy(), callback
+                    action.cpu().detach().numpy(),
+                    obs_t.cpu().detach().numpy(),
+                    callback,
                 )
 
                 done = terminated or truncated
@@ -149,17 +155,25 @@ class IDHP(BaseAgent):
                 callback.on_step()
 
                 # Convert to tensors
-                obs_t1 = th.tensor(obs_t1, requires_grad=True, dtype=th.float32)
-                error_t1 = th.tensor(self.env.error[-1], dtype=th.float32)
+                obs_t1 = th.tensor(
+                    obs_t1, requires_grad=True, dtype=th.float32, device=self.device
+                )
+                error_t1 = th.tensor(
+                    self.env.error[-1], dtype=th.float32, device=self.device
+                )
 
                 # Get the reward gradient with respect to the state at time t+1
-                dr1_ds1 = -2 * error_t1 * self.env.tracked_state_mask
+                dr1_ds1 = (
+                    -2
+                    * error_t1
+                    * th.as_tensor(self.env.tracked_state_mask, device=self.device)
+                )
 
                 critic_t1 = self.critic(obs_t1)
 
                 # Get incremental model predictions of F and G at time t-1
-                F_t_1 = th.tensor(self.model.F, dtype=th.float32)
-                G_t_1 = th.tensor(self.model.G, dtype=th.float32)
+                F_t_1 = th.tensor(self.model.F, dtype=th.float32, device=self.device)
+                G_t_1 = th.tensor(self.model.G, dtype=th.float32, device=self.device)
 
                 # Get loss gradients for actor and critic
                 loss_gradient_a = self.actor.get_loss(
@@ -193,8 +207,8 @@ class IDHP(BaseAgent):
             # Loging #
             ##########
             # Log to stable baseliens logger
-            loss_gradient_a_mean = loss_gradient_a.mean().detach().numpy()
-            loss_gradient_c_mean = loss_gradient_c.mean().detach().numpy()
+            loss_gradient_a_mean = loss_gradient_a.mean().cpu().detach().numpy()
+            loss_gradient_c_mean = loss_gradient_c.mean().cpu().detach().numpy()
             self.logger.record("train/actor_loss", loss_gradient_a_mean)
             self.logger.record("train/critic_loss", loss_gradient_c_mean)
 

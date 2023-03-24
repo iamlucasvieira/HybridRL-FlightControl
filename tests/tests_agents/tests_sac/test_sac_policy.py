@@ -61,7 +61,9 @@ class TestCriticNetwork:
         state, _ = env.reset()
         action = env.action_space.sample()
 
-        output = net(th.tensor(state), th.tensor(action))
+        output = net(
+            th.tensor(state, device=net.device), th.tensor(action, device=net.device)
+        )
 
         assert output.shape == ()
 
@@ -120,7 +122,7 @@ class TestActorNetwork:
 
         state, _ = env.reset()
 
-        action, log_prob = net(th.tensor(state))
+        action, log_prob = net(th.tensor(state, device=net.device))
 
         assert action.shape == action_space.shape
         assert log_prob is not None
@@ -134,7 +136,7 @@ class TestActorNetwork:
 
         state, _ = env.reset()
 
-        action, log_prob = net(th.tensor(state), with_log_prob=False)
+        action, log_prob = net(th.tensor(state, device=net.device), with_log_prob=False)
 
         assert action.shape == action_space.shape
         assert log_prob is None
@@ -148,7 +150,7 @@ class TestActorNetwork:
 
         state, _ = env.reset()
 
-        action, log_prob = net(th.tensor(state), deterministic=True)
+        action, log_prob = net(th.tensor(state, device=net.device), deterministic=True)
 
         assert action.shape == action_space.shape
         assert log_prob is not None
@@ -179,7 +181,9 @@ class TestSACPolicy:
         state, _ = env.reset()
 
         action = policy.get_action(state)
-        action_from_actor, _ = policy.actor(th.tensor(state, dtype=th.float32))
+        action_from_actor, _ = policy.actor(
+            th.tensor(state, dtype=th.float32, device=policy.device)
+        )
 
         assert action.shape == action_space.shape
 
@@ -193,10 +197,13 @@ class TestSACPolicy:
         state, _ = env.reset()
 
         action = th.as_tensor(
-            policy.get_action(state, deterministic=True), dtype=th.float32
+            policy.get_action(state, deterministic=True),
+            dtype=th.float32,
+            device=policy.device,
         )
         action_from_actor, _ = policy.actor(
-            th.as_tensor(state, dtype=th.float32), deterministic=True
+            th.as_tensor(state, dtype=th.float32, device=policy.device),
+            deterministic=True,
         )
 
         assert action.shape == action_space.shape

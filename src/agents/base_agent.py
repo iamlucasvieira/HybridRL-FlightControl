@@ -56,7 +56,10 @@ class BaseAgent(ABC):
         self.run_name = None
         self.episode_buffer = None
         self.policy = policy(
-            self.observation_space, self.action_space, **self.policy_kwargs
+            self.observation_space,
+            self.action_space,
+            device=device,
+            **self.policy_kwargs,
         )
         self.log_interval = None
 

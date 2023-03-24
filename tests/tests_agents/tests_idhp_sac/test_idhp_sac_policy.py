@@ -29,4 +29,4 @@ class TestIDHPSACActor:
     def test_forward(self, env, actor):
         """Method that tests the forward method."""
         obs, _ = env().reset()
-        actor.forward(th.as_tensor(obs))
+        actor.forward(th.as_tensor(obs, device=actor.device))

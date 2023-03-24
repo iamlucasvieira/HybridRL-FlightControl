@@ -225,17 +225,13 @@ class DSACPolicy(BasePolicy):
             embedding_dim: Embedding dimension
             layer_norm: Whether to use layer normalization
         """
-        if device is None:
-            device = get_device()
 
-        self.device = device
         self.hidden_layers = hidden_layers
         self.embedding_dim = embedding_dim
         self.layer_norm = layer_norm
         self.learning_rate = learning_rate
 
-        super().__init__(observation_space, action_space)
-        self.to(device)
+        super().__init__(observation_space, action_space, device=device)
 
     def _setup_policy(self):
         self.z1 = CriticNetwork(
@@ -272,13 +268,29 @@ class DSACPolicy(BasePolicy):
         )
         return action.detach().cpu().numpy()
 
+    def get_action(self, state: np.ndarray, **kwargs) -> np.ndarray:
+        """Get action from the policy.
 
-def generate_quantiles(batch_size: int, num_quantiles: int, device: str) -> th.Tensor:
+        args:
+            state: Current state.
+
+        returns:
+            action: Action to take.
+        """
+        with th.no_grad():
+            state = th.tensor(state, dtype=th.float32, device=self.actor.device)
+            action, _ = self.actor(state, **kwargs)
+        return action.cpu().numpy()
+
+
+def generate_quantiles(
+    batch_size: int, num_quantiles: int, device: Optional[str] = None
+) -> th.Tensor:
     """Generate quantiles.
 
     Args:
+        batch_size: Batch size
         num_quantiles: Number of quantiles
-        num_actions: Number of actions
         device: Device to use for tensor operations
 
     Returns:

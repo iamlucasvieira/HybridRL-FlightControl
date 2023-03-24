@@ -11,7 +11,7 @@ from agents.base_callback import ListCallback
 from agents.buffer import ReplayBuffer, Transition
 from agents.sac.policy import BasePolicy, SACPolicy
 from envs import BaseEnv
-from helpers.torch_helpers import freeze, get_device, to_tensor, unfreeze
+from helpers.torch_helpers import freeze, to_tensor, unfreeze
 
 
 class SAC(BaseAgent):
@@ -58,8 +58,6 @@ class SAC(BaseAgent):
             polyak: Polyak averaging coefficient for updating target networks.
             device: Device to use.
         """
-        if device is None:
-            device = get_device()
         if policy is None:
             policy = SACPolicy
         if policy_kwargs is None:
@@ -184,7 +182,7 @@ class SAC(BaseAgent):
 
     def update_entropy_coefficient(self, buffer) -> None:
         """Update the entropy coefficient."""
-        obs = to_tensor(buffer.obs)
+        obs = to_tensor(buffer.obs, device=self.device)
         _, log_prob = self.policy.actor(obs)
         ent_coef = th.exp(self.log_ent_coef.detach())
         ent_coef_loss = -(
@@ -206,7 +204,7 @@ class SAC(BaseAgent):
 
         if self.entropy_coefficient_update:
             self.log_ent_coef = th.log(
-                th.ones(1) * self.entropy_coefficient
+                th.ones(1, device=self.device) * self.entropy_coefficient
             ).requires_grad_(True)
             self.ent_coef_optimizer = th.optim.Adam(
                 [self.log_ent_coef], lr=self.learning_rate
@@ -224,7 +222,9 @@ class SAC(BaseAgent):
         r_t = transition.reward
         done = transition.done
 
-        s_t, a_t, s_tp1, r_t, done = to_tensor(s_t, a_t, s_tp1, r_t, done)
+        s_t, a_t, s_tp1, r_t, done = to_tensor(
+            s_t, a_t, s_tp1, r_t, done, device=self.device
+        )
         critic_1 = self.policy.critic_1(s_t, a_t)
         critic_2 = self.policy.critic_2(s_t, a_t)
 
@@ -251,7 +251,7 @@ class SAC(BaseAgent):
         args:
             transition: Transition tuple.
         """
-        s_t = to_tensor(transition.obs)
+        s_t = to_tensor(transition.obs, device=self.device)
 
         a_t, log_prob = self.policy.actor(s_t)
         alpha = self.entropy_coefficient

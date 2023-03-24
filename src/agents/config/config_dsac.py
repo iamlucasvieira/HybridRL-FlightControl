@@ -26,6 +26,16 @@ class ConfigDSACKwargs(BaseModel):
     save_dir: Optional[str | List[str]] = get_auto("save_dir")
     policy_kwargs: Optional[dict | List[dict]] = None
     _init_setup_model: Optional[bool | List[bool]] = True
+    learning_rate: Optional[float | List[float]] = 3e-4
+    buffer_size: Optional[int | List[int]] = 100_000
+    learning_starts: Optional[int | List[int]] = 1_000
+    gradient_steps: Optional[int | List[int]] = 1
+    batch_size: Optional[int | List[int]] = 256
+    entropy_coefficient: Optional[float | List[float]] = 0.2
+    entropy_coefficient_update: Optional[bool | List[bool]] = True
+    gamma: Optional[float | List[float]] = 0.99
+    polyak: Optional[float | List[float]] = 0.995
+    num_quantiles: Optional[int | List[int]] = 32
 
     class Config:
         extra = Extra.forbid
@@ -46,7 +56,7 @@ class ConfigDSACLearn(BaseModel):
 class ConfigDSAC(BaseModel):
     """Configuration of SAC."""
 
-    name: Literal["SAC"] = "SAC"
+    name: Literal["DSAC"] = "DSAC"
     args: Optional[ConfigDSACArgs] = ConfigDSACArgs()
     kwargs: Optional[ConfigDSACKwargs] = ConfigDSACKwargs()
     sweep: Optional[ConfigDSACKwargs] = ConfigDSACKwargs()

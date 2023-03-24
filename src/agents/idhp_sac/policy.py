@@ -1,4 +1,5 @@
 """Module that defines the IDHP-SAC policy."""
+from typing import Optional
 
 import torch as th
 import torch.nn as nn
@@ -13,7 +14,14 @@ from helpers.torch_helpers import freeze, mlp
 class IDHPSACActor(IDHPActor):
     """Class that implements the actor network for the IDHP-SAC agent."""
 
-    def __init__(self, idhp_actor: IDHPActor, sac_actor: SACActor, *args, **kwargs):
+    def __init__(
+        self,
+        idhp_actor: IDHPActor,
+        sac_actor: SACActor,
+        *args,
+        device: Optional[str] = None,
+        **kwargs
+    ):
         """Initialize the actor network."""
         super().__init__(
             *args,
@@ -21,13 +29,15 @@ class IDHPSACActor(IDHPActor):
             observation_space=idhp_actor.observation_space,
             action_space=idhp_actor.action_space,
             hidden_layers=idhp_actor.hidden_layers,
-            learning_rate=idhp_actor.learning_rate
+            learning_rate=idhp_actor.learning_rate,
+            device=device,
         )
         freeze(sac_actor)
         self.sac = sac_actor
         self.sac_hidden = sac_actor.hidden_layers
         self.idhp_hidden = idhp_actor.hidden_layers
         self._setup_ff()
+        self.to(self.device)
 
     def _setup_ff(self):
         """Setup the feedforward network."""
@@ -54,9 +64,14 @@ class IDHPSACActor(IDHPActor):
 
 
 class IDHPSACPolicy(BasePolicy):
-    def __init__(self, observation_space: spaces.Space, action_space: spaces.Space):
+    def __init__(
+        self,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        device: Optional[str] = None,
+    ):
         """Initialize the policy."""
-        super().__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space, device=device)
 
     def _setup_policy(self):
         """Setup the policy."""

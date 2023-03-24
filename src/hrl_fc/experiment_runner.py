@@ -6,7 +6,6 @@ from rich.progress import track
 
 from helpers.misc import verbose_print
 from helpers.paths import Path
-from helpers.sb3 import load_agent
 from helpers.wandb_helpers import evaluate
 from hrl_fc.experiment_builder import ExperimentBuilder
 

@@ -20,7 +20,7 @@ class BaseNetwork(nn.Module, ABC):
         action_space: spaces.Space,
         learning_rate: float = 3e-4,
         hidden_layers=None,
-        device: Union[str, th.device] = "cpu",
+        device: Union[str, th.device] = None,
         build_network: bool = True,
     ):
         """Initialize critic network.
@@ -35,6 +35,9 @@ class BaseNetwork(nn.Module, ABC):
 
         """
         super().__init__()
+        if device is None:
+            device = get_device()
+
         if hidden_layers is None:
             hidden_layers = [256, 256]
 

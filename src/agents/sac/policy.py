@@ -1,5 +1,5 @@
 """Create policy for SAC algorithm."""
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import torch as th
@@ -71,6 +71,8 @@ class ActorNetwork(BaseNetwork):
         self.sigma_min = sigma_min
         self.sigma_max = sigma_max
 
+        self.to(self.device)
+
     def _build_network(self) -> nn.Sequential:
         """Build network."""
         ff = mlp(
@@ -91,6 +93,7 @@ class ActorNetwork(BaseNetwork):
         action_distribution = Normal(mu, sigma)
 
         action = action_distribution.rsample() if not deterministic else mu
+        action.to(self.device)
 
         if with_log_prob:  # From OpenAi Spinning Up
             log_prob = action_distribution.log_prob(action) - 2 * (
@@ -104,7 +107,7 @@ class ActorNetwork(BaseNetwork):
 
         return action, log_prob
 
-    def forward(self, state, with_log_prob=True, deterministic=False):
+    def forward(self, state: th.Tensor, with_log_prob=True, deterministic=False):
         """Forward pass in the actor network.
 
         args:
@@ -128,6 +131,7 @@ class SACPolicy(BasePolicy):
         action_space: spaces.Box,
         learning_rate: float = 3e-4,
         hidden_layers: List[int] = None,
+        device: Optional[str] = None,
     ):
         """Initialize policy.
 
@@ -144,7 +148,7 @@ class SACPolicy(BasePolicy):
 
         self.learning_rate = learning_rate
         self.hidden_layers = hidden_layers
-        super().__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space, device=device)
 
     def _setup_policy(self):
         """Setup policy."""
@@ -186,7 +190,7 @@ class SACPolicy(BasePolicy):
         with th.no_grad():
             state = th.tensor(state, dtype=th.float32, device=self.actor.device)
             action, _ = self.actor(state, **kwargs)
-        return action.numpy()
+        return action.cpu().numpy()
 
     def predict(
         self, observation: np.ndarray, deterministic: bool = True

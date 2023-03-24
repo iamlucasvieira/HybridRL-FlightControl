@@ -1,0 +1,20 @@
+---
+name: DSAC-LTI
+description: "Tests the DSAC agent on the LTI citation environment."
+wandb: true
+evaluate: true
+seed: 50
+
+# Set the agent to use
+agent:
+  name: SAC
+  learn:
+    total_steps: 10_000
+
+# Set the environment to use
+env:
+  name: "LTI"
+  kwargs:
+    dt: 0.01
+    reference_type: sin
+    tracked_state: q

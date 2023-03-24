@@ -1,5 +1,5 @@
 """Module that defines the IDHP agent, including the actor and the critic."""
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Union
 
 import numpy as np
 import torch as th
@@ -35,7 +35,7 @@ class BaseNetworkIDHP(BaseNetwork):
         )
         self.flatten = nn.Flatten()
         self.optimizer = optim.SGD(self.parameters(), lr=learning_rate)
-        self.device = "cpu"  # Having issues not using cpu with get_device()
+        # self.device = "cpu"  # Having issues not using cpu with get_device()
         self.to(self.device)
 
     def forward(self, x):
@@ -46,9 +46,8 @@ class BaseNetworkIDHP(BaseNetwork):
 
         # Transform into tensor if needed
         if not isinstance(x, th.Tensor):
-            x = th.tensor(x, dtype=th.float32)
-        logits = self.ff(x)
-        return logits
+            x = th.tensor(x, dtype=th.float32, device=self.device)
+        return self.ff(x)
 
 
 class Actor(BaseNetworkIDHP):
@@ -75,7 +74,7 @@ class Actor(BaseNetworkIDHP):
         """Gets the network loss."""
         return -(dr1_ds1 + gamma * critic_t1) @ G_t_1
 
-    def forward(self, x, to_scale: bool = True):
+    def forward(self, x: Union[np.ndarray, th.Tensor], to_scale: bool = True):
         """Forward pass."""
         action = super().forward(x)
         if to_scale:
@@ -118,22 +117,29 @@ class IDHPPolicy(BasePolicy):
         action_space: spaces.Space,
         actor_kwargs: Optional[dict] = None,
         critic_kwargs: Optional[dict] = None,
+        device: Optional[str] = None,
     ):
         """Initialize the IDHP policy."""
         self.actor_kwargs = {} if actor_kwargs is None else actor_kwargs
         self.critic_kwargs = {} if critic_kwargs is None else critic_kwargs
-        super().__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space, device=device)
 
     def _setup_policy(self):
         """Set up the policy."""
         self.actor = Actor(
-            self.observation_space, self.action_space, **self.actor_kwargs
+            self.observation_space,
+            self.action_space,
+            device=self.device,
+            **self.actor_kwargs
         )
         self.critic = Critic(
-            self.observation_space, self.action_space, **self.critic_kwargs
+            self.observation_space,
+            self.action_space,
+            device=self.device,
+            **self.critic_kwargs
         )
 
-    def predict(self, observation, deterministic: bool = True):
+    def predict(self, observation: th.Tensor, deterministic: bool = True):
         """Predict the action."""
         return self.actor(observation)
 

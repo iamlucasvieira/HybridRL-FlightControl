@@ -3,13 +3,15 @@
 from typing import Optional, Type, Union
 
 import gymnasium as gym
+import numpy as np
 import torch as th
+import torch.nn.functional as F
 
 from agents.buffer import Transition
-from agents.dsac.policy import DSACPolicy, generate_quantiles
+from agents.dsac.policy import DSACPolicy, check_dimensions, generate_quantiles
 from agents.sac.sac import SAC
 from envs import BaseEnv
-from helpers.torch_helpers import to_tensor
+from helpers.torch_helpers import freeze, to_tensor, unfreeze
 
 
 class DSAC(SAC):
@@ -63,13 +65,32 @@ class DSAC(SAC):
     def update(self) -> None:
         """Update the agent."""
         buffer = self.replay_buffer.sample_buffer(self.batch_size)
-        self.policy.z1.zero_grad()
-        self.policy.z2.zero_grad()
-
-        critic_loss = self.get_critic_loss(buffer)
 
         self._n_updates += 1
-        # loss_critic = self.get_critic_loss(buffer)
+
+        # Update the critic
+        critic_loss = self.get_critic_loss(buffer)
+        self.policy.z1.zero_grad()
+        self.policy.z2.zero_grad()
+        critic_loss.backward()
+        self.policy.z1.optimizer.step()
+        self.policy.z2.optimizer.step()
+
+        # Freeze critic networks to avoid gradient computation during actor update
+        freeze(self.policy.z1)
+        freeze(self.policy.z2)
+
+        self.policy.actor.zero_grad()
+        loss_actor = self.get_actor_loss(buffer)
+        loss_actor.backward()
+        self.policy.actor.optimizer.step()
+
+        # Unfreeze critic networks
+        unfreeze(self.policy.z1)
+        unfreeze(self.policy.z2)
+
+        self.logger.record("train/critic_loss", np.mean(critic_loss.mean().item()))
+        self.logger.record("train/actor_loss", np.mean(loss_actor.mean().item()))
 
     def get_critic_loss(self, transition: Transition) -> th.Tensor:
         """Get the critic loss."""
@@ -106,8 +127,77 @@ class DSAC(SAC):
 
         z1 = self.policy.z1(s_t, a_t, tau_j)
         z2 = self.policy.z2(s_t, a_t, tau_j)
-
-        return target
+        loss_1 = self.huber_quantile_loss(target, z1, tau_j)
+        loss_2 = self.huber_quantile_loss(target, z2, tau_j)
+        loss = loss_1 + loss_2
+        return loss
 
     def get_actor_loss(self, transition: Transition) -> th.Tensor:
-        pass
+        """Get the actor loss."""
+        s_t, a_t = transition.obs, transition.action
+        s_tp1 = transition.obs_
+        r_t = transition.reward
+        done = transition.done
+
+        s_t, a_t, s_tp1, r_t, done = to_tensor(
+            s_t, a_t, s_tp1, r_t, done, device=self.device
+        )
+
+        batch_size = len(s_t)
+
+        a_tp1, log_prob_tp1 = self.policy.actor(s_tp1)
+
+        tau_i = generate_quantiles(batch_size, self.num_quantiles, device=self.device)
+
+        z1 = self.policy.z1(s_t, a_t, tau_i)
+        z2 = self.policy.z2(s_t, a_t, tau_i)
+
+        # Compute the action-value function
+        q1 = z1.mean(dim=1)
+        q2 = z2.mean(dim=1)
+        q = th.min(q1, q2)
+
+        # Compute the actor loss
+        alpha = self.entropy_coefficient
+        loss = (alpha * log_prob_tp1 - q).mean()
+
+        return loss
+
+    @staticmethod
+    def huber_quantile_loss(
+        z_target: th.Tensor, z: th.Tensor, quantiles: th.Tensor, threshold: float = 1.0
+    ) -> th.Tensor:
+        """Returns the Huber loss.
+
+        Args:
+            z_target: The target quantile values.
+            z: The predicted quantile values.
+            quantiles: The quantiles.
+            threshold: The threshold for the Huber loss.
+
+        Dimensions:
+            z_target: (batch_size, num_quantiles)
+            z: (batch_size, num_quantiles)
+            quantiles: (batch_size, num_quantiles, 1)
+        """
+        # Check dimensions
+        check_dimensions(z_target, 2, name="Target")
+        check_dimensions(z, 2, name="Predicted")
+        check_dimensions(quantiles, 3, name="Quantiles")
+
+        # Get Temporal Difference Error
+        td_error = z_target - z
+
+        # Get Huber Loss
+        huber_loss = F.huber_loss(
+            z, z_target, reduction="none", delta=threshold
+        )  # (batch_size, num_quantiles)
+
+        # Get Quantile Huber Loss
+        quantile_huber_loss = (
+            (quantiles.squeeze(-1) - (td_error.detach() < 0).float())
+            * huber_loss
+            / threshold
+        )  # (batch_size, num_quantiles)
+
+        return quantile_huber_loss.sum(dim=1).mean()

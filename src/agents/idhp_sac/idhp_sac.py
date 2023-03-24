@@ -8,7 +8,6 @@ from agents.callbacks import OnlineCallback, TensorboardCallback
 from agents.idhp.idhp import IDHP
 from agents.idhp_sac.policy import IDHPSACActor, IDHPSACPolicy
 from agents.sac.sac import SAC
-from helpers.torch_helpers import get_device
 from helpers.wandb_helpers import evaluate
 
 
@@ -27,16 +26,13 @@ class IDHPSAC(BaseAgent):
         save_dir: Optional[str] = None,
         verbose: int = 1,
         seed: int = 1,
-        device: str = None,
+        device: Optional[str] = None,
         _init_setup_model: bool = True,
         sac_hidden_layers: list = None,
         idhp_hidden_layers: list = None,
     ):
         """Initialize the agent."""
         # Build the IDHP agent
-        if device is None:
-            device = get_device()
-
         if sac_hidden_layers is None:
             sac_hidden_layers = [256, 256]
 
@@ -57,6 +53,7 @@ class IDHPSAC(BaseAgent):
             verbose=verbose,
             actor_kwargs=actor_kwargs,
             critic_kwargs=critic_kwargs,
+            device=device,
         )
 
         self.sac = SAC(
@@ -67,6 +64,7 @@ class IDHPSAC(BaseAgent):
             buffer_size=buffer_size,
             batch_size=batch_size,
             policy_kwargs={"hidden_layers": sac_hidden_layers},
+            device=device,
         )
 
         super().__init__(
