@@ -244,6 +244,5 @@ class TestDSACPolicy:
         env = env()
         policy = DSACPolicy(env.observation_space, env.action_space)
         obs, _ = env.reset()
-        obs = th.as_tensor(obs)
         action = policy.predict(obs)
         assert action.shape == env.action_space.shape

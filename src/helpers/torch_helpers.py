@@ -2,7 +2,7 @@
 
 import pathlib as pl
 from abc import ABC, abstractmethod
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import torch as th
@@ -93,7 +93,9 @@ def get_device():
     return device
 
 
-def to_tensor(*arrays, data_type=th.float32) -> Union[th.Tensor, Tuple[th.Tensor]]:
+def to_tensor(
+    *arrays, data_type=th.float32, device: Optional[str] = None
+) -> Union[th.Tensor, Tuple[th.Tensor]]:
     """Convert numpy arrays to PyTorch tensors.
 
     args:
@@ -106,7 +108,9 @@ def to_tensor(*arrays, data_type=th.float32) -> Union[th.Tensor, Tuple[th.Tensor
             return a
         return np.array(a)
 
-    tensors = tuple(th.as_tensor(_to_array(a), dtype=data_type) for a in arrays)
+    tensors = tuple(
+        th.as_tensor(_to_array(a), dtype=data_type, device=device) for a in arrays
+    )
     if len(tensors) == 1:
         return tensors[0]
     return tensors

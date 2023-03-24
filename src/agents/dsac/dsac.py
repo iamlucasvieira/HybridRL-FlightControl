@@ -6,9 +6,10 @@ import gymnasium as gym
 import torch as th
 
 from agents.buffer import Transition
-from agents.dsac.policy import DSACPolicy
+from agents.dsac.policy import DSACPolicy, generate_quantiles
 from agents.sac.sac import SAC
 from envs import BaseEnv
+from helpers.torch_helpers import to_tensor
 
 
 class DSAC(SAC):
@@ -33,6 +34,7 @@ class DSAC(SAC):
         gamma: float = 0.99,
         polyak: float = 0.995,
         device: Optional[Union[th.device, str]] = None,
+        num_quantiles: int = 32,
     ) -> None:
         """Initialize DSAC agent."""
         super().__init__(
@@ -56,15 +58,56 @@ class DSAC(SAC):
             policy=DSACPolicy,
         )
 
+        self.num_quantiles = num_quantiles
+
     def update(self) -> None:
         """Update the agent."""
         buffer = self.replay_buffer.sample_buffer(self.batch_size)
         self.policy.z1.zero_grad()
         self.policy.z2.zero_grad()
-        loss_critic = self.get_critic_loss(buffer)
+
+        critic_loss = self.get_critic_loss(buffer)
+
+        self._n_updates += 1
+        # loss_critic = self.get_critic_loss(buffer)
 
     def get_critic_loss(self, transition: Transition) -> th.Tensor:
-        pass
+        """Get the critic loss."""
+        s_t, a_t = transition.obs, transition.action
+        s_tp1 = transition.obs_
+        r_t = transition.reward
+        done = transition.done
+
+        s_t, a_t, s_tp1, r_t, done = to_tensor(
+            s_t, a_t, s_tp1, r_t, done, device=self.device
+        )
+
+        batch_size = len(s_t)
+        with th.no_grad():
+            a_tp1, log_prob_tp1 = self.target_policy.actor(s_tp1)
+
+            tau_i = generate_quantiles(
+                batch_size, self.num_quantiles, device=self.device
+            )
+            tau_j = generate_quantiles(
+                batch_size, self.num_quantiles, device=self.device
+            )
+
+            z1_target = self.target_policy.z1(s_t, a_t, tau_i)
+            z2_target = self.target_policy.z2(s_t, a_t, tau_i)
+            z_target = th.min(z1_target, z2_target)
+
+            # Target
+            alpha = self.entropy_coefficient
+
+            target = r_t.view(-1, 1) + self.gamma * (1 - done.view(-1, 1)) * (
+                z_target - alpha * log_prob_tp1.unsqueeze(-1)
+            )
+
+        z1 = self.policy.z1(s_t, a_t, tau_j)
+        z2 = self.policy.z2(s_t, a_t, tau_j)
+
+        return target
 
     def get_actor_loss(self, transition: Transition) -> th.Tensor:
         pass

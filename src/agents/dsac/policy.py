@@ -9,13 +9,7 @@ from torch import nn
 
 from agents import BasePolicy
 from agents.sac.policy import ActorNetwork
-from helpers.torch_helpers import (
-    BaseNetwork,
-    check_dimensions,
-    check_shape,
-    get_device,
-    mlp,
-)
+from helpers.torch_helpers import BaseNetwork, check_dimensions, check_shape, get_device
 
 
 class CriticNetwork(BaseNetwork):
@@ -43,8 +37,8 @@ class CriticNetwork(BaseNetwork):
             hidden_layers=hidden_layers,
             device=device,
             learning_rate=learning_rate,
+            build_network=False,
             **kwargs,
-            build_network=False
         )
 
         self.iqn = IQN(
@@ -113,7 +107,7 @@ class IQN(BaseNetwork):
             device=device,
             build_network=False,
             learning_rate=learning_rate,
-            **kwargs
+            **kwargs,
         )
 
         # Define the state feature layer (psi)
@@ -277,3 +271,20 @@ class DSACPolicy(BasePolicy):
             observation, deterministic=deterministic, with_log_prob=False
         )
         return action.detach().cpu().numpy()
+
+
+def generate_quantiles(batch_size: int, num_quantiles: int, device: str) -> th.Tensor:
+    """Generate quantiles.
+
+    Args:
+        num_quantiles: Number of quantiles
+        num_actions: Number of actions
+        device: Device to use for tensor operations
+
+    Returns:
+        Quantiles tensor of shape (num_actions, num_quantiles, 1)
+    """
+    quantiles = th.rand(
+        batch_size, num_quantiles, 1, requires_grad=False, device=device
+    )  # (B, Q, 1)
+    return quantiles
