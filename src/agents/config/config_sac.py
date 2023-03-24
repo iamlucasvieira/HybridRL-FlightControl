@@ -34,7 +34,7 @@ class ConfigSACKwargs(BaseModel):
     entropy_coefficient_update: Optional[bool | List[bool]] = True
     gamma: Optional[float | List[float]] = 0.99
     polyak: Optional[float | List[float]] = 0.995
-    device: Optional[str | List[str]] = None
+    device: Optional[str | List[str]] = "cpu"
 
     class Config:
         extra = Extra.forbid

@@ -29,7 +29,7 @@ class ConfigIDHPSACKwargs(BaseModel):
     save_dir: Optional[str | List[str]] = get_auto("save_dir")
     verbose: Optional[int | List[int]] = get_auto("verbose")
     seed: Optional[int | List[int]] = get_auto("seed")
-    device: Optional[str | List[str]] = None
+    device: Optional[str | List[str]] = "cpu"
     _init_setup_model: Optional[bool | List[bool]] = True
     sac_hidden_layers: Optional[List[int] | List[List[int]]] = None
     idhp_hidden_layers: Optional[List[int] | List[List[int]]] = None

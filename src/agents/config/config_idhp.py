@@ -27,6 +27,7 @@ class ConfigIDHPKwargs(BaseModel):
     seed: Optional[int | List[int]] = get_auto("seed")
     learning_rate: Optional[float | List[float]] = 0.08
     hidden_size: Optional[int | List[int]] = 10
+    device: Optional[str | List[str]] = "cpu"
 
     class Config:
         extra = Extra.forbid

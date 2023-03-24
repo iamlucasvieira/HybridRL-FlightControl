@@ -162,6 +162,7 @@ class SACPolicy(BasePolicy):
             action_space,
             learning_rate=learning_rate,
             hidden_layers=hidden_layers,
+            device=self.device,
         )
 
         self.critic_1 = CriticNetwork(
@@ -169,6 +170,7 @@ class SACPolicy(BasePolicy):
             action_space,
             learning_rate=learning_rate,
             hidden_layers=hidden_layers,
+            device=self.device,
         )
 
         self.critic_2 = CriticNetwork(
@@ -176,6 +178,7 @@ class SACPolicy(BasePolicy):
             action_space,
             learning_rate=learning_rate,
             hidden_layers=hidden_layers,
+            device=self.device,
         )
 
     def get_action(self, state: np.ndarray, **kwargs) -> np.ndarray:

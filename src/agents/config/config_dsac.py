@@ -19,7 +19,7 @@ class ConfigDSACArgs(BaseModel):
 class ConfigDSACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
 
-    device: Optional[str | List[str]] = None
+    device: Optional[str | List[str]] = "cpu"
     verbose: Optional[int | List[int]] = get_auto("verbose")
     seed: Optional[int | List[int]] = get_auto("seed")
     log_dir: Optional[str | List[str]] = get_auto("log_dir")

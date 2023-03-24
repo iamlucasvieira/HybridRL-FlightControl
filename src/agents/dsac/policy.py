@@ -256,6 +256,7 @@ class DSACPolicy(BasePolicy):
             self.observation_space,
             self.action_space,
             learning_rate=self.learning_rate,
+            device=self.device,
         )
 
     def predict(
