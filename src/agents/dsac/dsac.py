@@ -4,6 +4,7 @@ from typing import Optional, Type, Union
 
 import gymnasium as gym
 import numpy as np
+import torch
 import torch as th
 import torch.nn.functional as F
 
@@ -37,8 +38,15 @@ class DSAC(SAC):
         polyak: float = 0.995,
         device: Optional[Union[th.device, str]] = None,
         num_quantiles: int = 32,
+        embedding_dim: int = 32,
+        hidden_layers: Optional[list] = None,
     ) -> None:
         """Initialize DSAC agent."""
+        if policy_kwargs is None:
+            policy_kwargs = {}
+        policy_kwargs["embedding_dim"] = embedding_dim
+        policy_kwargs["hidden_layers"] = hidden_layers
+
         super().__init__(
             env,
             learning_rate=learning_rate,
@@ -69,10 +77,10 @@ class DSAC(SAC):
         self._n_updates += 1
 
         # Update the critic
-        critic_loss = self.get_critic_loss(buffer)
+        loss_critic = self.get_critic_loss(buffer)
         self.policy.z1.zero_grad()
         self.policy.z2.zero_grad()
-        critic_loss.backward()
+        loss_critic.backward()
         self.policy.z1.optimizer.step()
         self.policy.z2.optimizer.step()
 
@@ -89,12 +97,16 @@ class DSAC(SAC):
         unfreeze(self.policy.z1)
         unfreeze(self.policy.z2)
 
-        self.logger.record("train/critic_loss", np.mean(critic_loss.mean().item()))
+        if self.entropy_coefficient_update:
+            self.update_entropy_coefficient(buffer)
+
+        self.logger.record("train/critic_loss", np.mean(loss_critic.mean().item()))
         self.logger.record("train/actor_loss", np.mean(loss_actor.mean().item()))
 
     def get_critic_loss(self, transition: Transition) -> th.Tensor:
         """Get the critic loss."""
-        s_t, a_t = transition.obs, transition.action
+        s_t = transition.obs
+        a_t = transition.action
         s_tp1 = transition.obs_
         r_t = transition.reward
         done = transition.done
@@ -103,7 +115,8 @@ class DSAC(SAC):
             s_t, a_t, s_tp1, r_t, done, device=self.device
         )
 
-        batch_size = len(s_t)
+        batch_size = len(s_tp1)
+
         with th.no_grad():
             a_tp1, log_prob_tp1 = self.target_policy.actor(s_tp1)
 
@@ -114,8 +127,8 @@ class DSAC(SAC):
                 batch_size, self.num_quantiles, device=self.device
             )
 
-            z1_target = self.target_policy.z1(s_t, a_t, tau_i)
-            z2_target = self.target_policy.z2(s_t, a_t, tau_i)
+            z1_target = self.target_policy.z1(s_tp1, a_tp1, tau_i)
+            z2_target = self.target_policy.z2(s_tp1, a_tp1, tau_i)
             z_target = th.min(z1_target, z2_target)
 
             # Target
@@ -134,23 +147,19 @@ class DSAC(SAC):
 
     def get_actor_loss(self, transition: Transition) -> th.Tensor:
         """Get the actor loss."""
-        s_t, a_t = transition.obs, transition.action
-        s_tp1 = transition.obs_
-        r_t = transition.reward
-        done = transition.done
-
-        s_t, a_t, s_tp1, r_t, done = to_tensor(
-            s_t, a_t, s_tp1, r_t, done, device=self.device
-        )
+        s_t = transition.obs
+        s_t = to_tensor(s_t, device=self.device)
 
         batch_size = len(s_t)
 
-        a_tp1, log_prob_tp1 = self.policy.actor(s_tp1)
+        a_tp1, log_prob_tp1 = self.policy.actor(s_t)
+        with torch.no_grad():
+            tau_i = generate_quantiles(
+                batch_size, self.num_quantiles, device=self.device
+            )
 
-        tau_i = generate_quantiles(batch_size, self.num_quantiles, device=self.device)
-
-        z1 = self.policy.z1(s_t, a_t, tau_i)
-        z2 = self.policy.z2(s_t, a_t, tau_i)
+        z1 = self.policy.z1(s_t, a_tp1, tau_i)
+        z2 = self.policy.z2(s_t, a_tp1, tau_i)
 
         # Compute the action-value function
         q1 = z1.mean(dim=1)
@@ -186,7 +195,7 @@ class DSAC(SAC):
         check_dimensions(quantiles, 3, name="Quantiles")
 
         # Get Temporal Difference Error
-        td_error = z_target - z
+        td_error = z - z_target
 
         # Get Huber Loss
         huber_loss = F.huber_loss(
@@ -195,9 +204,9 @@ class DSAC(SAC):
 
         # Get Quantile Huber Loss
         quantile_huber_loss = (
-            (quantiles.squeeze(-1) - (td_error.detach() < 0).float())
+            th.abs(quantiles.squeeze(-1) - (td_error.detach() < 0).float())
             * huber_loss
             / threshold
-        )  # (batch_size, num_quantiles)
+        )  # (B, Q)
 
         return quantile_huber_loss.sum(dim=1).mean()

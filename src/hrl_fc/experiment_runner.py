@@ -110,7 +110,7 @@ class Evaluator:
 
 
 def main():
-    Runner("exp_sac_lti").run()
+    Runner("exp_dsac_lti").run()
 
 
 if __name__ == "__main__":

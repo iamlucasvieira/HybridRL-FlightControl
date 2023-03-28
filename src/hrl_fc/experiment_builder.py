@@ -180,7 +180,7 @@ class ExperimentBuilder:
             defaults = operator.attrgetter(default_attr)(self.config)
 
             for sweep_option, sweep_value in sweep.dict().items():
-                if not isinstance(sweep_value, list):
+                if not isinstance(sweep_value, list) or sweep_option == "hidden_layers":
                     setattr(sweep, sweep_option, [getattr(defaults, sweep_option)])
 
             sweep_configurations = list(itertools.product(*sweep.dict().values()))

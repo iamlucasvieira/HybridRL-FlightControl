@@ -7,9 +7,11 @@ seed: 50
 
 # Set the agent to use
 agent:
-  name: SAC
+  name: DSAC
   learn:
-    total_steps: 10_000
+    total_steps: 50_000
+#  kwargs:
+#    device:
 
 # Set the environment to use
 env:

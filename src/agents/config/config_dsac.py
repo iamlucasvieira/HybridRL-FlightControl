@@ -27,8 +27,8 @@ class ConfigDSACKwargs(BaseModel):
     policy_kwargs: Optional[dict | List[dict]] = None
     _init_setup_model: Optional[bool | List[bool]] = True
     learning_rate: Optional[float | List[float]] = 3e-4
-    buffer_size: Optional[int | List[int]] = 100_000
-    learning_starts: Optional[int | List[int]] = 1_000
+    buffer_size: Optional[int | List[int]] = 1_000_000
+    learning_starts: Optional[int | List[int]] = 10_000
     gradient_steps: Optional[int | List[int]] = 1
     batch_size: Optional[int | List[int]] = 256
     entropy_coefficient: Optional[float | List[float]] = 0.2
@@ -36,6 +36,8 @@ class ConfigDSACKwargs(BaseModel):
     gamma: Optional[float | List[float]] = 0.99
     polyak: Optional[float | List[float]] = 0.995
     num_quantiles: Optional[int | List[int]] = 32
+    embedding_dim: Optional[int | List[int]] = 64
+    hidden_layers: Optional[List[int] | List[List[int]]] = [256, 256]
 
     class Config:
         extra = Extra.forbid
