@@ -3,6 +3,8 @@ import itertools
 import operator
 import pathlib as pl
 import random
+import shutil
+from typing import Optional
 
 import yaml
 
@@ -132,14 +134,16 @@ class Sweep:
         # Learn
         self.agent.learn(**learn_kwargs)
 
-    def load_model(self, model_name):
+    def load_model(self, model_path: Optional[pl.Path]):
         """Load a model file."""
-        model = self.agent.load(self.MODELS_PATH / model_name)
-        self.agent = model
+        self.agent.load(model_path)
 
-    def save_model(self, model_name=None):
+    def save_model(self, config_path: Optional[pl.Path] = None):
         """Save a model file."""
         self.agent.save()
+        # Copy config file to model folder
+        if config_path is not None:
+            shutil.copy(config_path, self.MODELS_PATH / self.run_name / "config.yaml")
 
     def evaluate(self):
         """Evaluate the agent."""

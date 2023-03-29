@@ -14,6 +14,8 @@ from envs import BaseEnv
 class IDHP(BaseAgent):
     """Class that implements the IDHP algorithm."""
 
+    name = "IDHP"
+
     def __init__(
         self,
         env: BaseEnv,

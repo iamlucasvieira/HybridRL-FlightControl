@@ -8,11 +8,14 @@ from agents.callbacks import OnlineCallback, TensorboardCallback
 from agents.idhp.idhp import IDHP
 from agents.idhp_sac.policy import IDHPSACActor, IDHPSACPolicy
 from agents.sac.sac import SAC
+from helpers.paths import Path
 from helpers.wandb_helpers import evaluate
 
 
 class IDHPSAC(BaseAgent):
     """Class that implements the hybrid IDHP-SAC agent."""
+
+    name = "IDHPSAC"
 
     def __init__(
         self,
@@ -54,6 +57,8 @@ class IDHPSAC(BaseAgent):
             actor_kwargs=actor_kwargs,
             critic_kwargs=critic_kwargs,
             device=device,
+            log_dir=log_dir,
+            save_dir=save_dir,
         )
 
         self.sac = SAC(
@@ -65,6 +70,8 @@ class IDHPSAC(BaseAgent):
             batch_size=batch_size,
             policy_kwargs={"hidden_layers": sac_hidden_layers},
             device=device,
+            log_dir=log_dir,
+            save_dir=save_dir,
         )
 
         super().__init__(
@@ -76,10 +83,8 @@ class IDHPSAC(BaseAgent):
             verbose=verbose,
             seed=seed,
             device=device,
+            _init_setup_model=_init_setup_model,
         )
-
-        if _init_setup_model:
-            self._setup_model()
 
     def setup_model(self):
         """Set up the model."""
@@ -92,26 +97,27 @@ class IDHPSAC(BaseAgent):
         sac_actor = self.sac.policy.actor
 
         # Update the IDHP layers
-        self.idhp.policy.actor = IDHPSACActor(idhp_actor, sac_actor)
+        self.idhp.policy.actor = IDHPSACActor(idhp_actor, sac_actor, device=self.device)
 
     def _learn(
         self,
         total_steps: int,
         callback: ListCallback,
         log_interval: int,
-        sac_timesteps: int = 1_000_000,
-        idhp_timesteps: int = 1_000_000,
+        sac_steps: int = 1_000_000,
+        idhp_steps: int = 1_000_000,
         sac_model: Optional[str] = None,
     ) -> None:
         """Learn the agent."""
 
         if sac_model is not None:
             self.print("Loading SAC")
-            raise NotImplementedError
+            sac_model_path = Path.models / sac_model
+            self.sac.load(sac_model_path)
         else:
             self.print("Learning SAC")
             self.sac.learn(
-                sac_timesteps,
+                sac_steps,
                 run_name="SAC",
                 callback=[TensorboardCallback(verbose=self.verbose)],
                 log_interval=log_interval,
@@ -126,7 +132,7 @@ class IDHPSAC(BaseAgent):
 
         self.print("Learning IDHP")
         self.idhp.learn(
-            idhp_timesteps,
+            idhp_steps,
             run_name="IDHP",
             callback=[
                 OnlineCallback(verbose=self.verbose),
@@ -135,3 +141,12 @@ class IDHPSAC(BaseAgent):
             log_interval=log_interval,
         )
         self.print("done 🎉")
+
+    def save(self, *args, **kwargs):
+        """Save the agent."""
+        # Give same run name for sac and idhp
+        self.sac.run_name = self.run_name
+        self.idhp.run_name = self.run_name
+        self.sac.save(*args, **kwargs)
+        self.idhp.save(*args, **kwargs)
+        super().save(*args, **kwargs)

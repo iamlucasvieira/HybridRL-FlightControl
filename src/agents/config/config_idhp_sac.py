@@ -10,7 +10,6 @@ from helpers.config_auto import get_auto
 class ConfigIDHPSACArgs(BaseModel):
     """Arguments for IDHP-SAC object."""
 
-    policy: Optional[str] = "default"
     env: Optional[str] = get_auto("env")
 
     class Config:

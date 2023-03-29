@@ -1,0 +1,18 @@
+---
+name: DSAC-gym
+description: "Tests the DSAC agent on the Pendulum-v1 Gym environment."
+wandb: true
+evaluate: 30
+seed: 50
+
+# Set the agent to use
+agent:
+  name: DSAC
+  learn:
+    total_steps: 10_000
+
+# Set the environment to use
+env:
+  name: "gym"
+  kwargs:
+    id: Pendulum-v1

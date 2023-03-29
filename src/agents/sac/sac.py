@@ -17,6 +17,8 @@ from helpers.torch_helpers import freeze, to_tensor, unfreeze
 class SAC(BaseAgent):
     """Implements the Soft Actor-Critic algorithm."""
 
+    name = "SAC"
+
     def __init__(
         self,
         env: Union[gym.Env, Type[BaseEnv]],

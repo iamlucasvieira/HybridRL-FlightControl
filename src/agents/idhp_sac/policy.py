@@ -41,22 +41,23 @@ class IDHPSACActor(IDHPActor):
 
     def _setup_ff(self):
         """Setup the feedforward network."""
-        idhp_features = (
-            [self.sac_hidden[-1]] + self.idhp_hidden + [self.sac.mu.in_features]
-        )
+        idhp_features = self.sac_hidden + [self.sac.mu.in_features]
         new_idhp = mlp(
-            idhp_features, activation=nn.ReLU, output_activation=nn.Identity, bias=False
+            idhp_features, activation=nn.ReLU, output_activation=nn.ReLU, bias=False
         )
-        # for layer in new_idhp:
-        #     if isinstance(layer, nn.Linear):
-        #         nn.init.ones_(layer.weight)
-        self.ff = new_idhp
+        self.ff = nn.Sequential()
+
+        # Append an IDHP layer after a SAC layer
+        for idx, layer in enumerate(self.sac.ff):
+            self.ff.append(layer)
+            if not isinstance(layer, nn.Linear):
+                self.ff.append(new_idhp.pop(0))
+                self.ff.append(new_idhp.pop(0))
 
     def forward(
         self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
     ):
-        output_sac = self.sac.ff(obs)
-        output_idhp = self.ff(output_sac)
+        output_idhp = self.ff(obs)
         action, _ = self.sac.output_layer(
             output_idhp, deterministic=deterministic, with_log_prob=False
         )

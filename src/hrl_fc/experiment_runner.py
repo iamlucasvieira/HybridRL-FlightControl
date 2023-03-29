@@ -44,7 +44,8 @@ class Runner:
             sweep.learn(name=wandb_run.name)
 
             if self.config.save_model:
-                sweep.save_model()
+                config_path = self.experiment.file_path / self.experiment.filename
+                sweep.save_model(config_path=config_path)
 
             # Evaluate
             if self.config.evaluate:
@@ -55,17 +56,32 @@ class Runner:
     def evaluate(self, sweep):
         """Evaluate a sweep."""
         self.print("Evaluating...")
-        obs = sweep.env.reset()
-        while True:
-            action, _states = sweep.agent.predict(obs, deterministic=True)
-            obs, reward, done, info = sweep.env.step(action)
-            sweep.env.render()
-            if done:
-                obs = sweep.env.reset()
+
+        sweep_config = sweep.config
+        wandb_run = wandb.init(
+            project=sweep_config.name,
+            config=sweep_config.dict(),
+            sync_tensorboard=False,  # auto-upload sb3's tensorboard metrics
+            save_code=False,  # optional
+            monitor_gym=True,
+        )
+        sweep.evaluate()
+        wandb_run.finish()
 
     def print(self, message: str):
         """Prints only if verbose is greater than 0."""
         verbose_print(message, self.config.verbose)
+
+    @classmethod
+    def from_file(cls, *args, **kwargs):
+        """Load a model file."""
+        # Initialize class
+        runner = cls(*args, **kwargs)
+
+        for sweep in runner.experiment.sweeps:
+            sweep.load_model(runner.file_path)
+
+        return runner
 
 
 class Evaluator:
@@ -110,7 +126,7 @@ class Evaluator:
 
 
 def main():
-    Runner("exp_dsac_lti").run()
+    Runner("exp_idhp_sac_lti").run()
 
 
 if __name__ == "__main__":

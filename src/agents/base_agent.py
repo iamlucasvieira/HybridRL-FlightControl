@@ -22,6 +22,8 @@ from hrl_fc.console import console
 class BaseAgent(ABC):
     """Base agent class."""
 
+    name = "BaseAgent"
+
     def __init__(
         self,
         policy: Type[BasePolicy],
@@ -79,7 +81,9 @@ class BaseAgent(ABC):
         """Print only if verbosity is enabled."""
         if self.verbose > 0:
             console.print(
-                f"{'Agent: ' if identifier else ''}{message}", style="blue", **kwargs
+                f"{f'Agent {self.name}: ' if identifier else ''}{message}",
+                style="blue",
+                **kwargs,
             )
 
     def _setup_model(self):
@@ -238,46 +242,26 @@ class BaseAgent(ABC):
             raise ValueError("Run name not set. Agent needs to 'learn' before saving.")
         path = path / self.run_name
 
-        policy_path = path / "policy.pt"
-        env_path = path / "env.pkl"
+        policy_path = path / f"{self.name}_policy.pt"
 
         # Make directory for files
         path.mkdir(parents=True, exist_ok=True)
 
         th.save(self.policy.state_dict(), policy_path)
 
-        # Save environment as pickle
-        try:
-            with open(env_path, "wb") as f:
-                pickle.dump(self.env, f)
-        except Exception as e:
-            self.print(f"Not able to pickle the environment '{e}'")
-            # Delete file if created
-            if env_path.is_file():
-                env_path.unlink()
-
-    def load(self, path: str):
+    def load(self, path: pl.Path):
         """Load the model.
 
         Args:
             path: Path to the model.
         """
-        path = path
-        policy_path = path / "policy.pt"
-        env_path = path / "env.pkl"
+        policy_path = path / f"{self.name}_policy.pt"
 
         # Load the policy
         if policy_path.is_file():
             self.policy.load_state_dict(th.load(policy_path))
         else:
             raise ValueError("Policy file not found.")
-
-        # Load the environment
-        if env_path.is_file():
-            with open(env_path, "rb") as f:
-                self.env = pickle.load(f)
-        else:
-            self.print("Environment file not found.")
 
     def predict(
         self, observation: np.ndarray, deterministic: bool = False
