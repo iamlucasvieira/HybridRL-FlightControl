@@ -25,7 +25,7 @@ class TestIDHPSAC:
         env = env()
         agent = IDHPSAC(env, learning_starts=1, buffer_size=1, batch_size=1)
 
-        agent.learn(sac_timesteps=3, idhp_timesteps=3)
+        agent.learn(sac_steps=3, idhp_steps=3)
         assert isinstance(agent.idhp.policy.actor, IDHPSACActor)
         assert agent.idhp.policy.actor == agent.idhp.actor
         assert agent.sac.num_steps == 3
@@ -63,12 +63,13 @@ class TestIDHPSAC:
         env = env()
         agent = IDHPSAC(env, learning_starts=1, buffer_size=1, batch_size=1)
 
-        agent.learn(sac_timesteps=3, idhp_timesteps=3)
+        agent.learn(sac_steps=3, idhp_steps=3)
 
         for idhp_layer, sac_layer in zip(
             agent.idhp.policy.actor.sac.ff, agent.sac.policy.actor.ff
         ):
             if isinstance(idhp_layer, th.nn.Linear):
+                assert idhp_layer.weight.requires_grad is False
                 assert th.allclose(idhp_layer.weight, sac_layer.weight)
                 assert th.allclose(idhp_layer.bias, sac_layer.bias)
 
