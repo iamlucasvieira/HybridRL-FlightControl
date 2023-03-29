@@ -62,12 +62,23 @@ class ReferenceSignals:
 
         return np.array([reference])
 
+    @staticmethod
+    def constant_sin(env):
+        """Task to track a constant sinusoidal that repeats every 5 seconds."""
+        period = 2 * np.pi / 5
+        amplitude = 0.1
+
+        reference = amplitude * np.sin(env.current_time * period)
+
+        return np.array([reference])
+
 
 reference_dict = {
     "step": ReferenceSignals.step,
     "sin": ReferenceSignals.sin,
     "rectangle": ReferenceSignals.rectangle,
     "square_wave": ReferenceSignals.square_wave,
+    "constant_sin": ReferenceSignals.constant_sin,
 }
 
 AVAILABLE_REFERENCES = list(reference_dict.keys())

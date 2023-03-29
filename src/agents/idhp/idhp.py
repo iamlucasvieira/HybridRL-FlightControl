@@ -1,11 +1,12 @@
 """Module that implements the IDHP agent."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import torch as th
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
+from agents.idhp.excitation import get_excitation_function
 from agents.idhp.incremental_model import IncrementalCitation
 from agents.idhp.policy import IDHPPolicy
 from envs import BaseEnv
@@ -18,7 +19,7 @@ class IDHP(BaseAgent):
 
     def __init__(
         self,
-        env: BaseEnv,
+        env: Type[BaseEnv],
         discount_factor: float = 0.6,
         discount_factor_model: float = 0.8,
         verbose: int = 1,
@@ -29,6 +30,7 @@ class IDHP(BaseAgent):
         actor_kwargs: Optional[dict] = None,
         critic_kwargs: Optional[dict] = None,
         device: Optional[str] = None,
+        excitation: Optional[str] = None,
         **kwargs,
     ):
         """Initialize the IDHP algorithm.
@@ -76,6 +78,10 @@ class IDHP(BaseAgent):
         self.learning_data = IDHPLearningData(
             [0],
             [0],
+        )
+
+        self.excitation_function = (
+            None if excitation is None else get_excitation_function(excitation)
         )
 
     def setup_model(self):
@@ -140,6 +146,9 @@ class IDHP(BaseAgent):
 
             with th.no_grad():
                 # Step environment
+
+                if self.excitation_function is not None:
+                    action += self.excitation_function(self.env)
 
                 obs_t1, rew_t1, terminated, truncated, info = self.get_rollout(
                     action.cpu().detach().numpy(),

@@ -1,5 +1,6 @@
 """IDHP incremental model."""
 from abc import ABC
+from typing import Type
 
 import numpy as np
 
@@ -146,7 +147,7 @@ class IncrementalModelBase(ABC):
 class IncrementalCitation(IncrementalModelBase):
     """Incremental model for the LTI aircraft system."""
 
-    def __init__(self, env: BaseEnv, **kwargs) -> None:
+    def __init__(self, env: Type[BaseEnv], **kwargs) -> None:
         """Initialize the model."""
         n_states = env.n_states
         n_inputs = env.n_inputs

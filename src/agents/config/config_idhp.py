@@ -1,9 +1,10 @@
 """Module with IHDP configuration."""
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, validator
 
 from agents import IDHP, BaseAgent
+from agents.idhp.excitation import AVAILABLE_EXCITATION_FUNCTIONS
 from helpers.config_auto import get_auto
 
 
@@ -28,9 +29,18 @@ class ConfigIDHPKwargs(BaseModel):
     learning_rate: Optional[float | List[float]] = 0.08
     hidden_size: Optional[int | List[int]] = 10
     device: Optional[str | List[str]] = "cpu"
+    excitation: Optional[str | List[str]] = None
 
     class Config:
         extra = Extra.forbid
+
+    @validator("excitation")
+    def excitation_validator(cls, v):
+        if v is not None and v not in AVAILABLE_EXCITATION_FUNCTIONS:
+            raise ValueError(
+                f"Excitation must be in {list(AVAILABLE_EXCITATION_FUNCTIONS.keys())}, not '{v}'"
+            )
+        return v
 
 
 class ConfigIDHPLearn(BaseModel):
