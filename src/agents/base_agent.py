@@ -52,17 +52,12 @@ class BaseAgent(ABC):
 
         # Setup data
         self.policy = None
+        self.policy_function = policy
         self.observation_space = env.observation_space
         self.action_space = env.action_space
         self._n_updates = 0
         self.run_name = None
         self.episode_buffer = None
-        self.policy = policy(
-            self.observation_space,
-            self.action_space,
-            device=device,
-            **self.policy_kwargs,
-        )
         self.log_interval = None
 
         # Setup learn variables
@@ -90,7 +85,14 @@ class BaseAgent(ABC):
         """Set up the model."""
         self.print("Setting up model:", end=" ")
         self.set_random_seed()
+        self.policy = self.policy_function(
+            self.observation_space,
+            self.action_space,
+            device=self.device,
+            **self.policy_kwargs,
+        )
         self.setup_model()
+
         self.print("Done :heavy_check_mark:", identifier=False)
 
     def get_rollout(
