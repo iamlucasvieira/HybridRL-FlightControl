@@ -89,7 +89,7 @@ class IDHP(BaseAgent):
         pass
 
     @staticmethod
-    def _setup_env(env: BaseEnv) -> BaseEnv:
+    def _setup_env(env: Type[BaseEnv]) -> Type[BaseEnv]:
         """Adds the required reward and observation fucntion to env."""
         env.set_reward_function("sq_error")
         env.set_observation_function("states + ref")
