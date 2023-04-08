@@ -6,6 +6,8 @@ import torch.nn as nn
 from gymnasium import spaces
 
 from agents import BasePolicy
+from agents.sac.sac import SAC
+from agents.idhp.idhp import IDHP
 from agents.idhp.policy import Actor as IDHPActor
 from agents.sac.policy import ActorNetwork as SACActor
 from helpers.torch_helpers import freeze, mlp
@@ -15,12 +17,12 @@ class IDHPSACActor(IDHPActor):
     """Class that implements the actor network for the IDHP-SAC agent."""
 
     def __init__(
-        self,
-        idhp_actor: IDHPActor,
-        sac_actor: SACActor,
-        *args,
-        device: Optional[str] = None,
-        **kwargs
+            self,
+            idhp_actor: IDHPActor,
+            sac_actor: SACActor,
+            *args,
+            device: Optional[str] = None,
+            **kwargs
     ):
         """Initialize the actor network."""
         super().__init__(
@@ -55,7 +57,7 @@ class IDHPSACActor(IDHPActor):
                 self.ff.append(new_idhp.pop(0))
 
     def forward(
-        self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
+            self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
     ):
         output_idhp = self.ff(obs)
         action, _ = self.sac.output_layer(
@@ -66,10 +68,10 @@ class IDHPSACActor(IDHPActor):
 
 class IDHPSACPolicy(BasePolicy):
     def __init__(
-        self,
-        observation_space: spaces.Space,
-        action_space: spaces.Space,
-        device: Optional[str] = None,
+            self,
+            observation_space: spaces.Space,
+            action_space: spaces.Space,
+            device: Optional[str] = None,
     ):
         """Initialize the policy."""
         super().__init__(observation_space, action_space, device=device)
@@ -77,6 +79,9 @@ class IDHPSACPolicy(BasePolicy):
     def _setup_policy(self):
         """Setup the policy."""
         pass
+
+    def transfer_learning(self, sac: SAC, idhp: IDHP):
+        return IDHPSACActor(idhp.policy.actor, sac.policy.actor, device=self.device)
 
     def predict(self, observation, deterministic: bool = True):
         """Predict the action."""
