@@ -84,7 +84,7 @@ class OnlineCallback(BaseCallback):
             {"actor/loss": self.agent.learning_data.loss_a[-1], "train/step": step}
         )
         wandb.log(
-            {"actor/w_{idx}": i for idx, i in enumerate(actor_weights)}
+            {f"actor/w_{idx}": i for idx, i in enumerate(actor_weights)}
             | {"train/step": step}
         )
 
@@ -96,7 +96,7 @@ class OnlineCallback(BaseCallback):
             {"critic/loss": self.agent.learning_data.loss_c[-1], "train/step": step}
         )
         wandb.log(
-            {"critic/w_{idx}": i for idx, i in enumerate(critic_weights)}
+            {f"critic/w_{idx}": i for idx, i in enumerate(critic_weights)}
             | {"train/step": step}
         )
         return True
@@ -110,4 +110,37 @@ class OnlineCallback(BaseCallback):
         return True
 
 
-AVAILABLE_CALLBACKS = {"tensorboard": TensorboardCallback, "online": OnlineCallback}
+class IDHPSACCallback(BaseCallback):
+    """
+    A custom callback to log the IDHP-SAC online learning data.
+    """
+
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+
+    def _on_step(self) -> bool:
+        """
+        This method will be called by the agent after each call to `env.step()`.
+
+        For child callback (of an `EventCallback`), this will be called
+        when the event is triggered.
+
+        :return: (bool) If the callback returns False, training is aborted early.
+        """
+        if self.agent.num_steps % self.agent.log_interval != 0 or wandb.run is None:
+            return True
+
+        step = self.agent.num_steps
+
+        # Log Actor
+        actor_weights = (
+            self.agent.actor.state_dict()["ff.2.weight"].flatten()[:3].numpy()
+        )
+
+        wandb.log(
+            {f"actor/idhp_w_{idx}": i for idx, i in enumerate(actor_weights)}
+            | {"train/step": step}
+        )
+
+
+AVAILABLE_CALLBACKS = {"tensorboard": TensorboardCallback, "online": OnlineCallback, "idhp_sac": IDHPSACCallback}

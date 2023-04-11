@@ -44,7 +44,7 @@ class ConfigIDHPSACLearn(BaseModel):
     sac_steps: Optional[int] = 1_000
     idhp_steps: Optional[int] = 1_000
     sac_model: Optional[str] = None
-    callback: Optional[list] = ["tensorboard"]
+    callback: Optional[list] = ["idhp_sac"]
     log_interval: Optional[int] = 1
     run_name: Optional[str] = get_auto("run_name")
 
