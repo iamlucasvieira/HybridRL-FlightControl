@@ -15,13 +15,13 @@ class BaseNetwork(nn.Module, ABC):
     """Base network for Critic and Value networks."""
 
     def __init__(
-        self,
-        observation_space: spaces.Space,
-        action_space: spaces.Space,
-        learning_rate: float = 3e-4,
-        hidden_layers=None,
-        device: Union[str, th.device] = None,
-        build_network: bool = True,
+            self,
+            observation_space: spaces.Space,
+            action_space: spaces.Space,
+            learning_rate: float = 3e-4,
+            hidden_layers=None,
+            device: Union[str, th.device] = None,
+            build_network: bool = True,
     ):
         """Initialize critic network.
 
@@ -72,12 +72,15 @@ class BaseNetwork(nn.Module, ABC):
         self.load_state_dict(th.load(self.checkpoint_file))
 
 
-def mlp(sizes, activation=nn.ReLU, output_activation=nn.Identity, bias=True):
+def mlp(sizes, activation=nn.ReLU, output_activation=nn.Identity, bias=True, layer_norm=False):
     """Build a multi-layer perceptron (MLP) with the given sizes and activation functions."""
     layers = []
     for j in range(len(sizes) - 1):
         act = activation if j < len(sizes) - 2 else output_activation
-        layers += [th.nn.Linear(sizes[j], sizes[j + 1], bias=bias), act()]
+        layers += [th.nn.Linear(sizes[j], sizes[j + 1], bias=bias)]
+        if layer_norm:
+            layers += [nn.LayerNorm(sizes[j + 1])]
+        layers += [act()]
     return nn.Sequential(*layers)
 
 
@@ -97,7 +100,7 @@ def get_device():
 
 
 def to_tensor(
-    *arrays, data_type=th.float32, device: Optional[str] = None
+        *arrays, data_type=th.float32, device: Optional[str] = None
 ) -> Union[th.Tensor, Tuple[th.Tensor]]:
     """Convert numpy arrays to PyTorch tensors.
 
