@@ -1,13 +1,13 @@
 ---
-name: SAC-LTI
-description: "Tests the SAC agent on the lti citation environment."
+name: DSAC-LTI
+description: "Tests the DSAC agent on the lti citation environment with constant function."
 wandb: true
 evaluate: true
 seed: 50
 
 # Set the agent to use
 agent:
-  name: SAC
+  name: DSAC
   learn:
     total_steps: 50_000
 
@@ -16,5 +16,6 @@ env:
   name: "LTI"
   kwargs:
     dt: 0.01
-    reference_type: sin
+    episode_steps: 10_000
+    reference_type: constant_sin
     tracked_state: q

@@ -1,6 +1,6 @@
 ---
 name: SAC-LTI
-description: "Tests the SAC agent on the lti citation environment."
+description: "Tests the SAC agent on the lti citation environment with constant function."
 wandb: true
 evaluate: true
 seed: 50
@@ -16,5 +16,6 @@ env:
   name: "LTI"
   kwargs:
     dt: 0.01
-    reference_type: sin
+    episode_steps: 10_000
+    reference_type: constant_sin
     tracked_state: q

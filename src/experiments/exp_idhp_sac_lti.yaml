@@ -3,7 +3,7 @@ name: IDHP-SAC-LTI
 description: "Tests the SAC agent on the lti citation environment."
 wandb: true
 evaluate: false
-seed: 50
+seed: 40
 
 # Set the agent to use
 agent:
