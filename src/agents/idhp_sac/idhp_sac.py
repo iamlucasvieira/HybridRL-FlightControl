@@ -4,7 +4,7 @@ from typing import Optional
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
-from agents.callbacks import OnlineCallback, TensorboardCallback, IDHPSACCallback
+from agents.callbacks import IDHPSACCallback, OnlineCallback, TensorboardCallback
 from agents.idhp.idhp import IDHP
 from agents.idhp_sac.policy import IDHPSACPolicy
 from agents.sac.sac import SAC
@@ -18,21 +18,21 @@ class IDHPSAC(BaseAgent):
     name = "IDHPSAC"
 
     def __init__(
-            self,
-            env: str,
-            learning_rate: float = 3e-4,
-            learning_starts: int = 100,
-            buffer_size: int = 1_000_000,
-            batch_size: int = 256,
-            policy_kwargs: dict = None,
-            log_dir: Optional[str] = None,
-            save_dir: Optional[str] = None,
-            verbose: int = 1,
-            seed: int = 1,
-            device: Optional[str] = None,
-            _init_setup_model: bool = True,
-            sac_hidden_layers: list = None,
-            idhp_hidden_layers: list = None,
+        self,
+        env: str,
+        learning_rate: float = 3e-4,
+        learning_starts: int = 100,
+        buffer_size: int = 1_000_000,
+        batch_size: int = 256,
+        policy_kwargs: dict = None,
+        log_dir: Optional[str] = None,
+        save_dir: Optional[str] = None,
+        verbose: int = 1,
+        seed: int = 1,
+        device: Optional[str] = None,
+        _init_setup_model: bool = True,
+        sac_hidden_layers: list = None,
+        idhp_hidden_layers: list = None,
     ):
         """Initialize the agent."""
         # Build the IDHP agent
@@ -91,13 +91,13 @@ class IDHPSAC(BaseAgent):
         pass
 
     def _learn(
-            self,
-            total_steps: int,
-            callback: ListCallback,
-            log_interval: int,
-            sac_steps: int = 1_000_000,
-            idhp_steps: int = 1_000_000,
-            sac_model: Optional[str] = None,
+        self,
+        total_steps: int,
+        callback: ListCallback,
+        log_interval: int,
+        sac_steps: int = 1_000_000,
+        idhp_steps: int = 1_000_000,
+        sac_model: Optional[str] = None,
     ) -> None:
         """Learn the agent."""
 
@@ -109,10 +109,12 @@ class IDHPSAC(BaseAgent):
 
         self.print("done 🎉")
 
-    def learn_offline(self,
-                      log_interval: int,
-                      sac_steps: int,
-                      sac_model: Optional[str], ):
+    def learn_offline(
+        self,
+        log_interval: int,
+        sac_steps: int,
+        sac_model: Optional[str],
+    ):
         """Offline learning part of the algorithm."""
         if sac_model is not None:
             self.print("Loading SAC")
@@ -131,9 +133,11 @@ class IDHPSAC(BaseAgent):
         self.print("Evaluating SAC")
         evaluate(self.sac, self.sac.env)
 
-    def learn_online(self,
-                     log_interval: int,
-                     idhp_steps: int = 1_000_000, ):
+    def learn_online(
+        self,
+        log_interval: int,
+        idhp_steps: int = 1_000_000,
+    ):
         """Online learning part of the algorithm."""
         self.print("Tranfering learning from SAC -> IDHP")
 

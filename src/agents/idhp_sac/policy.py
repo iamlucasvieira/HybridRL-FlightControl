@@ -4,14 +4,13 @@ from typing import Optional
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
-
 from gymnasium import spaces
 
 from agents import BasePolicy
-from agents.sac.sac import SAC
 from agents.idhp.idhp import IDHP
 from agents.idhp.policy import Actor as IDHPActor
 from agents.sac.policy import ActorNetwork as SACActor
+from agents.sac.sac import SAC
 from helpers.torch_helpers import freeze, mlp
 
 
@@ -19,12 +18,12 @@ class HybridActor(IDHPActor):
     """Class that implements the actor network for the IDHP-SAC agent."""
 
     def __init__(
-            self,
-            idhp_actor: IDHPActor,
-            sac_actor: SACActor,
-            *args,
-            device: Optional[str] = None,
-            **kwargs
+        self,
+        idhp_actor: IDHPActor,
+        sac_actor: SACActor,
+        *args,
+        device: Optional[str] = None,
+        **kwargs
     ):
         """Initialize the actor network."""
         super().__init__(
@@ -56,12 +55,14 @@ class HybridActor(IDHPActor):
         for idx, layer in enumerate(self.sac.ff):
             self.ff.append(layer)
             if not isinstance(layer, nn.Linear):
-                th.nn.init.eye_(new_idhp[0].weight)  # Initialize the Linear layer as identity
+                th.nn.init.eye_(
+                    new_idhp[0].weight
+                )  # Initialize the Linear layer as identity
                 self.ff.append(new_idhp.pop(0))
                 self.ff.append(new_idhp.pop(0))
 
     def forward(
-            self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
+        self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
     ):
         output_idhp = self.ff(obs)
         action, _ = self.sac.output_layer(
@@ -74,12 +75,12 @@ class SequentialActor(IDHPActor):
     """Class that implements the sequential version of the SAC-IDHP agent."""
 
     def __init__(
-            self,
-            idhp_actor: IDHPActor,
-            sac_actor: SACActor,
-            *args,
-            device: Optional[str] = None,
-            **kwargs
+        self,
+        idhp_actor: IDHPActor,
+        sac_actor: SACActor,
+        *args,
+        device: Optional[str] = None,
+        **kwargs
     ):
         """Initialize the actor network."""
         super().__init__(
@@ -101,7 +102,8 @@ class SequentialActor(IDHPActor):
         """Modify first layer of IDHP to make it have the sac output also as input."""
         self.idhp.ff[0] = nn.Linear(
             self.idhp.ff[0].in_features + self.sac.mu.in_features,
-            self.idhp.ff[0].out_features)
+            self.idhp.ff[0].out_features,
+        )
 
     def forward(self):
         """Forward pass."""
@@ -110,10 +112,10 @@ class SequentialActor(IDHPActor):
 
 class IDHPSACPolicy(BasePolicy):
     def __init__(
-            self,
-            observation_space: spaces.Space,
-            action_space: spaces.Space,
-            device: Optional[str] = None,
+        self,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        device: Optional[str] = None,
     ):
         """Initialize the policy."""
         super().__init__(observation_space, action_space, device=device)

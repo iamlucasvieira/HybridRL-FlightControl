@@ -4,8 +4,8 @@ import pytest
 import torch as th
 
 from agents import IDHPSAC
-from agents.idhp_sac.policy import HybridActor
 from agents.idhp.policy import Actor as IDHPActor
+from agents.idhp_sac.policy import HybridActor
 from envs import CitationEnv, LTIEnv
 from envs.observations import get_observation
 from envs.rewards import get_reward
@@ -49,7 +49,7 @@ class TestIDHPSAC:
 
         assert isinstance(agent.idhp.policy.actor, HybridActor)
         for idhp_layer, sac_layer in zip(
-                agent.idhp.policy.actor.sac.ff, agent.sac.policy.actor.ff
+            agent.idhp.policy.actor.sac.ff, agent.sac.policy.actor.ff
         ):
             if isinstance(idhp_layer, th.nn.Linear):
                 assert idhp_layer.weight.requires_grad is False

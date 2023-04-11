@@ -143,4 +143,8 @@ class IDHPSACCallback(BaseCallback):
         )
 
 
-AVAILABLE_CALLBACKS = {"tensorboard": TensorboardCallback, "online": OnlineCallback, "idhp_sac": IDHPSACCallback}
+AVAILABLE_CALLBACKS = {
+    "tensorboard": TensorboardCallback,
+    "online": OnlineCallback,
+    "idhp_sac": IDHPSACCallback,
+}

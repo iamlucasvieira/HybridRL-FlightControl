@@ -16,14 +16,14 @@ class BaseEnv(gym.Env, ABC):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
-            self,
-            dt: float = 0.1,
-            episode_steps: int = 100,
-            reward_scale: float = 1.0,
-            tracked_state: str = "q",
-            reference_type: str = "sin",
-            reward_type: str = "sq_error",
-            observation_type: str = "states + ref + error",
+        self,
+        dt: float = 0.1,
+        episode_steps: int = 100,
+        reward_scale: float = 1.0,
+        tracked_state: str = "q",
+        reference_type: str = "sin",
+        reward_type: str = "sq_error",
+        observation_type: str = "states + ref + error",
     ):
         """Initialize the environment."""
         super().__init__()
@@ -123,7 +123,7 @@ class BaseEnv(gym.Env, ABC):
 
         # Tracking error
         e = tracked_x_t1 - self.reference[-1]
-        e_2 = e ** 2
+        e_2 = e**2
 
         # Store values
         self.actions.append(action)
