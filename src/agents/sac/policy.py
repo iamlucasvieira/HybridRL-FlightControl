@@ -35,6 +35,7 @@ class CriticNetwork(BaseNetwork):
         ff = mlp(
             [self.observation_dim + self.action_dim] + self.hidden_layers + [1],
             activation=nn.ReLU,
+            layer_norm=False,
         )
         return ff
 

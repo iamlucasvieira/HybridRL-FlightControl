@@ -3,7 +3,7 @@ import pytest
 import torch as th
 
 from agents.idhp.policy import Actor as IDHPActor
-from agents.idhp_sac.policy import IDHPSACActor
+from agents.idhp_sac.policy import HybridActor
 from agents.sac.policy import ActorNetwork as SACActor
 from envs import CitationEnv, LTIEnv
 
@@ -14,7 +14,7 @@ def actor(env):
     env = env()
     idhp_actor = IDHPActor(env.observation_space, env.action_space)
     sac_actor = SACActor(env.observation_space, env.action_space)
-    actor = IDHPSACActor(idhp_actor, sac_actor)
+    actor = HybridActor(idhp_actor, sac_actor)
     return actor
 
 

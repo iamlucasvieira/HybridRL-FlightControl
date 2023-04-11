@@ -3,6 +3,8 @@ from typing import Optional
 
 import torch as th
 import torch.nn as nn
+import torch.optim as optim
+
 from gymnasium import spaces
 
 from agents import BasePolicy
@@ -13,7 +15,7 @@ from agents.sac.policy import ActorNetwork as SACActor
 from helpers.torch_helpers import freeze, mlp
 
 
-class IDHPSACActor(IDHPActor):
+class HybridActor(IDHPActor):
     """Class that implements the actor network for the IDHP-SAC agent."""
 
     def __init__(
@@ -39,6 +41,7 @@ class IDHPSACActor(IDHPActor):
         self.sac_hidden = sac_actor.hidden_layers
         self.idhp_hidden = idhp_actor.hidden_layers
         self._setup_ff()
+        self.optimizer = optim.SGD(self.parameters(), lr=self.learning_rate)
         self.to(self.device)
 
     def _setup_ff(self):
@@ -53,6 +56,7 @@ class IDHPSACActor(IDHPActor):
         for idx, layer in enumerate(self.sac.ff):
             self.ff.append(layer)
             if not isinstance(layer, nn.Linear):
+                th.nn.init.eye_(new_idhp[0].weight)  # Initialize the Linear layer as identity
                 self.ff.append(new_idhp.pop(0))
                 self.ff.append(new_idhp.pop(0))
 
@@ -64,6 +68,44 @@ class IDHPSACActor(IDHPActor):
             output_idhp, deterministic=deterministic, with_log_prob=False
         )
         return action
+
+
+class SequentialActor(IDHPActor):
+    """Class that implements the sequential version of the SAC-IDHP agent."""
+
+    def __init__(
+            self,
+            idhp_actor: IDHPActor,
+            sac_actor: SACActor,
+            *args,
+            device: Optional[str] = None,
+            **kwargs
+    ):
+        """Initialize the actor network."""
+        super().__init__(
+            *args,
+            **kwargs,
+            observation_space=idhp_actor.observation_space,
+            action_space=idhp_actor.action_space,
+            hidden_layers=idhp_actor.hidden_layers,
+            learning_rate=idhp_actor.learning_rate,
+            device=device,
+        )
+
+        freeze(sac_actor)
+        self.sac = sac_actor
+        self.idhp = idhp_actor
+        self.to(self.device)
+
+    def setup_idhp(self):
+        """Modify first layer of IDHP to make it have the sac output also as input."""
+        self.idhp.ff[0] = nn.Linear(
+            self.idhp.ff[0].in_features + self.sac.mu.in_features,
+            self.idhp.ff[0].out_features)
+
+    def forward(self):
+        """Forward pass."""
+        pass
 
 
 class IDHPSACPolicy(BasePolicy):
@@ -81,7 +123,7 @@ class IDHPSACPolicy(BasePolicy):
         pass
 
     def transfer_learning(self, sac: SAC, idhp: IDHP):
-        return IDHPSACActor(idhp.policy.actor, sac.policy.actor, device=self.device)
+        return HybridActor(idhp.policy.actor, sac.policy.actor, device=self.device)
 
     def predict(self, observation, deterministic: bool = True):
         """Predict the action."""

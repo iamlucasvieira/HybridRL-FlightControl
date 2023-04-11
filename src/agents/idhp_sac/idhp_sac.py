@@ -4,9 +4,9 @@ from typing import Optional
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
-from agents.callbacks import OnlineCallback, TensorboardCallback
+from agents.callbacks import OnlineCallback, TensorboardCallback, IDHPSACCallback
 from agents.idhp.idhp import IDHP
-from agents.idhp_sac.policy import IDHPSACActor, IDHPSACPolicy
+from agents.idhp_sac.policy import IDHPSACPolicy
 from agents.sac.sac import SAC
 from helpers.paths import Path
 from helpers.wandb_helpers import evaluate
@@ -52,7 +52,7 @@ class IDHPSAC(BaseAgent):
         env_sac, env_idhp = copy(env), copy(env)
         self.idhp = IDHP(
             env_idhp,
-            learning_rate=learning_rate,
+            learning_rate=15,
             verbose=verbose,
             actor_kwargs=actor_kwargs,
             critic_kwargs=critic_kwargs,
@@ -147,6 +147,7 @@ class IDHPSAC(BaseAgent):
             callback=[
                 OnlineCallback(verbose=self.verbose),
                 TensorboardCallback(verbose=self.verbose),
+                IDHPSACCallback(verbose=self.verbose),
             ],
             log_interval=log_interval,
         )

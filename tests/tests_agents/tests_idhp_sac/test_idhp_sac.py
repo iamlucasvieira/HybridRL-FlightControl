@@ -4,7 +4,7 @@ import pytest
 import torch as th
 
 from agents import IDHPSAC
-from agents.idhp_sac.policy import IDHPSACActor
+from agents.idhp_sac.policy import HybridActor
 from agents.idhp.policy import Actor as IDHPActor
 from envs import CitationEnv, LTIEnv
 from envs.observations import get_observation
@@ -27,7 +27,7 @@ class TestIDHPSAC:
         agent = IDHPSAC(env, learning_starts=1, buffer_size=1, batch_size=1)
 
         agent.learn(sac_steps=3, idhp_steps=3)
-        assert isinstance(agent.idhp.policy.actor, IDHPSACActor)
+        assert isinstance(agent.idhp.policy.actor, HybridActor)
         assert agent.idhp.policy.actor == agent.idhp.actor
         assert agent.sac.num_steps == 3
         assert agent.sac._n_updates == 2
@@ -47,7 +47,7 @@ class TestIDHPSAC:
 
         agent.learn(sac_steps=3, idhp_steps=3)
 
-        assert isinstance(agent.idhp.policy.actor, IDHPSACActor)
+        assert isinstance(agent.idhp.policy.actor, HybridActor)
         for idhp_layer, sac_layer in zip(
                 agent.idhp.policy.actor.sac.ff, agent.sac.policy.actor.ff
         ):
