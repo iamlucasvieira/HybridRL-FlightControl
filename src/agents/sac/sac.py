@@ -1,6 +1,6 @@
 """Module that creates the SAC algorithm."""
 from copy import deepcopy
-from typing import Optional, Type, Union
+from typing import Any, Optional, SupportsFloat, Type, Union
 
 import gymnasium as gym
 import numpy as np
@@ -264,3 +264,13 @@ class SAC(BaseAgent):
 
         loss = (alpha * log_prob - critic).mean()
         return loss
+
+    def get_rollout(
+        self,
+        action: np.ndarray,
+        obs: np.ndarray,
+        callback: ListCallback,
+        scale_action: bool = False,
+    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
+        """Get the rollout."""
+        return super().get_rollout(action, obs, callback, scale_action=scale_action)

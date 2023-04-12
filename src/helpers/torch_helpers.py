@@ -84,7 +84,9 @@ def mlp(
     for j in range(len(sizes) - 1):
         act = activation if j < len(sizes) - 2 else output_activation
         layers += [th.nn.Linear(sizes[j], sizes[j + 1], bias=bias)]
-        if layer_norm:
+        if (
+            layer_norm and 0 < j < len(sizes) - 2
+        ):  # Only add layer norm to hidden layers
             layers += [nn.LayerNorm(sizes[j + 1])]
         layers += [act()]
     return nn.Sequential(*layers)

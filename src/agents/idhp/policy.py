@@ -66,6 +66,7 @@ class Actor(BaseNetworkIDHP):
             activation=nn.Tanh,
             output_activation=nn.Tanh,
             bias=False,
+            layer_norm=True,
         )
 
         return ff
@@ -74,7 +75,7 @@ class Actor(BaseNetworkIDHP):
         """Gets the network loss."""
         return -(dr1_ds1 + gamma * critic_t1) @ G_t_1
 
-    def forward(self, x: Union[np.ndarray, th.Tensor], to_scale: bool = True):
+    def forward(self, x: Union[np.ndarray, th.Tensor], to_scale: bool = False):
         """Forward pass."""
         action = super().forward(x)
         if to_scale:

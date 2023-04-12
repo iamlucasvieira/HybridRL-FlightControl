@@ -80,6 +80,7 @@ class ActorNetwork(BaseNetwork):
             [self.observation_dim] + self.hidden_layers,
             activation=nn.ReLU,
             output_activation=nn.ReLU,
+            layer_norm=False,
         )
         return ff
 

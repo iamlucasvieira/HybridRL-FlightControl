@@ -128,6 +128,7 @@ class IDHP(BaseAgent):
 
             # Sample and scale action
             action = self.actor(obs_t)
+            scaled_action = self.env.scale_action(action)
             critic_t = self.critic(obs_t)
 
             ##############
@@ -136,9 +137,9 @@ class IDHP(BaseAgent):
             da_ds = []
             for i in range(action.shape[0]):
                 grad_i = th.autograd.grad(
-                    action[i],
+                    scaled_action[i],
                     obs_t,
-                    grad_outputs=th.ones_like(action[i]),
+                    grad_outputs=th.ones_like(scaled_action[i]),
                     retain_graph=True,
                 )
                 da_ds.append(grad_i[0])
@@ -199,7 +200,7 @@ class IDHP(BaseAgent):
             ########################
 
             # Update actor network
-            action = self.actor(obs_t, to_scale=False)
+            action = self.actor(obs_t)
             self.actor.optimizer.zero_grad()
             loss_a = action * loss_gradient_a
             loss_a.backward(gradient=th.ones_like(loss_gradient_a))

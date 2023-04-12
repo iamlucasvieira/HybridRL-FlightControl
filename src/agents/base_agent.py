@@ -96,7 +96,11 @@ class BaseAgent(ABC):
         self.print("Done :heavy_check_mark:", identifier=False)
 
     def get_rollout(
-        self, action: np.ndarray, obs: np.ndarray, callback: ListCallback
+        self,
+        action: np.ndarray,
+        obs: np.ndarray,
+        callback: ListCallback,
+        scale_action: bool = True,
     ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
         """Get the rollout.
 
@@ -104,11 +108,14 @@ class BaseAgent(ABC):
             action: Action to take.
             obs: Observation.
             callback: Callbacks.
+            scale_action: Whether to scale the action.
         """
         callback.on_rollout_start()
 
         # Get the rollout
-        obs_tp1, reward, terminated, truncated, info = self.env.step(action)
+        obs_tp1, reward, terminated, truncated, info = self.env.step(
+            action, scale_action=scale_action
+        )
 
         callback.on_rollout_end()
 

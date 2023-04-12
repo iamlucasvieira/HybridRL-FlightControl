@@ -199,7 +199,15 @@ class BaseEnv(gym.Env, ABC):
         self.observation_space = self._observation_space()
 
     def scale_action(self, action) -> np.ndarray:
-        """Scale the action to the correct range."""
+        """Scale the action to the correct range from [-1, 1] to [low, high]."""
         action_space = self.action_space
         low, high = action_space.low[0], action_space.high[0]
         return action * (high - low) / 2 + (high + low) / 2
+
+    def unscale_action(self, action: np.ndarray) -> np.ndarray:
+        """
+        Rescale the action from [low, high] to [-1, 1]
+        """
+        action_space = self.action_space
+        low, high = action_space.low[0], action_space.high[0]
+        return 2.0 * ((action - low) / (high - low)) - 1.0
