@@ -5,6 +5,7 @@ import torch as th
 import torch.nn as nn
 import torch.optim as optim
 from gymnasium import spaces
+from copy import deepcopy
 
 from agents import BasePolicy
 from agents.idhp.idhp import IDHP
@@ -18,12 +19,12 @@ class HybridActor(IDHPActor):
     """Class that implements the actor network for the IDHP-SAC agent."""
 
     def __init__(
-        self,
-        idhp_actor: IDHPActor,
-        sac_actor: SACActor,
-        *args,
-        device: Optional[str] = None,
-        **kwargs
+            self,
+            idhp_actor: IDHPActor,
+            sac_actor: SACActor,
+            *args,
+            device: Optional[str] = None,
+            **kwargs
     ):
         """Initialize the actor network."""
         super().__init__(
@@ -47,7 +48,7 @@ class HybridActor(IDHPActor):
         """Setup the feedforward network."""
         idhp_features = self.sac_hidden + [self.sac.mu.in_features]
         new_idhp = mlp(
-            idhp_features, activation=nn.ReLU, output_activation=nn.ReLU, bias=False
+            idhp_features, activation=nn.Tanh, output_activation=nn.Tanh, bias=False
         )
         self.ff = nn.Sequential()
 
@@ -62,7 +63,7 @@ class HybridActor(IDHPActor):
                 self.ff.append(new_idhp.pop(0))
 
     def forward(
-        self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
+            self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
     ):
         output_idhp = self.ff(obs)
         action, _ = self.sac.output_layer(
@@ -71,16 +72,52 @@ class HybridActor(IDHPActor):
         return action
 
 
+class SumActor(IDHPActor):
+    """Class that implements the actor network for the IDHP-SAC agent that adds both networks."""
+
+    def __init__(
+            self,
+            idhp_actor: IDHPActor,
+            sac_actor: SACActor,
+            *args,
+            device: Optional[str] = None,
+            **kwargs
+    ):
+        """Initialize the actor network."""
+        super().__init__(
+            *args,
+            **kwargs,
+            observation_space=idhp_actor.observation_space,
+            action_space=idhp_actor.action_space,
+            hidden_layers=idhp_actor.hidden_layers,
+            learning_rate=idhp_actor.learning_rate,
+            device=device,
+        )
+        freeze(sac_actor)
+        self.sac = sac_actor
+        self.ff = idhp_actor.ff
+        self.optimizer = optim.SGD(self.parameters(), lr=self.learning_rate)
+        self.to(self.device)
+
+    def forward(
+            self, obs: th.Tensor, deterministic: bool = True, to_scale: bool = False
+    ):
+        output_idhp = self.ff(obs)
+        output_sac, _ = self.sac(obs, deterministic=True, with_log_prob=False)
+        output =  output_idhp + output_sac
+        return output
+
+
 class SequentialActor(IDHPActor):
     """Class that implements the sequential version of the SAC-IDHP agent."""
 
     def __init__(
-        self,
-        idhp_actor: IDHPActor,
-        sac_actor: SACActor,
-        *args,
-        device: Optional[str] = None,
-        **kwargs
+            self,
+            idhp_actor: IDHPActor,
+            sac_actor: SACActor,
+            *args,
+            device: Optional[str] = None,
+            **kwargs
     ):
         """Initialize the actor network."""
         super().__init__(
@@ -112,10 +149,10 @@ class SequentialActor(IDHPActor):
 
 class IDHPSACPolicy(BasePolicy):
     def __init__(
-        self,
-        observation_space: spaces.Space,
-        action_space: spaces.Space,
-        device: Optional[str] = None,
+            self,
+            observation_space: spaces.Space,
+            action_space: spaces.Space,
+            device: Optional[str] = None,
     ):
         """Initialize the policy."""
         super().__init__(observation_space, action_space, device=device)

@@ -52,7 +52,7 @@ class IDHPSAC(BaseAgent):
         env_sac, env_idhp = copy(env), copy(env)
         self.idhp = IDHP(
             env_idhp,
-            learning_rate=15,
+            learning_rate=0.08,
             verbose=verbose,
             actor_kwargs=actor_kwargs,
             critic_kwargs=critic_kwargs,

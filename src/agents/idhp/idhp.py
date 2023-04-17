@@ -1,8 +1,9 @@
 """Module that implements the IDHP agent."""
 from dataclasses import dataclass
-from typing import List, Optional, Type
+from typing import List, Optional, Type, SupportsFloat, Any
 
 import torch as th
+import numpy as np
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
@@ -236,6 +237,15 @@ class IDHP(BaseAgent):
 
         return self
 
+    def get_rollout(
+        self,
+        action: np.ndarray,
+        obs: np.ndarray,
+        callback: ListCallback,
+        scale_action: bool = False,
+    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
+        """Get the rollout."""
+        return super().get_rollout(action, obs, callback, scale_action=scale_action)
 
 @dataclass
 class IDHPLearningData:
