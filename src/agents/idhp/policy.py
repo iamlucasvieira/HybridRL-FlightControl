@@ -18,7 +18,9 @@ class BaseNetworkIDHP(BaseNetwork):
         self,
         *args,
         hidden_layers: List[int] = None,
-        learning_rate: float = 0.08,
+        lr_low: float = 0.005,
+        lr_high: float = 0.08,
+        lr_threshold: float = 1,
         **kwargs
     ):
         """Initialize the base network.
@@ -30,11 +32,15 @@ class BaseNetworkIDHP(BaseNetwork):
         if hidden_layers is None:
             hidden_layers = [10, 10]
 
+        self.lr_low = lr_low
+        self.lr_high = lr_high
+        self.lr_threshold = lr_threshold
+
         super().__init__(
-            *args, **kwargs, hidden_layers=hidden_layers, learning_rate=learning_rate
+            *args, **kwargs, hidden_layers=hidden_layers, learning_rate=lr_low
         )
         self.flatten = nn.Flatten()
-        self.optimizer = optim.SGD(self.parameters(), lr=learning_rate)
+        self.optimizer = optim.SGD(self.parameters(), lr=lr_high)
         # self.device = "cpu"  # Having issues not using cpu with get_device()
         self.to(self.device)
 
@@ -48,6 +54,13 @@ class BaseNetworkIDHP(BaseNetwork):
         if not isinstance(x, th.Tensor):
             x = th.tensor(x, dtype=th.float32, device=self.device)
         return self.ff(x)
+
+    def update_learning_rate(self, loss):
+        """Update the learning rate."""
+        if loss < self.lr_threshold:
+            self.optimizer.param_groups[0]["lr"] = self.lr_low
+        else:
+            self.optimizer.param_groups[0]["lr"] = self.lr_high
 
 
 class Actor(BaseNetworkIDHP):

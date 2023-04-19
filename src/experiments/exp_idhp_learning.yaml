@@ -6,8 +6,7 @@ n_learning: 1
 agent:
   name: IDHP
   kwargs:
-    discount_factor: 0.8
-    excitation: "decay"
+    excitation: decay
   learn:
     total_steps: 10_000
 
@@ -15,7 +14,7 @@ env:
   name: "LTI"
   kwargs:
     dt: 0.01
-    episode_steps: 10_000
+    episode_steps: 5_000
     reference_type: constant_sin
     tracked_state: q
 

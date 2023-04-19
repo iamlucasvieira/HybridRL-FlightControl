@@ -63,17 +63,17 @@ class OnlineCallback(BaseCallback):
         # Log incremental model
         wandb.log(
             {
-                f"model/w_{idx}": i
+                f"online/model_w_{idx}": i
                 for idx, i in enumerate(self.agent.model.theta.flatten())
             }
-            | {"train/step": step}
+            | {"online/step": step}
         )
         wandb.log(
             {
-                f"model/error_{idx}": abs(i)
+                f"online/model_error_{idx}": abs(i)
                 for idx, i in enumerate(self.agent.model.errors[-1].flatten())
             }
-            | {"train/step": step}
+            | {"online/step": step}
         )
 
         # Log Actor
@@ -81,11 +81,14 @@ class OnlineCallback(BaseCallback):
             self.agent.actor.state_dict()["ff.0.weight"].flatten()[:3].numpy()
         )
         wandb.log(
-            {"actor/loss": self.agent.learning_data.loss_a[-1], "train/step": step}
+            {
+                "online/actor_loss": self.agent.learning_data.loss_a[-1],
+                "online/step": step,
+            }
         )
         wandb.log(
-            {f"actor/w_{idx}": i for idx, i in enumerate(actor_weights)}
-            | {"train/step": step}
+            {f"online/actor_w_{idx}": i for idx, i in enumerate(actor_weights)}
+            | {"online/step": step}
         )
 
         # Log Critic
@@ -93,11 +96,14 @@ class OnlineCallback(BaseCallback):
             self.agent.critic.state_dict()["ff.0.weight"].flatten()[:3].numpy()
         )
         wandb.log(
-            {"critic/loss": self.agent.learning_data.loss_c[-1], "train/step": step}
+            {
+                "online/critic_loss": self.agent.learning_data.loss_c[-1],
+                "online/step": step,
+            }
         )
         wandb.log(
-            {f"critic/w_{idx}": i for idx, i in enumerate(critic_weights)}
-            | {"train/step": step}
+            {f"online/critic_w_{idx}": i for idx, i in enumerate(critic_weights)}
+            | {"online/step": step}
         )
         return True
 
@@ -106,8 +112,25 @@ class OnlineCallback(BaseCallback):
         This event is triggered before exiting the `learn()` method.
         """
         if wandb.run is not None:
-            wandb.log({"mean_error": np.mean(self.env.sq_error)})
+            wandb.log({"online/mean_error": np.mean(self.env.sq_error)})
         return True
+
+
+class IDHPCallback(BaseCallback):
+    """Custom callback for IDHP."""
+
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+
+    def _on_step(self) -> bool:
+        """Method called after each step."""
+        if self.agent.num_steps % self.agent.log_interval != 0 or wandb.run is None:
+            return True
+        actor_lr = self.agent.actor.optimizer.param_groups[0]["lr"]
+        critic_lr = self.agent.critic.optimizer.param_groups[0]["lr"]
+
+        wandb.log({"idhp/actor_lr": actor_lr, "idhp/step": self.agent.num_steps})
+        wandb.log({"idhp/critic_lr": critic_lr, "idhp/step": self.agent.num_steps})
 
 
 class IDHPSACCallback(BaseCallback):
@@ -147,4 +170,5 @@ AVAILABLE_CALLBACKS = {
     "tensorboard": TensorboardCallback,
     "online": OnlineCallback,
     "idhp_sac": IDHPSACCallback,
+    "idhp": IDHPCallback,
 }

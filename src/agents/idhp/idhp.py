@@ -1,9 +1,9 @@
 """Module that implements the IDHP agent."""
 from dataclasses import dataclass
-from typing import List, Optional, Type, SupportsFloat, Any
+from typing import Any, List, Optional, SupportsFloat, Type
 
-import torch as th
 import numpy as np
+import torch as th
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
@@ -27,27 +27,38 @@ class IDHP(BaseAgent):
         log_dir: Optional[str] = None,
         save_dir: Optional[str] = None,
         seed: int = None,
-        learning_rate: float = 0.08,
         actor_kwargs: Optional[dict] = None,
         critic_kwargs: Optional[dict] = None,
         device: Optional[str] = None,
         excitation: Optional[str] = None,
+        lr_a_low: float = 0.005,
+        lr_a_high: float = 0.08,
+        lr_c_low: float = 0.0005,
+        lr_c_high: float = 0.005,
+        lr_threshold: float = 1,
+        t_warmup: int = 100,
         **kwargs,
     ):
         """Initialize the IDHP algorithm.
 
         Args:
-            policy: Policy to use.
-            env: Environment to use.
-            discount_factor (float): Discount factor.
-            discount_factor_model (float): Discount factor for incremental model.
-            verbose (int): Verbosity level.
-            log_dir (str): Directory to save logs.
-            save_dir (str): Directory to save models.
-            seed (int): Seed for random number generator.
-            beta_actor (float): Actor regularization parameter.
-            learning_rate (float): Critic regularization parameter.
-            hidden_layers (List[int]): Hidden layers for actor and critic.
+            env (Type[BaseEnv]): Environment to use.
+            discount_factor (float, optional): Discount factor for the reward. Defaults to 0.6.
+            discount_factor_model (float, optional): Discount factor for the incremental model. Defaults to 0.8.
+            verbose (int, optional): Verbosity level. Defaults to 1.
+            log_dir (Optional[str], optional): Directory to save logs. Defaults to None.
+            save_dir (Optional[str], optional): Directory to save models. Defaults to None.
+            seed (int, optional): Seed for the random number generator. Defaults to None.
+            actor_kwargs (Optional[dict], optional): Keyword arguments for the actor. Defaults to None.
+            critic_kwargs (Optional[dict], optional): Keyword arguments for the critic. Defaults to None.
+            device (Optional[str], optional): Device to use. Defaults to None.
+            excitation (Optional[str], optional): Excitation function to use. Defaults to None.
+            lr_a_low (float, optional): Lower bound for the learning rate of the actor. Defaults to 0.005.
+            lr_a_high (float, optional): Upper bound for the learning rate of the actor. Defaults to 0.08.
+            lr_c_low (float, optional): Lower bound for the learning rate of the critic. Defaults to 0.0005.
+            lr_c_high (float, optional): Upper bound for the learning rate of the critic. Defaults to 0.005.
+            lr_threshold (float, optional): Threshold for the learning rate. Defaults to 1 [deg].
+            t_warmup (int, optional): Number of warmup steps before allowing adaptive learning rate. Defaults to 100.
         """
         # Make sure environment has the right observation and reward functions for IDHP
         env = self._setup_env(env)
@@ -55,9 +66,18 @@ class IDHP(BaseAgent):
         # Create the policy kwargs
         actor_kwargs = {} if actor_kwargs is None else actor_kwargs
         critic_kwargs = {} if critic_kwargs is None else critic_kwargs
-        default_policy_kwargs = {"learning_rate": learning_rate}
-        actor_kwargs = actor_kwargs | default_policy_kwargs
-        critic_kwargs = critic_kwargs | default_policy_kwargs
+        actor_kwargs = {
+            "lr_low": lr_a_low,
+            "lr_high": lr_a_high,
+            "lr_threshold": lr_threshold,
+            **actor_kwargs,
+        }
+        critic_kwargs = {
+            "lr_low": lr_c_low,
+            "lr_high": lr_c_high,
+            "lr_threshold": lr_threshold,
+            **critic_kwargs,
+        }
         policy_kwargs = {"actor_kwargs": actor_kwargs, "critic_kwargs": critic_kwargs}
 
         super().__init__(
@@ -72,6 +92,7 @@ class IDHP(BaseAgent):
         )
 
         self.gamma = discount_factor
+        self.t_warmup = t_warmup
 
         # Initialize model
         self.model = IncrementalCitation(self.env, gamma=discount_factor_model)
@@ -216,6 +237,18 @@ class IDHP(BaseAgent):
             # Update incremental model
             self.model.update(self.env)
 
+            ########################
+            # Update learning rate #
+            ########################
+            if self.num_steps >= self.t_warmup:
+                n_steps_average = 50
+                if self.num_steps % n_steps_average == 0:
+                    sq_error = np.array(self.env.sq_error).flatten()
+                    mse = np.sqrt(sq_error[-n_steps_average:]).mean()
+
+                    self.critic.update_learning_rate(mse)
+                    self.actor.update_learning_rate(mse)
+
             ##########
             # Loging #
             ##########
@@ -246,6 +279,7 @@ class IDHP(BaseAgent):
     ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
         """Get the rollout."""
         return super().get_rollout(action, obs, callback, scale_action=scale_action)
+
 
 @dataclass
 class IDHPLearningData:

@@ -88,30 +88,16 @@ class Sweep:
     def get_callbacks(self):
         """Get the callbacks to use."""
         callbacks = []
-        config_callbacks = self.learn_kwargs["callback"]
-        if "wandb" in config_callbacks:
-            callbacks.append(
-                AVAILABLE_CALLBACKS["wandb"](
-                    model_save_freq=100,
-                    model_save_path=f"{self.MODELS_PATH / self.run_name}",
-                    verbose=self.config.verbose,
-                )
-            )
 
-        if "tensorboard" in config_callbacks:
-            callbacks.append(
-                AVAILABLE_CALLBACKS["tensorboard"](
-                    verbose=self.config.verbose,
+        for callback in self.learn_kwargs["callback"]:
+            if callback not in AVAILABLE_CALLBACKS:
+                raise ValueError(f"Callback {callback} not available.")
+            else:
+                callbacks.append(
+                    AVAILABLE_CALLBACKS[callback](
+                        verbose=self.config.verbose,
+                    )
                 )
-            )
-
-        if "online" in config_callbacks:
-            callbacks.append(
-                AVAILABLE_CALLBACKS["online"](
-                    verbose=self.config.verbose,
-                )
-            )
-
         self.learn_kwargs["callback"] = callbacks
 
     def learn(self, name=None):

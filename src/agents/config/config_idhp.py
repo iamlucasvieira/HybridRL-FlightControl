@@ -26,10 +26,15 @@ class ConfigIDHPKwargs(BaseModel):
     log_dir: Optional[str | List[str]] = get_auto("log_dir")
     save_dir: Optional[str | List[str]] = get_auto("save_dir")
     seed: Optional[int | List[int]] = get_auto("seed")
-    learning_rate: Optional[float | List[float]] = 0.08
     hidden_size: Optional[int | List[int]] = 10
     device: Optional[str | List[str]] = "cpu"
     excitation: Optional[str | List[str]] = None
+    lr_a_low: Optional[float | List[float]] = 0.005
+    lr_a_high: Optional[float | List[float]] = 0.08
+    lr_c_low: Optional[float | List[float]] = 0.0005
+    lr_c_high: Optional[float | List[float]] = 0.005
+    lr_threshold: Optional[float | List[float]] = 0.001
+    t_warmup: Optional[int | List[int]] = 100
 
     class Config:
         extra = Extra.forbid
@@ -47,7 +52,7 @@ class ConfigIDHPLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
 
     total_steps: Optional[int] = 1_000
-    callback: Optional[list] = ["online", "tensorboard"]
+    callback: Optional[list] = ["online", "tensorboard", "idhp"]
     log_interval: Optional[int] = 1
     run_name: Optional[str] = get_auto("run_name")
 

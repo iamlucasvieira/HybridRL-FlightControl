@@ -26,7 +26,7 @@ class Excitation:
         """Exponentially decay sinusoidal excitation."""
         t = env.current_time
         half_life_time = 2
-        amplitude = env.action_space.high[0] * 0.1
+        amplitude = env.action_space.high[0] * 0.4
         omega = 2 * pi / 0.2
         tau = half_life_time / log(2)
         excitation = 0

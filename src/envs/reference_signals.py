@@ -64,8 +64,8 @@ class ReferenceSignals:
 
     @staticmethod
     def constant_sin(env):
-        """Task to track a constant sinusoidal that repeats every 5 seconds."""
-        period = 2 * np.pi / 5
+        """Task to track a constant sinusoidal that repeats every 3 seconds."""
+        period = 2 * np.pi / 3
         amplitude = 0.1
 
         reference = amplitude * np.sin(env.current_time * period)
