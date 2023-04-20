@@ -37,7 +37,7 @@ class BaseNetworkIDHP(BaseNetwork):
         self.lr_threshold = lr_threshold
 
         super().__init__(
-            *args, **kwargs, hidden_layers=hidden_layers, learning_rate=lr_low
+            *args, **kwargs, hidden_layers=hidden_layers, learning_rate=lr_high
         )
         self.flatten = nn.Flatten()
         self.optimizer = optim.SGD(self.parameters(), lr=lr_high)

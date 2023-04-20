@@ -35,7 +35,7 @@ class IDHP(BaseAgent):
         lr_a_high: float = 0.08,
         lr_c_low: float = 0.0005,
         lr_c_high: float = 0.005,
-        lr_threshold: float = 1,
+        lr_threshold: float = 0.01,
         t_warmup: int = 100,
         **kwargs,
     ):

@@ -52,6 +52,46 @@ class TestIDHPPolicy:
         )
         assert policy.critic.num_hidden_layers == 1
 
+    def test_adaptive_lr(self, env):
+        """Test the IDHP policy."""
+        env = env()
+        lr_low = 0
+        lr_high = 1
+        lr_threshold = 0.5
+        policy = IDHPPolicy(
+            env.observation_space,
+            env.action_space,
+            critic_kwargs={
+                "lr_low": lr_low,
+                "lr_high": lr_high,
+                "lr_threshold": lr_threshold,
+            },
+            actor_kwargs={
+                "lr_low": lr_low,
+                "lr_high": lr_high,
+                "lr_threshold": lr_threshold,
+            },
+        )
+        # Assert that the learning rates are high at start
+        assert policy.actor.optimizer.param_groups[0]["lr"] == lr_high
+        assert policy.critic.optimizer.param_groups[0]["lr"] == lr_high
+
+        # Test if rates become low when loss is low
+        loss_low = 0.1
+        policy.actor.update_learning_rate(loss_low)
+        policy.critic.update_learning_rate(loss_low)
+
+        assert policy.actor.optimizer.param_groups[0]["lr"] == lr_low
+        assert policy.critic.optimizer.param_groups[0]["lr"] == lr_low
+
+        # Test if rates become high when loss is high
+        loss_high = 0.6
+        policy.actor.update_learning_rate(loss_high)
+        policy.critic.update_learning_rate(loss_high)
+
+        assert policy.actor.optimizer.param_groups[0]["lr"] == lr_high
+        assert policy.critic.optimizer.param_groups[0]["lr"] == lr_high
+
 
 @pytest.mark.parametrize("env", [LTIEnv, CitationEnv])
 class TestActor:

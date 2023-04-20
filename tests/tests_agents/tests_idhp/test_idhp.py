@@ -33,7 +33,7 @@ class TestIDHP:
 
     def test_learn(self, env: BaseEnv):
         """Tests the IDHP agent."""
-        agent = IDHP(env())
+        agent = IDHP(env(), device="cpu")
         agent.learn(100)
         assert agent.num_steps == 100
 

@@ -33,7 +33,9 @@ class HybridActor(IDHPActor):
             observation_space=idhp_actor.observation_space,
             action_space=idhp_actor.action_space,
             hidden_layers=idhp_actor.hidden_layers,
-            learning_rate=idhp_actor.learning_rate,
+            lr_high=idhp_actor.lr_high,
+            lr_low=idhp_actor.lr_low,
+            lr_threshold=idhp_actor.lr_threshold,
             device=device,
         )
         freeze(sac_actor)
@@ -90,7 +92,9 @@ class SumActor(IDHPActor):
             observation_space=idhp_actor.observation_space,
             action_space=idhp_actor.action_space,
             hidden_layers=idhp_actor.hidden_layers,
-            learning_rate=idhp_actor.learning_rate,
+            lr_high=idhp_actor.lr_high,
+            lr_low=idhp_actor.lr_low,
+            lr_threshold=idhp_actor.lr_threshold,
             device=device,
         )
         freeze(sac_actor)
@@ -126,7 +130,9 @@ class SequentialActor(IDHPActor):
             observation_space=idhp_actor.observation_space,
             action_space=idhp_actor.action_space,
             hidden_layers=idhp_actor.hidden_layers,
-            learning_rate=idhp_actor.learning_rate,
+            lr_high=idhp_actor.lr_high,
+            lr_low=idhp_actor.lr_low,
+            lr_threshold=idhp_actor.lr_threshold,
             device=device,
         )
 
