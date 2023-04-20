@@ -196,16 +196,14 @@ class ExperimentBuilder:
         self.sweep_configs = get_sweep("env.sweep", "env.kwargs")
         self.sweep_configs = get_sweep("agent.sweep", "agent.kwargs")
 
+        MULTIPLE_SWEEPS = len(self.sweep_configs) > 1 or self.config.n_learning > 1
+        if MULTIPLE_SWEEPS and self.config.seed is not None:
+            random.seed(self.config.seed)
         for _ in range(self.config.n_learning):
             for sweep_config in self.sweep_configs:
+                if MULTIPLE_SWEEPS:
+                    sweep_config.seed = self.get_random_seed()
                 self.sweeps.append(Sweep(sweep_config))
-
-        # If multiple sweeps generate seeds
-        if len(self.sweeps) > 1:
-            if self.config.seed is not None:
-                random.seed(self.config.seed)
-            for sweep in self.sweeps:
-                sweep.config.seed = self.get_random_seed()
 
     def get_random_seed(self):
         """Get a random seed."""
