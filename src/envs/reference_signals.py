@@ -1,5 +1,7 @@
 """Defines the RL tasks functions."""
 
+from math import ceil
+
 import numpy as np
 
 
@@ -72,6 +74,37 @@ class ReferenceSignals:
 
         return np.array([reference])
 
+    @staticmethod
+    def constant_square(env):
+        """Task to track a constant square wave that repeats every 3 seconds."""
+        reference = -0.1
+        start = 0
+        middle = 2
+        end = 4
+
+        periods = ceil(env.current_time / (end - start))
+
+        if env.current_time <= middle + (end - start) * (periods - 1):
+            reference = 0.1
+        else:
+            reference = -0.1
+
+        return np.array([reference])
+
+    @staticmethod
+    def sin_to_constant(env):
+        """Task to track a sinusoidal reference signal that becomes constant at a certain time."""
+        period = 2 * np.pi / 3
+        length = env.episode_length
+        amplitude = 0.1
+
+        if period * env.current_time / (2 * np.pi) < 3:
+            reference = amplitude * np.sin(period * env.current_time)
+        else:
+            reference = amplitude
+
+        return np.array([reference])
+
 
 reference_dict = {
     "step": ReferenceSignals.step,
@@ -79,6 +112,8 @@ reference_dict = {
     "rectangle": ReferenceSignals.rectangle,
     "square_wave": ReferenceSignals.square_wave,
     "constant_sin": ReferenceSignals.constant_sin,
+    "constant_square": ReferenceSignals.constant_square,
+    "sin_to_constant": ReferenceSignals.sin_to_constant,
 }
 
 AVAILABLE_REFERENCES = list(reference_dict.keys())
