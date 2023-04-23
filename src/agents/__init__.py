@@ -5,5 +5,6 @@ from agents.buffer import ReplayBuffer
 from agents.callbacks import AVAILABLE_CALLBACKS
 from agents.dsac.dsac import DSAC
 from agents.idhp.idhp import IDHP
+from agents.idhp_dsac.idhp_dsac import IDHPDSAC
 from agents.idhp_sac.idhp_sac import IDHPSAC
 from agents.sac.sac import SAC
