@@ -105,6 +105,20 @@ class ReferenceSignals:
 
         return np.array([reference])
 
+    @staticmethod
+    def sum_sin(env):
+        """Task to track a sinusoidal reference signal."""
+        period_1 = 2 * np.pi / 4
+        period_2 = 2 * np.pi / 5
+
+        amplitude = 0.1
+
+        reference = amplitude * np.sin(
+            env.current_time * period_1
+        ) + amplitude * np.sin(env.current_time * period_2)
+
+        return np.array([reference])
+
 
 reference_dict = {
     "step": ReferenceSignals.step,
@@ -114,6 +128,7 @@ reference_dict = {
     "constant_sin": ReferenceSignals.constant_sin,
     "constant_square": ReferenceSignals.constant_square,
     "sin_to_constant": ReferenceSignals.sin_to_constant,
+    "sum_sin": ReferenceSignals.sum_sin,
 }
 
 AVAILABLE_REFERENCES = list(reference_dict.keys())

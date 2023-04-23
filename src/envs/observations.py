@@ -55,6 +55,18 @@ class Observations:
             .flatten()
         )
 
+    @staticmethod
+    def noise_states_ref(self):
+        """Return the all states and the reference state with noise"""
+        bias = 5e-3
+        variance = 1e-3
+        noise = np.random.normal(bias, variance, self.states[-1].shape)
+        return (
+            np.hstack((self.states[-1] + noise, self.reference[-1]))
+            .astype(np.float32)
+            .flatten()
+        )
+
 
 observations_dict = {
     "states + ref + error": Observations.states_ref_error,
@@ -63,6 +75,7 @@ observations_dict = {
     "state + error": Observations.state_error,
     "states": Observations.states,
     "states + ref": Observations.states_ref,
+    "noise + states + ref": Observations.noise_states_ref,
 }
 
 AVAILABLE_OBSERVATIONS = list(observations_dict.keys())
