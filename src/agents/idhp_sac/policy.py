@@ -1,5 +1,4 @@
 """Module that defines the IDHP-SAC policy."""
-from copy import deepcopy
 from typing import Optional
 
 import torch as th

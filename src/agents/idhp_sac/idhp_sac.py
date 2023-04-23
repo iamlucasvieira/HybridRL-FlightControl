@@ -128,18 +128,21 @@ class IDHPSAC(BaseAgent):
                 log_interval=log_interval,
             )
 
-        # Evaluate SAC
-        self.print("Evaluating SAC")
-        evaluate(self.sac, self.sac.env)
-
     def learn_online(
         self,
         log_interval: int,
         idhp_steps: int = 1_000_000,
     ):
         """Online learning part of the algorithm."""
-        self.print("Tranfering learning from SAC -> IDHP")
 
+        self.sac.env.set_observation_function("noise + states + ref")
+        self.idhp.env.set_observation_function("noise + states + ref")
+
+        # Evaluate SAC
+        self.print("Evaluating SAC")
+        evaluate(self.sac, self.sac.env)
+
+        self.print("Tranfering learning from SAC -> IDHP")
         self.idhp.policy.actor = self.policy.transfer_learning(self.sac, self.idhp)
 
         self.print("Learning IDHP")
@@ -154,6 +157,10 @@ class IDHPSAC(BaseAgent):
             ],
             log_interval=log_interval,
         )
+
+        self.logger.record("nMAE_sac", self.sac.env.nmae * 100)
+        self.logger.record("nMAE_idhp", self.idhp.env.nmae * 100)
+        self.logger.dump()
 
     def save(self, *args, **kwargs):
         """Save the agent."""
