@@ -208,6 +208,7 @@ class BaseAgent(ABC):
         self.logger.record(
             "rollout/total_time", (time.time_ns() - self.start_time) / 1e9
         )
+        self.logger.record("rollout/nmae", self.env.nmae)
         self.logger.dump(step=self.num_steps)
 
     def _init_callback(self, callback: List[BaseCallback]) -> ListCallback:

@@ -211,3 +211,8 @@ class BaseEnv(gym.Env, ABC):
         action_space = self.action_space
         low, high = action_space.low[0], action_space.high[0]
         return 2.0 * ((action - low) / (high - low)) - 1.0
+
+    @property
+    def nmae(self):
+        """Normalized mean absolute error."""
+        return np.mean(np.abs(self.error)) / np.mean(np.abs(self.reference))
