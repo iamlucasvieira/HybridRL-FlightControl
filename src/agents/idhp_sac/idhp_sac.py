@@ -20,10 +20,6 @@ class IDHPSAC(BaseAgent):
     def __init__(
         self,
         env: str,
-        learning_rate: float = 3e-4,
-        learning_starts: int = 100,
-        buffer_size: int = 1_000_000,
-        batch_size: int = 256,
         policy_kwargs: dict = None,
         log_dir: Optional[str] = None,
         save_dir: Optional[str] = None,
@@ -31,19 +27,19 @@ class IDHPSAC(BaseAgent):
         seed: int = 1,
         device: Optional[str] = None,
         _init_setup_model: bool = True,
-        sac_hidden_layers: list = None,
-        idhp_hidden_layers: list = None,
+        idhp_kwargs: dict = None,
+        sac_kwargs: dict = None,
     ):
         """Initialize the agent."""
         # Build the IDHP agent
-        if sac_hidden_layers is None:
-            sac_hidden_layers = [256, 256]
+        idhp_kwargs = {} if idhp_kwargs is None else idhp_kwargs
+        sac_kwargs = {} if sac_kwargs is None else sac_kwargs
 
-        if idhp_hidden_layers is None:
-            idhp_hidden_layers = [10, 10]
-
-        actor_kwargs = {"hidden_layers": idhp_hidden_layers}
-        critic_kwargs = {"hidden_layers": idhp_hidden_layers}
+        for agent_dict in [idhp_kwargs, sac_kwargs]:
+            agent_dict["log_dir"] = log_dir
+            agent_dict["save_dir"] = save_dir
+            agent_dict["verbose"] = verbose
+            agent_dict["seed"] = seed
 
         # Make sure environment follows IDHP requirements
         env = IDHP._setup_env(env)
@@ -52,25 +48,12 @@ class IDHPSAC(BaseAgent):
         env_sac, env_idhp = copy(env), copy(env)
         self.idhp = IDHP(
             env_idhp,
-            verbose=verbose,
-            actor_kwargs=actor_kwargs,
-            critic_kwargs=critic_kwargs,
-            device=device,
-            log_dir=log_dir,
-            save_dir=save_dir,
+            **idhp_kwargs,
         )
 
         self.sac = SAC(
             env_sac,
-            learning_rate=learning_rate,
-            verbose=verbose,
-            learning_starts=learning_starts,
-            buffer_size=buffer_size,
-            batch_size=batch_size,
-            policy_kwargs={"hidden_layers": sac_hidden_layers},
-            device=device,
-            log_dir=log_dir,
-            save_dir=save_dir,
+            **sac_kwargs,
         )
 
         super().__init__(
@@ -135,8 +118,8 @@ class IDHPSAC(BaseAgent):
     ):
         """Online learning part of the algorithm."""
 
-        self.sac.env.set_observation_function("noise + states + ref")
-        self.idhp.env.set_observation_function("noise + states + ref")
+        # self.sac.env.set_observation_function("noise + states + ref")
+        # self.idhp.env.set_observation_function("noise + states + ref")
 
         # Evaluate SAC
         self.print("Evaluating SAC")

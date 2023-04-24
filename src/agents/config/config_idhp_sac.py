@@ -4,6 +4,8 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Extra
 
 from agents import IDHPSAC, BaseAgent
+from agents.config.config_idhp import ConfigIDHPKwargs
+from agents.config.config_sac import ConfigSACKwargs
 from helpers.config_auto import get_auto
 
 
@@ -19,10 +21,6 @@ class ConfigIDHPSACArgs(BaseModel):
 class ConfigIDHPSACKwargs(BaseModel):
     """Keyword arguments for IDHP-SAC object."""
 
-    learning_rate: Optional[float | List[float]] = 3e-4
-    learning_starts: Optional[int | List[int]] = 100
-    buffer_size: Optional[int | List[int]] = 1_000_000
-    batch_size: Optional[int | List[int]] = 256
     policy_kwargs: Optional[dict | List[dict]] = None
     log_dir: Optional[str | List[str]] = get_auto("log_dir")
     save_dir: Optional[str | List[str]] = get_auto("save_dir")
@@ -30,8 +28,10 @@ class ConfigIDHPSACKwargs(BaseModel):
     seed: Optional[int | List[int]] = get_auto("seed")
     device: Optional[str | List[str]] = "cpu"
     _init_setup_model: Optional[bool | List[bool]] = True
-    sac_hidden_layers: Optional[List[int] | List[List[int]]] = None
-    idhp_hidden_layers: Optional[List[int] | List[List[int]]] = None
+    idhp_kwargs: Optional[
+        ConfigIDHPKwargs | List[ConfigIDHPKwargs]
+    ] = ConfigIDHPKwargs()
+    sac_kwargs: Optional[ConfigSACKwargs | List[ConfigSACKwargs]] = ConfigSACKwargs()
 
     class Config:
         extra = Extra.forbid
