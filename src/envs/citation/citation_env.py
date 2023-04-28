@@ -89,7 +89,7 @@ class CitationEnv(BaseEnv):
         return spaces.Box(
             low=np.deg2rad(low_list),
             high=np.deg2rad(high_list),
-            dtype=np.float64,
+            dtype=np.float32,
         )
 
     def state_transition(self, action):
