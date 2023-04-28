@@ -2,16 +2,17 @@
 import torch
 import wandb
 
-from envs import BaseEnv
+from envs import BaseEnv, CitationEnv
 
 
-def evaluate(agent, env, n_times=1):
+def evaluate(agent, env, n_times=1, to_wandb=True):
     """Run the experiment n times."""
 
     for _ in range(n_times):
         obs, _ = env.reset()
         done = False
         steps = 0
+        episode_return = 0
         while not done:
             action = agent.predict(obs, deterministic=True)
 
@@ -21,10 +22,11 @@ def evaluate(agent, env, n_times=1):
 
             obs, reward, terminated, truncated, info = env.step(action)
             done = terminated or truncated
+            episode_return += reward
 
             env.render()
 
-            if wandb.run is not None:
+            if wandb.run is not None and to_wandb:
                 wandb.log({"reward": reward, "episode_step": steps})
                 wandb.log(
                     {
@@ -34,16 +36,43 @@ def evaluate(agent, env, n_times=1):
                 )
 
                 if isinstance(env, BaseEnv):
-                    wandb.log(
-                        {
-                            "reference": env.reference[-1],
-                            "state": env.track[-1],
-                            "episode_step": steps,
-                        }
-                    )
-                    wandb.log(
-                        {"tracking_error": env.sq_error[-1], "episode_step": steps}
-                    )
+                    log_base_env(env, steps)
+
+                if isinstance(env, CitationEnv):
+                    log_citation_env(env, steps)
 
             steps += 1
-        print(f"finished at {steps - 1}")
+        print(f"finished at {steps}")
+        return episode_return
+
+
+def log_base_env(env: BaseEnv, step: int):
+    """Log the base environment information after a step."""
+    wandb.log(
+        {
+            "eval/reference": env.reference[-1],
+            "eval/state": env.track[-1],
+            "eval/episode_step": step,
+        }
+    )
+    wandb.log({"eval/tracking_error": env.sq_error[-1], "eval/episode_step": step})
+
+
+def log_citation_env(env: CitationEnv, step: int):
+    """Log the Citation env information after a step."""
+    for input_name, input_value in zip(env.input_names, env.actions[-1]):
+        wandb.log(
+            {
+                f"citation_inputs/{input_name}": input_value,
+                "citation_inputs/step": step,
+            }
+        )
+
+    # Log states
+    for state_name, state_value in zip(env.model.states, env.states[-1]):
+        wandb.log(
+            {
+                f"citation_states/{state_name}": state_value,
+                "citation_states/step": step,
+            }
+        )

@@ -102,6 +102,7 @@ class SAC(BaseAgent):
         """Learn from the environment."""
         env = self.env
         obs, _ = env.reset()
+        episode_return = 0
 
         for step in range(total_steps):
             callback.on_step()
@@ -116,6 +117,7 @@ class SAC(BaseAgent):
                 action, obs, callback
             )
             done = terminated or truncated
+            episode_return += reward
 
             self.replay_buffer.push(
                 Transition(
@@ -125,13 +127,15 @@ class SAC(BaseAgent):
 
             # If done, reset the environment
             if done:
+                callback.on_episode_end(episode_return)
                 obs, _ = env.reset()
                 self._episode_num += 1
-
-                if self._episode_num % log_interval == 0:
-                    self.dump_logs()
+                episode_return = 0
             else:
                 obs = obs_tp1
+
+            if self.num_steps % log_interval == 0:
+                self.dump_logs()
 
             if step >= self.learning_starts:
                 for gradient_step in range(self.gradient_steps):
@@ -265,12 +269,12 @@ class SAC(BaseAgent):
         loss = (alpha * log_prob - critic).mean()
         return loss
 
-    def get_rollout(
-        self,
-        action: np.ndarray,
-        obs: np.ndarray,
-        callback: ListCallback,
-        scale_action: bool = False,
-    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
-        """Get the rollout."""
-        return super().get_rollout(action, obs, callback, scale_action=scale_action)
+    # def get_rollout(
+    #     self,
+    #     action: np.ndarray,
+    #     obs: np.ndarray,
+    #     callback: ListCallback,
+    #     scale_action: bool = False,
+    # ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
+    #     """Get the rollout."""
+    #     return super().get_rollout(action, obs, callback, scale_action=scale_action)

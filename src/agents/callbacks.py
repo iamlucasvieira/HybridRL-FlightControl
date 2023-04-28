@@ -6,6 +6,7 @@ import numpy as np
 import wandb
 
 from agents import BaseCallback
+from helpers.wandb_helpers import evaluate
 
 
 class TensorboardCallback(BaseCallback):
@@ -24,7 +25,16 @@ class TensorboardCallback(BaseCallback):
         self.agent.logger.record("time/time_elapsed", time_elapsed)
         self.agent.logger.record("time/episodes", self.agent._episode_num)
 
-        return True
+        if self.agent.num_steps % self.agent.log_interval != 0 or wandb.run is None:
+            return True
+
+        if self.agent.rewards:
+            wandb.log(
+                {
+                    "learning/rewards": self.agent.rewards[-1],
+                    "learning/step": self.agent.num_steps,
+                }
+            )
 
 
 class OnlineCallback(BaseCallback):
@@ -166,9 +176,45 @@ class IDHPSACCallback(BaseCallback):
         )
 
 
+class SACCallback(BaseCallback):
+    """Callback for the SAC algorithm."""
+
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+
+        self.best_nmae = np.inf
+
+    def _on_step(self) -> bool:
+        pass
+
+    def on_episode_end(self, episode_return) -> None:
+        """Runs after each episode."""
+
+        self.agent.save(run=str(self.agent.num_steps))
+
+        episode_length = self.env.current_time
+        train_nmae = self.env.nmae
+        eval_episode_return = evaluate(self.agent, self.env, to_wandb=False)
+        eval_nmae = self.env.nmae
+        eval_episode_length = self.env.current_time
+
+        wandb.log({"sac_train/episode_return": episode_return})
+        wandb.log({"sac_train/episode_length": episode_length})
+        wandb.log({"sac_train/nmae": train_nmae})
+
+        wandb.log({"sac_eval/episode_return": eval_episode_return})
+        wandb.log({"sac_eval/episode_length": eval_episode_length})
+        wandb.log({"sac_eval/nmae": eval_nmae})
+
+        if eval_nmae < self.best_nmae:
+            self.best_nmae = eval_nmae
+            self.agent.save(run="best")
+
+
 AVAILABLE_CALLBACKS = {
     "tensorboard": TensorboardCallback,
     "online": OnlineCallback,
     "idhp_sac": IDHPSACCallback,
     "idhp": IDHPCallback,
+    "sac": SACCallback,
 }

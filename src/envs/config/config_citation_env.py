@@ -15,13 +15,15 @@ class ConfigCitationKwargs(BaseModel):
     """Base configuration which is passed to the gym environment."""
 
     model: Optional[str | List[str]] = "default"
-    dt: Optional[float | List[float]] = 0.1  # Time step
+    dt: Optional[float | List[float]] = 0.01  # Time step
     episode_steps: Optional[int | List[int]] = 100  # Number of steps
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
     reference_type: Optional[str | List[str]] = "sin"
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
     tracked_state: Optional[str | List[str]] = "q"
+    input_names: Optional[List[str]] = None
+    observation_names: Optional[List[str]] = None
 
     @validator("model")
     def check_config(cls, model):

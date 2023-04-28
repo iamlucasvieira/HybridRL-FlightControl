@@ -9,7 +9,7 @@ seed: 40
 agent:
   name: IDHP-DSAC
   learn:
-    dsac_steps: 5_000
+    dsac_steps: 30_000
     idhp_steps: 5_000
 #    sac_model: IDHP-SAC-LTI/northern-resonance-98
 

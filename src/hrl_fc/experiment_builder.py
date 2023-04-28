@@ -131,8 +131,11 @@ class Sweep:
         if config_path is not None:
             shutil.copy(config_path, self.MODELS_PATH / self.run_name / "config.yaml")
 
-    def evaluate(self):
+    def evaluate(self, config_path: Optional[pl.Path] = None):
         """Evaluate the agent."""
+        # Load best model
+        if config_path is not None:
+            self.agent.load(path=self.agent.save_dir / self.agent.run_name, run="best")
         evaluate(self.agent, self.env, n_times=self.config.evaluate)
 
 

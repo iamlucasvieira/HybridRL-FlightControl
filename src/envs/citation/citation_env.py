@@ -4,6 +4,7 @@ from gymnasium import spaces
 
 from envs.base_env import BaseEnv
 from envs.citation.models.model_loader import load_model
+from typing import List
 
 
 class CitationEnv(BaseEnv):
@@ -19,14 +20,27 @@ class CitationEnv(BaseEnv):
         reference_type: str = "sin",
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
+        input_names: List[str] = None,
+        observation_names: List[str] = None,
     ):
         self.model = load_model(model)
-        if tracked_state not in self.model.states:
-            raise ValueError(
-                f"Tracked state {tracked_state} not in model states {self.model.states}"
-            )
+        self.input_names = ["de", "da", "dr"] if input_names is None else input_names
+        self.observation_names = (
+            ["p", "q", "r", "alpha", "beta", "phi", "theta"]
+            if observation_names is None
+            else observation_names
+        )
+
+        self.list_contains_all(self.model.states, [tracked_state])
+        self.list_contains_all(self.model.inputs, self.input_names)
+        self.list_contains_all(self.model.states, self.observation_names)
 
         self.model.initialize()
+
+        self.input_idx = [self.model.inputs.index(name) for name in self.input_names]
+        self.observation_idx = [
+            self.model.states.index(name) for name in self.observation_names
+        ]
 
         self._states = [
             self._initial_state().reshape(-1, 1)
@@ -52,12 +66,19 @@ class CitationEnv(BaseEnv):
     def _action_space(self):
         """The action space of the environment."""
         return spaces.Box(
-            low=-0.3, high=0.3, shape=(self.model.n_inputs,), dtype=np.float32
+            low=np.deg2rad([-20.05]),
+            high=np.deg2rad([14.90]),
+            dtype=np.float64,
         )
+        # return spaces.Box(
+        #     low=np.deg2rad([-20.05, -37.24, -21.77]),
+        #     high=np.deg2rad([14.90, 37.24, 21.77]),
+        #     dtype=np.float64,
+        # )
 
     def state_transition(self, action):
         """The state transition function of the environment."""
-        states = self.model.step(action.flatten())
+        states = self.model.step(self.action_to_input(action).flatten())
         self._states.append(states.reshape(-1, 1))
         return states
 
@@ -70,6 +91,12 @@ class CitationEnv(BaseEnv):
         initial_states = self.model.step(np.zeros(self.model.n_inputs))
         self._reset()
         return initial_states.flatten()
+
+    def action_to_input(self, action):
+        """Converts the action to the input of the model."""
+        model_input = np.zeros(self.model.n_inputs)
+        model_input[self.input_idx] = action
+        return model_input
 
     def _reset(self):
         """Reset the environment."""
@@ -95,3 +122,13 @@ class CitationEnv(BaseEnv):
     def current_aircraft_state(self):
         """The current state of the aircraft."""
         return self._states[-1]
+
+    @staticmethod
+    def list_contains_all(
+        model_vars: List[str | int | float], variables: List[str | int | float]
+    ):
+        """Checks if a variable is in the model variables."""
+        for var in variables:
+            if var not in model_vars:
+                raise ValueError(f"Variable {var} not in model variables {model_vars}")
+        return True

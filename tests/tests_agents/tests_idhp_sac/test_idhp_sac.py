@@ -24,8 +24,9 @@ class TestIDHPSAC:
     def test_learn(self, env):
         """Test the learn method."""
         env = env()
-        agent = IDHPSAC(env,
-                        sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1))
+        agent = IDHPSAC(
+            env, sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1)
+        )
 
         agent.learn(sac_steps=3, idhp_steps=3)
         assert isinstance(agent.idhp.policy.actor, HybridActor)
@@ -37,16 +38,18 @@ class TestIDHPSAC:
     def test_idhp_policy_is_default_before_run(self, env):
         """Tests that IDHP actor is not modified before learn."""
         env = env()
-        agent = IDHPSAC(env,
-                        sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1))
+        agent = IDHPSAC(
+            env, sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1)
+        )
 
         assert isinstance(agent.idhp.policy.actor, IDHPActor)
 
     def test_idhp_layers_after_learn(self, env):
         """Tests that the first IDHP layers are frozen and weights are the same."""
         env = env()
-        agent = IDHPSAC(env,
-                        sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1))
+        agent = IDHPSAC(
+            env, sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1)
+        )
 
         agent.learn(sac_steps=3, idhp_steps=3)
 
@@ -62,8 +65,9 @@ class TestIDHPSAC:
     def test_envs_independent(self, env):
         """Tests that the envs from SAC and IDHP are different."""
         env = env()
-        agent = IDHPSAC(env,
-                        sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1))
+        agent = IDHPSAC(
+            env, sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1)
+        )
 
         assert agent.sac.env != agent.idhp.env
         assert agent.sac.env.episode_steps == agent.idhp.env.episode_steps
@@ -73,8 +77,9 @@ class TestIDHPSAC:
     def test_envs_are_idhp_like(self, env):
         """Tests if the created environment are according to IDHP requirements."""
         env = env()
-        agent = IDHPSAC(env,
-                        sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1))
+        agent = IDHPSAC(
+            env, sac_kwargs=dict(learning_starts=1, buffer_size=1, batch_size=1)
+        )
 
         reward_function = "sq_error"
         observation_function = "states + ref"

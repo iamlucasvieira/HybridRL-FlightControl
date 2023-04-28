@@ -43,13 +43,15 @@ class Runner:
             # Learn
             sweep.learn(name=wandb_run.name)
 
+            config_path = None
+
             if self.config.save_model:
                 config_path = self.experiment.file_path / self.experiment.filename
                 sweep.save_model(config_path=config_path)
 
             # Evaluate
             if self.config.evaluate:
-                sweep.evaluate()
+                sweep.evaluate(config_path)
 
             wandb_run.finish()
 
@@ -126,7 +128,7 @@ class Evaluator:
 
 
 def main():
-    Runner("exp_idhp_learning").run()
+    Runner("exp_sac_citation").run()
 
 
 if __name__ == "__main__":

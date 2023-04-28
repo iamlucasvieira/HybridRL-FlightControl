@@ -44,8 +44,8 @@ class ConfigSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
 
     total_steps: Optional[int] = 1_000
-    callback: Optional[list] = ["tensorboard"]
-    log_interval: Optional[int] = 1
+    callback: Optional[list] = ["tensorboard", "sac"]
+    log_interval: Optional[int] = 100
     run_name: Optional[str] = get_auto("run_name")
 
     class Config:

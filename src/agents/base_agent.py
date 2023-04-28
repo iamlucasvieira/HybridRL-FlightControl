@@ -59,6 +59,7 @@ class BaseAgent(ABC):
         self.run_name = None
         self.episode_buffer = None
         self.log_interval = None
+        self.rewards = []
 
         # Setup learn variables
         self.total_steps = None
@@ -116,6 +117,8 @@ class BaseAgent(ABC):
         obs_tp1, reward, terminated, truncated, info = self.env.step(
             action, scale_action=scale_action
         )
+
+        self.rewards.append(reward)
 
         callback.on_rollout_end()
 
@@ -244,7 +247,7 @@ class BaseAgent(ABC):
         """Agent specific setup."""
         pass
 
-    def save(self, path: Optional[pl.Path] = None):
+    def save(self, path: Optional[pl.Path] = None, run: str = "final") -> None:
         """Save the model."""
         if path is None:
             path = self.save_dir
@@ -252,20 +255,21 @@ class BaseAgent(ABC):
             raise ValueError("Run name not set. Agent needs to 'learn' before saving.")
         path = path / self.run_name
 
-        policy_path = path / f"{self.name}_policy.pt"
+        policy_path = path / f"{self.name}_{run}_policy.pt"
 
         # Make directory for files
         path.mkdir(parents=True, exist_ok=True)
 
         th.save(self.policy.state_dict(), policy_path)
 
-    def load(self, path: pl.Path):
+    def load(self, path: pl.Path, run: str = "final"):
         """Load the model.
 
         Args:
             path: Path to the model.
+            run: Run name.
         """
-        policy_path = path / f"{self.name}_policy.pt"
+        policy_path = path / f"{self.name}_{run}_policy.pt"
 
         # Load the policy
         if policy_path.is_file():

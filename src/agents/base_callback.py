@@ -61,6 +61,10 @@ class BaseCallback(ABC):
         """Method called after rollout for callbacks."""
         self._on_rollout_end()
 
+    def on_episode_end(self, episode_return) -> None:
+        """Method called after each episode for callbacks."""
+        self._on_episode_end(episode_return)
+
     def _on_training_start(self) -> None:
         """Method called before training for callbacks."""
         pass
@@ -80,6 +84,10 @@ class BaseCallback(ABC):
 
     def _on_training_end(self) -> None:
         """Method called after training for callbacks."""
+        pass
+
+    def _on_episode_end(self, episode_return) -> None:
+        """Method called after each episode for callbacks."""
         pass
 
 
@@ -122,3 +130,8 @@ class ListCallback(BaseCallback):
         """Method called after training for callbacks."""
         for callback in self.callbacks:
             callback.on_training_end()
+
+    def _on_episode_end(self, episode_return) -> None:
+        """Method called after each episode for callbacks."""
+        for callback in self.callbacks:
+            callback.on_episode_end(episode_return)
