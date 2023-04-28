@@ -1,7 +1,7 @@
 """Creates a gym environment for the high fidelity citation  model."""
 import numpy as np
 from gymnasium import spaces
-
+from collections import namedtuple
 from envs.base_env import BaseEnv
 from envs.citation.models.model_loader import load_model
 from typing import List
@@ -65,16 +65,32 @@ class CitationEnv(BaseEnv):
 
     def _action_space(self):
         """The action space of the environment."""
+        Action = namedtuple("Action", "low high")
+
+        de = Action(-20.05, 14.90)
+        da = Action(-37.24, 37.24)
+        dr = Action(-21.77, 21.77)
+
+        low_list, high_list = [], []
+        for action in self.input_names:
+            if action == "de":
+                low, high = de.low, de.high
+            elif action == "da":
+                low, high = da.low, da.high
+            elif action == "dr":
+                low, high = dr.low, dr.high
+            else:
+                raise ValueError(
+                    "Only 'de', 'da', and 'dr' actions are supported by te model."
+                )
+            low_list.append(low)
+            high_list.append(high)
+
         return spaces.Box(
-            low=np.deg2rad([-20.05]),
-            high=np.deg2rad([14.90]),
+            low=np.deg2rad(low_list),
+            high=np.deg2rad(high_list),
             dtype=np.float64,
         )
-        # return spaces.Box(
-        #     low=np.deg2rad([-20.05, -37.24, -21.77]),
-        #     high=np.deg2rad([14.90, 37.24, 21.77]),
-        #     dtype=np.float64,
-        # )
 
     def state_transition(self, action):
         """The state transition function of the environment."""

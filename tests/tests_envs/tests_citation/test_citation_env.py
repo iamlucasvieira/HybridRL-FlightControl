@@ -56,6 +56,7 @@ class TestCitationEnv:
         for input_name in input_names:
             assert input_name in env.input_names
         assert len(env.input_idx) == len(input_names)
+        assert env.action_space.shape == (2,)
 
     def test_init_unsupported_input_names(self, env_kwargs):
         """Tests if unsupported input_names raises an error."""
