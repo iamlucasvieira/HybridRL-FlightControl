@@ -127,7 +127,7 @@ class CitationEnv(BaseEnv):
     @property
     def n_inputs(self) -> int:
         """The number of inputs in the environment."""
-        return self.model.n_inputs
+        return len(self.input_names)
 
     @property
     def aircraft_states(self):
