@@ -22,7 +22,6 @@ class Aircraft:
         auto_build: bool = True,
         configuration: str = "symmetric",
         dt: float = 0.01,
-        tracked_state="",
     ) -> None:
         """Initialize aircraft model.
 
@@ -40,11 +39,9 @@ class Aircraft:
         self.ss = None
         self.states = None
         self.current_state = None
-        self.tracked_state_map = None
 
         if auto_build:
             self.build_state_space()
-            self.get_tracked_state_map(tracked_state)
 
     def load_aircraft(self) -> AircraftData:
         """Load aircraft _data from YAML file, validate, and return _data object."""
@@ -95,21 +92,6 @@ class Aircraft:
     def set_initial_state(self, inital_state: np.ndarray) -> None:
         """Set initial state of the aircraft."""
         self.current_state = inital_state.reshape(self.ss.nstates, 1)
-
-    # def __rich_repr__(self) -> rich.repr.Result:
-    #     """Representation of the state space model."""
-    #     yield "Aircraft", self.filename
-    #     yield "Configuration", self.configuration
-
-    def get_tracked_state_map(self, tracked_state) -> None:
-        """Remove the state being tracked based in a task name."""
-        if not isinstance(tracked_state, list):
-            tracked_state = [tracked_state]
-        track_map = np.zeros((self.ss.nstates, 1))
-        for state in tracked_state:
-            state_idx = self.ss.x_names.index(state)
-            track_map[state_idx] = 1
-        self.tracked_state_map = track_map.astype(bool)
 
 
 class StateSpace:

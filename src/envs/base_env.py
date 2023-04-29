@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import gymnasium as gym
@@ -6,8 +6,8 @@ import numpy as np
 from gymnasium import spaces
 
 from envs.observations import get_observation
-from envs.reference_signals import get_reference_signal
 from envs.rewards import get_reward
+from tasks import get_task
 
 
 class BaseEnv(gym.Env, ABC):
@@ -20,8 +20,7 @@ class BaseEnv(gym.Env, ABC):
         dt: float = 0.1,
         episode_steps: int = 100,
         reward_scale: float = 1.0,
-        tracked_state: str = "q",
-        reference_type: str = "sin",
+        task_type: str = "sin_q",
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
     ):
@@ -33,14 +32,13 @@ class BaseEnv(gym.Env, ABC):
         self.episode_steps = episode_steps
         self.episode_length = episode_steps * dt
         self.reward_scale = reward_scale
-        self.tracked_state = tracked_state
 
         # Set spaces
         self.action_space = self._action_space()
 
         # Set reference signal
         self.get_reference = None
-        self.set_reference_signal(reference_type)
+        self.set_task(task_type)
 
         # Initialize data storage
         self.current_time = None
@@ -57,11 +55,6 @@ class BaseEnv(gym.Env, ABC):
         self.get_obs = None
         self.set_reward_function(reward_type)
         self.set_observation_function(observation_type)
-
-    @property
-    def tracked_state_mask(self):
-        """A mask that has the shape of the aircraft states and the value 1 in the tracked state."""
-        raise NotImplementedError
 
     @property
     def n_states(self):
@@ -118,8 +111,8 @@ class BaseEnv(gym.Env, ABC):
             action = self.scale_action(action)
 
         x_t1 = self.state_transition(action)
-        tracked_x_t1 = x_t1[self.tracked_state_mask]
-        x_t_r1 = self.get_reference(self)
+        tracked_x_t1 = x_t1[self.task.mask]
+        x_t_r1 = self.task.reference()
 
         # Tracking error
         e = tracked_x_t1 - self.reference[-1]
@@ -165,13 +158,13 @@ class BaseEnv(gym.Env, ABC):
         """Initializes the environment."""
         self.current_time = 0
         self.actions = [np.zeros(self.action_space.shape[0])]
-        self.error = [np.zeros([np.sum(self.tracked_state_mask)])]
+        self.error = [np.zeros(np.sum(self.task.mask))]
         self.sq_error = self.error.copy()
 
         #  Get initial state
         x_t_0 = self._initial_state()
-        x_t_r_0 = self.get_reference(self)
-        tracked_x_t_0 = x_t_0[self.tracked_state_mask]
+        x_t_r_0 = self.task.reference()
+        tracked_x_t_0 = x_t_0[self.task.mask]
 
         self.states = [x_t_0]
         self.reference = [x_t_r_0]
@@ -187,9 +180,9 @@ class BaseEnv(gym.Env, ABC):
         """Returns the shape of the observation."""
         return self.get_obs(self).shape
 
-    def set_reference_signal(self, reference_type: str) -> None:
+    def set_task(self, task_type: str) -> None:
         """Sets the reference signal function to be used."""
-        self.get_reference = get_reference_signal(reference_type)
+        self.task = get_task(task_type)(self)
 
     def set_reward_function(self, reward_type: str) -> None:
         self.get_reward = get_reward(reward_type)
@@ -216,3 +209,9 @@ class BaseEnv(gym.Env, ABC):
     def nmae(self):
         """Normalized mean absolute error."""
         return np.mean(np.abs(self.error)) / np.mean(np.abs(self.reference))
+
+    @property
+    @abstractmethod
+    def states_name(self):
+        """The names of the states."""
+        raise NotImplementedError

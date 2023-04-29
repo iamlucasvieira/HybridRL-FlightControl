@@ -198,9 +198,7 @@ class IDHP(BaseAgent):
 
                 # Get the reward gradient with respect to the state at time t+1
                 dr1_ds1 = (
-                    -2
-                    * error_t1
-                    * th.as_tensor(self.env.tracked_state_mask, device=self.device)
+                    -2 * error_t1 * th.as_tensor(self.env.task.mask, device=self.device)
                 )
 
                 critic_t1 = self.critic(obs_t1)

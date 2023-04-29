@@ -7,8 +7,8 @@ from pydantic import BaseModel, Extra, validator
 from envs.citation.citation_env import CitationEnv
 from envs.citation.models.model_loader import AVAILABLE_MODELS
 from envs.observations import AVAILABLE_OBSERVATIONS
-from envs.reference_signals import AVAILABLE_REFERENCES
 from envs.rewards import AVAILABLE_REWARDS
+from tasks.all_tasks import AVAILABLE_TASKS
 
 
 class ConfigCitationKwargs(BaseModel):
@@ -18,10 +18,9 @@ class ConfigCitationKwargs(BaseModel):
     dt: Optional[float | List[float]] = 0.01  # Time step
     episode_steps: Optional[int | List[int]] = 100  # Number of steps
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
-    reference_type: Optional[str | List[str]] = "sin"
+    task_type: Optional[str | List[str]] = "sin_q"
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
-    tracked_state: Optional[str | List[str]] = "q"
     input_names: Optional[List[str]] = None
     observation_names: Optional[List[str]] = None
 
@@ -31,13 +30,11 @@ class ConfigCitationKwargs(BaseModel):
             raise ValueError(f"Configuration must be in {model}")
         return model
 
-    @validator("reference_type")
-    def check_reference_type(cls, reference_type):
-        if reference_type not in AVAILABLE_REFERENCES and not isinstance(
-            reference_type, list
-        ):
-            raise ValueError(f"Task must be in {AVAILABLE_REFERENCES}")
-        return reference_type
+    @validator("task_type")
+    def check_reference_type(cls, task_type):
+        if task_type not in AVAILABLE_TASKS and not isinstance(task_type, list):
+            raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
+        return task_type
 
     @validator("reward_type")
     def check_reward_type(cls, reward_type):

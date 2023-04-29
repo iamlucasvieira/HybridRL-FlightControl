@@ -4,8 +4,8 @@ import pytest
 from envs.citation.citation_env import CitationEnv
 from envs.lti_citation.lti_env import LTIEnv
 from envs.observations import AVAILABLE_OBSERVATIONS, get_observation
-from envs.reference_signals import AVAILABLE_REFERENCES, get_reference_signal
 from envs.rewards import AVAILABLE_REWARDS, get_reward
+from tasks.all_tasks import AVAILABLE_TASKS, get_task
 
 
 env_storage_parameters = [
@@ -24,8 +24,7 @@ def env_kwargs():
         "dt": 0.1,
         "episode_steps": 100,
         "reward_scale": 1.0,
-        "tracked_state": "q",
-        "reference_type": "sin",
+        "task_type": "sin_q",
         "reward_type": "sq_error",
         "observation_type": "states + ref + error",
     }
@@ -109,31 +108,27 @@ class TestChildEnvs:
         with pytest.raises(ValueError):
             env_constructor(**env_kwargs)
 
-    @pytest.mark.parametrize("reference_type", AVAILABLE_REFERENCES)
-    def test_reference_function(self, env_constructor, reference_type, env_kwargs):
+    @pytest.mark.parametrize("task_type", AVAILABLE_TASKS)
+    def test_reference_function(self, env_constructor, task_type, env_kwargs):
         """Tests if reference function is correct."""
-        env_kwargs["reference_type"] = reference_type
+        env_kwargs["task_type"] = task_type
         env = env_constructor(**env_kwargs)
-        reference = env.get_reference(env)
+        reference = env.task.reference()
         assert isinstance(reference, np.ndarray), "Reference should be a numpy array."
-        assert env.get_reference == get_reference_signal(
-            reference_type
-        ), f"Reference function is not set correctly."
+        assert isinstance(env.task, get_task(task_type)), f"Task is not set correctly."
 
-    def test_invalid_reference_type(self, env_constructor, env_kwargs):
+    def test_invalid_task_type(self, env_constructor, env_kwargs):
         """Tests if error is raised when invalid reference type is given."""
-        env_kwargs["reference_type"] = "invalid"
+        env_kwargs["task_type"] = "invalid"
         with pytest.raises(ValueError):
             env_constructor(**env_kwargs)
 
-    @pytest.mark.parametrize("reference_type", AVAILABLE_REFERENCES)
-    def test_set_reference(self, env_constructor, reference_type, env_kwargs):
+    @pytest.mark.parametrize("task_type", AVAILABLE_TASKS)
+    def test_set_task(self, env_constructor, task_type, env_kwargs):
         """Tests if using set_reference_signal changes the reference function"""
         env = env_constructor(**env_kwargs)
-        env.set_reference_signal(reference_type)
-        assert env.get_reference == get_reference_signal(
-            reference_type
-        ), f"Reference function is not set correctly."
+        env.set_task(task_type)
+        assert isinstance(env.task, get_task(task_type)), f"Task is not set correctly."
 
     @pytest.mark.parametrize("reward_type", AVAILABLE_REWARDS)
     def test_set_reward(self, env_constructor, reward_type, env_kwargs):
@@ -162,7 +157,7 @@ class TestChildEnvs:
         """Tests if the shapes of the state, action and observation spaces are correct."""
         env = env_constructor(**env_kwargs)
         for i in range(10):
-            shape_tracked_state = (np.sum(env.tracked_state_mask),)
+            shape_tracked_state = (np.sum(env.task.mask),)
             assert np.isclose(env.current_time, env.dt * i)
             assert env.actions[i].shape == env.action_space.shape
             assert env.error[i].shape == shape_tracked_state

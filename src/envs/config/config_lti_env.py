@@ -6,8 +6,8 @@ from pydantic import BaseModel, Extra, validator
 
 from envs.lti_citation.lti_env import LTIEnv
 from envs.observations import AVAILABLE_OBSERVATIONS
-from envs.reference_signals import AVAILABLE_REFERENCES
 from envs.rewards import AVAILABLE_REWARDS
+from tasks.all_tasks import AVAILABLE_TASKS
 
 
 class ConfigLTIKwargs(BaseModel):
@@ -18,10 +18,9 @@ class ConfigLTIKwargs(BaseModel):
     dt: Optional[float | List[float]] = 0.1  # Time step
     episode_steps: Optional[int | List[int]] = 100  # Number of steps
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
-    reference_type: Optional[str | List[str]] = "sin"
+    task_type: Optional[str | List[str]] = "sin_q"
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
-    tracked_state: Optional[str | List[str]] = "q"
 
     @validator("configuration")
     def check_config(cls, configuration):
@@ -34,13 +33,11 @@ class ConfigLTIKwargs(BaseModel):
             raise ValueError(f"Configuration must be in {CONFIGURATIONS}")
         return configuration
 
-    @validator("reference_type")
-    def check_reference_type(cls, reference_type):
-        if reference_type not in AVAILABLE_REFERENCES and not isinstance(
-            reference_type, list
-        ):
-            raise ValueError(f"Task must be in {AVAILABLE_REFERENCES}")
-        return reference_type
+    @validator("task_type")
+    def check_task_type(cls, task_type):
+        if task_type not in AVAILABLE_TASKS and not isinstance(task_type, list):
+            raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
+        return task_type
 
     @validator("reward_type")
     def check_reward_type(cls, reward_type):

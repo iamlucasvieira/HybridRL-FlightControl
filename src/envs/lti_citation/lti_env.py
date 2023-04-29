@@ -13,8 +13,7 @@ class LTIEnv(BaseEnv):
         configuration: str = "sp",
         dt: float = 0.1,
         episode_steps: int = 100,
-        tracked_state: str = "q",
-        reference_type: str = "sin",
+        task_type: str = "sin_q",
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
         reward_scale: float = 1.0,
@@ -23,28 +22,16 @@ class LTIEnv(BaseEnv):
             filename=filename,
             dt=dt,
             configuration=configuration,
-            tracked_state=tracked_state,
         )
-
-        if tracked_state not in self.aircraft.ss.x_names:
-            raise ValueError(
-                f"Tracked state {tracked_state} not in model states {self.aircraft.states}"
-            )
 
         super().__init__(
             dt=dt,
             episode_steps=episode_steps,
             reward_scale=reward_scale,
-            tracked_state=tracked_state,
-            reference_type=reference_type,
+            task_type=task_type,
             reward_type=reward_type,
             observation_type=observation_type,
         )
-
-    @property
-    def tracked_state_mask(self):
-        """A mask that has the shape of the aircraft states and the value 1 in the tracked state."""
-        return self.aircraft.tracked_state_map.flatten()
 
     def _action_space(self) -> spaces.Box:
         """The action space of the environment."""
@@ -94,3 +81,8 @@ class LTIEnv(BaseEnv):
     def current_aircraft_state(self):
         """The current state of the aircraft."""
         return self.aircraft.current_state
+
+    @property
+    def states_name(self):
+        """The current state of the aircraft."""
+        return self.aircraft.ss.x_names

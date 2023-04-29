@@ -10,8 +10,7 @@ def env_kwargs():
         "model": "default",
         "dt": 0.1,
         "episode_steps": 100,
-        "tracked_state": "q",
-        "reference_type": "sin",
+        "task_type": "sin_q",
         "reward_type": "sq_error",
         "observation_type": "states + ref + error",
         "reward_scale": 1.0,
@@ -42,9 +41,9 @@ class TestCitationEnv:
         with pytest.raises(ValueError):
             CitationEnv(**env_kwargs)
 
-    def test_unsupported_tracking_state(self, env_kwargs):
+    def test_unsupported_task_type(self, env_kwargs):
         """Tests if unsupported tracking state raises an error."""
-        env_kwargs["tracked_state"] = "unsupported"
+        env_kwargs["task_type"] = "unsupported"
         with pytest.raises(ValueError):
             CitationEnv(**env_kwargs)
 

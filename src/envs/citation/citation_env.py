@@ -1,10 +1,12 @@
 """Creates a gym environment for the high fidelity citation  model."""
+from collections import namedtuple
+from typing import List
+
 import numpy as np
 from gymnasium import spaces
-from collections import namedtuple
+
 from envs.base_env import BaseEnv
 from envs.citation.models.model_loader import load_model
-from typing import List
 
 
 class CitationEnv(BaseEnv):
@@ -16,8 +18,7 @@ class CitationEnv(BaseEnv):
         dt: float = 0.1,
         episode_steps: int = 100,
         reward_scale: float = 1.0,
-        tracked_state: str = "q",
-        reference_type: str = "sin",
+        task_type: str = "sin_q",
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
         input_names: List[str] = None,
@@ -31,7 +32,6 @@ class CitationEnv(BaseEnv):
             else observation_names
         )
 
-        self.list_contains_all(self.model.states, [tracked_state])
         self.list_contains_all(self.model.inputs, self.input_names)
         self.list_contains_all(self.model.states, self.observation_names)
 
@@ -49,19 +49,10 @@ class CitationEnv(BaseEnv):
             dt=dt,
             episode_steps=episode_steps,
             reward_scale=reward_scale,
-            tracked_state=tracked_state,
-            reference_type=reference_type,
+            task_type=task_type,
             reward_type=reward_type,
             observation_type=observation_type,
         )
-
-    @property
-    def tracked_state_mask(self):
-        """A mask that has the shape of the aircraft states and the value 1 in the tracked state."""
-        state_mask = np.zeros(self.model.n_states)
-        tracked_state_index = self.model.states.index(self.tracked_state)
-        state_mask[tracked_state_index] = 1
-        return state_mask.astype(bool)
 
     def _action_space(self):
         """The action space of the environment."""
@@ -144,7 +135,13 @@ class CitationEnv(BaseEnv):
         model_vars: List[str | int | float], variables: List[str | int | float]
     ):
         """Checks if a variable is in the model variables."""
+        if not isinstance(variables, list):
+            variables = [variables]
         for var in variables:
             if var not in model_vars:
                 raise ValueError(f"Variable {var} not in model variables {model_vars}")
         return True
+
+    @property
+    def states_name(self):
+        return self.model.states
