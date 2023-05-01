@@ -44,4 +44,16 @@ class SineQ(BaseSine):
         super().__init__(env, period=3, amplitude=0.1)
 
     def __str__(self):
-        return "sine_q"
+        return "sin_q"
+
+
+class SineTheta(BaseSine):
+    """Task to track a sinusoidal reference signal of the pitch angle theta."""
+
+    tracked_states = ["theta"]
+
+    def __init__(self, env):
+        super().__init__(env, period=3, amplitude=0.1)
+
+    def __str__(self):
+        return "sin_theta"
