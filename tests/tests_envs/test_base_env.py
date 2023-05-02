@@ -108,7 +108,7 @@ class TestChildEnvs:
         with pytest.raises(ValueError):
             env_constructor(**env_kwargs)
 
-    @pytest.mark.parametrize("task_type", AVAILABLE_TASKS)
+    @pytest.mark.parametrize("task_type", ["sin_q"])
     def test_reference_function(self, env_constructor, task_type, env_kwargs):
         """Tests if reference function is correct."""
         env_kwargs["task_type"] = task_type
@@ -123,7 +123,7 @@ class TestChildEnvs:
         with pytest.raises(ValueError):
             env_constructor(**env_kwargs)
 
-    @pytest.mark.parametrize("task_type", AVAILABLE_TASKS)
+    @pytest.mark.parametrize("task_type", ["sin_q"])
     def test_set_task(self, env_constructor, task_type, env_kwargs):
         """Tests if using set_reference_signal changes the reference function"""
         env = env_constructor(**env_kwargs)

@@ -120,9 +120,9 @@ class Sweep:
         # Learn
         self.agent.learn(**learn_kwargs)
 
-    def load_model(self, model_path: Optional[pl.Path]):
+    def load_model(self, model_path: Optional[pl.Path], run: str = "best"):
         """Load a model file."""
-        self.agent.load(model_path)
+        self.agent.load(model_path, run=run)
 
     def save_model(self, config_path: Optional[pl.Path] = None):
         """Save a model file."""

@@ -1,12 +1,12 @@
 """Module that runs an experiment from a configuration file."""
 import os
+import pathlib as pl
 
 import wandb
 from rich.progress import track
 
 from helpers.misc import verbose_print
 from helpers.paths import Path
-from helpers.wandb_helpers import evaluate
 from hrl_fc.experiment_builder import ExperimentBuilder
 
 
@@ -75,56 +75,26 @@ class Runner:
         verbose_print(message, self.config.verbose)
 
     @classmethod
-    def from_file(cls, *args, **kwargs):
+    def from_file(
+        cls,
+        experiment_name: str,
+        run_name: str,
+        policy_name: str,
+        models_dir: str = None,
+    ):
         """Load a model file."""
+
+        models_dir = pl.Path(models_dir) if models_dir is not None else Path.models
+        file_path = models_dir / experiment_name / run_name
+        file_name = "config"
+
         # Initialize class
-        runner = cls(*args, **kwargs)
+        runner = cls(file_name, file_path)
 
         for sweep in runner.experiment.sweeps:
-            sweep.load_model(runner.file_path)
+            sweep.load_model(runner.file_path, run=policy_name)
 
         return runner
-
-
-class Evaluator:
-    """Class responsible for replaying evaluation of stored models."""
-
-    def __init__(
-        self,
-        model_directory: str,
-        models_directory: str = None,
-        zip_name: str = None,
-        verbose=0,
-    ):
-        """Initialize the evaluator."""
-        os.environ["WANDB_DIR"] = Path.logs.as_posix()
-        self.verbose = verbose
-
-        self.print("Initializing evaluator...")
-        self.agent, self.data = load_agent(
-            model_directory=model_directory,
-            models_directory=models_directory,
-            zip_name=zip_name,
-            with_data=True,
-        )
-
-    def evaluate(self):
-        """Evaluate a sweep."""
-        wandb_run = wandb.init(
-            project="replay",
-            config=self.data,
-            sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
-            save_code=False,  # optional
-        )
-
-        self.print("Evaluating...")
-        evaluate(self.agent, self.agent.env)
-
-        wandb_run.finish()
-
-    def print(self, message: str):
-        """Prints only if verbose is greater than 0."""
-        verbose_print(message, self.verbose)
 
 
 def main():

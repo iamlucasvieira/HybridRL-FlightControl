@@ -269,12 +269,12 @@ class SAC(BaseAgent):
         loss = (alpha * log_prob - critic).mean()
         return loss
 
-    # def get_rollout(
-    #     self,
-    #     action: np.ndarray,
-    #     obs: np.ndarray,
-    #     callback: ListCallback,
-    #     scale_action: bool = False,
-    # ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
-    #     """Get the rollout."""
-    #     return super().get_rollout(action, obs, callback, scale_action=scale_action)
+    def get_rollout(
+        self,
+        action: np.ndarray,
+        obs: np.ndarray,
+        callback: ListCallback,
+        scale_action: bool = False,
+    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
+        """Get the rollout."""
+        return super().get_rollout(action, obs, callback, scale_action=scale_action)

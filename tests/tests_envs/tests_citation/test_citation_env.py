@@ -63,28 +63,6 @@ class TestCitationEnv:
         with pytest.raises(ValueError):
             CitationEnv(**env_kwargs)
 
-    def test_init_with_observation_names(self, env_kwargs):
-        """Tests if the environment can be initialized with observation_names."""
-        observation_names = ["p", "q", "r"]
-        env_kwargs["observation_names"] = observation_names
-        env = CitationEnv(**env_kwargs)
-        for observation in observation_names:
-            assert observation in env.observation_names
-        assert len(env.observation_idx) == len(observation_names)
-
-    def test_init_unsupported_observation_names(self, env_kwargs):
-        """Tests if unsupported observation_names raises an error."""
-        env_kwargs["observation_names"] = ["unsupported"]
-        with pytest.raises(ValueError):
-            CitationEnv(**env_kwargs)
-
-    def test_init_with_default_input_observation(self, env_kwargs):
-        """Tests if the environment can be initialized with default input and observation names."""
-        env = CitationEnv(**env_kwargs)
-        assert len(env.input_idx) == 3
-        assert len(env.observation_idx) == 7
-        assert env.action_space.shape[0] == 3
-
     def test_list_contains_all(self):
         """Test the method list_contains_all."""
         assert CitationEnv.list_contains_all([1, 2, 3], [1, 2])

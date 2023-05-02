@@ -9,7 +9,7 @@ from rich.prompt import Confirm, IntPrompt
 from rich.table import Table
 
 from helpers.paths import Path
-from hrl_fc.experiment_runner import Evaluator, Runner
+from hrl_fc.experiment_runner import Runner
 
 
 app = typer.Typer()
@@ -22,7 +22,7 @@ def available_experiment_files():
 
 
 @app.command()
-def main(
+def run(
     filename: Optional[str] = typer.Argument(None, help="Experiment file name"),
     filepath: Optional[pl.Path] = typer.Argument(Path.exp, help="Experiment file path"),
     offline: Optional[bool] = typer.Option(False, help="Run experiment offline"),
@@ -64,25 +64,16 @@ def main(
 
 @app.command()
 def eval(
-    model_directory: Optional[str] = typer.Argument(
-        None, help="Directory of the model to evaluate"
-    ),
-    models_directory: Optional[pl.Path] = typer.Argument(
-        Path.models, help="Models path"
-    ),
+    experiment_name: str = typer.Argument(..., help="Experiment name"),
+    run_name: str = typer.Argument(..., help="Run name"),
+    policy_name: Optional[str] = typer.Argument("best", help="Policy to evaluate"),
 ):
     """Evaluates an experiment from a zip file."""
     print("Evaluating experiment...")
-    try:
-        evaluator = Evaluator(
-            model_directory=model_directory, models_directory=models_directory
-        )
-        evaluator.evaluate()
-        print("Evaluation finished :tada:")
-    except FileNotFoundError:
-        print(f"Path {model_directory / model_directory} does not exist :sweat:")
-    except ValueError:
-        print(f"Not able to load model from {model_directory} :sweat:")
+    runner = Runner.from_file(experiment_name, run_name, policy_name)
+    for sweep in runner.experiment.sweeps:
+        runner.evaluate(sweep)
+    print("Evaluation finished :tada:")
 
 
 if __name__ == "__main__":
