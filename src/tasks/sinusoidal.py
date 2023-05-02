@@ -1,6 +1,5 @@
 """Module that defines the sinusoidal tracking tasks."""
 from abc import ABC, abstractmethod
-from typing import List
 
 import numpy as np
 
@@ -33,6 +32,11 @@ class BaseSine(BaseTask, ABC):
         reference = amplitude * np.sin(2 * np.pi / period * self.env.current_time)
 
         return np.array([reference])
+
+    @property
+    def scale(self):
+        """The scale of each state tracked in the task."""
+        return np.array([1])
 
 
 class SineQ(BaseSine):

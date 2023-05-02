@@ -1,3 +1,4 @@
+from tasks.attitude import AttitudeTrain, SineAttitude
 from tasks.sinusoidal import SineQ, SineTheta
 
 
@@ -9,4 +10,9 @@ def get_task(task_type: str):
         raise ValueError(f"Task type {task_type} is not available.")
 
 
-AVAILABLE_TASKS = {"sin_q": SineQ, "sin_theta": SineTheta}
+AVAILABLE_TASKS = {
+    "sin_q": SineQ,
+    "sin_theta": SineTheta,
+    "att_train": AttitudeTrain,
+    "sin_att": SineAttitude,
+}

@@ -40,12 +40,21 @@ class Rewards:
         """Returns the error between the reference and the state."""
         return self.reward_scale * self.error[-1]
 
+    @staticmethod
+    def clip(self):
+        """Reward that clips the reward to -1, 1"""
+        n_tracked_states = self.task.mask.sum()
+        reward = -1 / n_tracked_states * np.abs(np.clip(self.error[-1], -1, 1)).sum()
+
+        return reward
+
 
 rewards_dict = {
     "sq_error": Rewards.sq_error,
     "sq_error_da": Rewards.sq_error_da,
     "sq_error_da_a": Rewards.sq_error_da_a,
     "error": Rewards.error,
+    "clip": Rewards.clip,
 }
 
 AVAILABLE_REWARDS = list(rewards_dict.keys())

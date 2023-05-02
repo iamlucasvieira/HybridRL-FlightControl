@@ -22,25 +22,15 @@ class CitationEnv(BaseEnv):
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
         input_names: List[str] = None,
-        observation_names: List[str] = None,
     ):
         self.model = load_model(model)
         self.input_names = ["de", "da", "dr"] if input_names is None else input_names
-        self.observation_names = (
-            ["p", "q", "r", "alpha", "beta", "phi", "theta"]
-            if observation_names is None
-            else observation_names
-        )
 
         self.list_contains_all(self.model.inputs, self.input_names)
-        self.list_contains_all(self.model.states, self.observation_names)
 
         self.model.initialize()
 
         self.input_idx = [self.model.inputs.index(name) for name in self.input_names]
-        self.observation_idx = [
-            self.model.states.index(name) for name in self.observation_names
-        ]
 
         self._states = [
             self._initial_state().reshape(-1, 1)

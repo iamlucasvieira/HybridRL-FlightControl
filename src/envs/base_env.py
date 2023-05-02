@@ -36,9 +36,7 @@ class BaseEnv(gym.Env, ABC):
         # Set spaces
         self.action_space = self._action_space()
 
-        # Set reference signal
-        self.get_reference = None
-        self.set_task(task_type)
+        self.task_type = task_type
 
         # Initialize data storage
         self.current_time = None
@@ -110,12 +108,12 @@ class BaseEnv(gym.Env, ABC):
         if scale_action:
             action = self.scale_action(action)
 
-        x_t1 = self.state_transition(action)
-        tracked_x_t1 = x_t1[self.task.mask]
-        x_t_r1 = self.task.reference()
+        x_t1 = self.state_transition(action)  # All states of the aircraft
+        tracked_x_t1 = x_t1[self.task.mask]  # Values of the states being tracked
+        x_t_r1 = self.task.reference()  # Reference value for the next state
 
         # Tracking error
-        e = tracked_x_t1 - self.reference[-1]
+        e = (tracked_x_t1 - self.reference[-1]) * self.task.scale
         e_2 = e**2
 
         # Store values
@@ -156,9 +154,12 @@ class BaseEnv(gym.Env, ABC):
 
     def initialize(self):
         """Initializes the environment."""
+        # Set reference signal
+        self.set_task(self.task_type)
+
         self.current_time = 0
         self.actions = [np.zeros(self.action_space.shape[0])]
-        self.error = [np.zeros(np.sum(self.task.mask))]
+        self.error = [np.zeros(self.task.mask.sum())]
         self.sq_error = self.error.copy()
 
         #  Get initial state
@@ -208,7 +209,12 @@ class BaseEnv(gym.Env, ABC):
     @property
     def nmae(self):
         """Normalized mean absolute error."""
-        return np.mean(np.abs(self.error)) / np.mean(np.abs(self.reference))
+        error = np.array(self.error)
+        reference = np.array(self.reference)
+        observation_ranges = reference.max(axis=0) - reference.min(axis=0)
+        observation_ranges[observation_ranges <= 0] = np.deg2rad(5) - np.deg2rad(-5)
+
+        return np.mean(np.mean(np.abs(error), axis=0) / observation_ranges)
 
     @property
     @abstractmethod

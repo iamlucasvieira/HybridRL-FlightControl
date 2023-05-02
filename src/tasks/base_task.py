@@ -52,3 +52,9 @@ class BaseTask(ABC):
     def reference(self) -> np.ndarray:
         """The reference signal."""
         ...
+
+    @property
+    @abstractmethod
+    def scale(self) -> float:
+        """The scale of each state tracked in the task."""
+        ...
