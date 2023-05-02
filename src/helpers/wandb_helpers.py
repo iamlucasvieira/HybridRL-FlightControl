@@ -48,14 +48,21 @@ def evaluate(agent, env, n_times=1, to_wandb=True):
 
 def log_base_env(env: BaseEnv, step: int):
     """Log the base environment information after a step."""
-    wandb.log(
-        {
-            "eval/reference": env.reference[-1],
-            "eval/state": env.track[-1],
-            "eval/episode_step": step,
-        }
-    )
-    wandb.log({"eval/tracking_error": env.sq_error[-1], "eval/episode_step": step})
+
+    for idx, tracked_state in enumerate(env.task.tracked_states):
+        wandb.log(
+            {
+                f"eval/{tracked_state}_ref": env.reference[-1][idx],
+                f"eval/{tracked_state}": env.track[-1][idx],
+                "eval/episode_step": step,
+            }
+        )
+        wandb.log(
+            {
+                f"eval/{tracked_state}_sq_error": env.sq_error[-1][idx],
+                "eval/episode_step": step,
+            }
+        )
 
 
 def log_citation_env(env: CitationEnv, step: int):
