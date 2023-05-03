@@ -98,15 +98,11 @@ class BaseEnv(gym.Env, ABC):
         """The observation space of the environment."""
         return spaces.Box(low=-1, high=1, shape=self._get_obs_shape(), dtype=np.float32)
 
-    def step(self, action: np.ndarray, scale_action=False) -> tuple:
+    def step(self, action: np.ndarray) -> tuple:
         info = {}
 
         # Advance time
         self.current_time += self.dt
-
-        # Get aircraft next state after action and the reference value for the next state
-        if scale_action:
-            action = self.scale_action(action)
 
         x_t1 = self.state_transition(action)  # All states of the aircraft
         tracked_x_t1 = x_t1[self.task.mask]  # Values of the states being tracked
@@ -191,20 +187,6 @@ class BaseEnv(gym.Env, ABC):
     def set_observation_function(self, observation_type: str) -> None:
         self.get_obs = get_observation(observation_type)
         self.observation_space = self._observation_space()
-
-    def scale_action(self, action) -> np.ndarray:
-        """Scale the action to the correct range from [-1, 1] to [low, high]."""
-        action_space = self.action_space
-        low, high = action_space.low[0], action_space.high[0]
-        return action * (high - low) / 2 + (high + low) / 2
-
-    def unscale_action(self, action: np.ndarray) -> np.ndarray:
-        """
-        Rescale the action from [low, high] to [-1, 1]
-        """
-        action_space = self.action_space
-        low, high = action_space.low[0], action_space.high[0]
-        return 2.0 * ((action - low) / (high - low)) - 1.0
 
     @property
     def nmae(self):

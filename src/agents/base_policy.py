@@ -45,8 +45,37 @@ class BasePolicy(nn.Module, ABC):
         pass
 
     @abstractmethod
-    def predict(
-        self, observation: np.ndarray, deterministic: bool = False
+    def _predict(
+        self, observation: np.ndarray, deterministic: bool = True
     ) -> np.ndarray:
         """Predict action."""
         pass
+
+    def predict(
+        self, observation: np.ndarray, deterministic: bool = True
+    ) -> np.ndarray:
+        """Predict action."""
+        action = self._predict(observation, deterministic)
+        unscaled_action = self.unscale_action(action)
+        return unscaled_action
+
+    def scale_action(self, action: np.ndarray) -> np.ndarray:
+        """
+        Rescale the action from [low, high] to [-1, 1]
+        (no need for symmetric action space)
+
+        :param action: Action to scale
+        :return: Scaled action
+        """
+        low, high = self.action_space.low, self.action_space.high
+        return 2.0 * ((action - low) / (high - low)) - 1.0
+
+    def unscale_action(self, scaled_action: np.ndarray) -> np.ndarray:
+        """
+        Rescale the action from [-1, 1] to [low, high]
+        (no need for symmetric action space)
+
+        :param scaled_action: Action to un-scale
+        """
+        low, high = self.action_space.low, self.action_space.high
+        return low + (0.5 * (scaled_action + 1.0) * (high - low))

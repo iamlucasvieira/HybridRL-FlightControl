@@ -5,6 +5,7 @@ from typing import Any, Optional, SupportsFloat, Type, Union
 import gymnasium as gym
 import numpy as np
 import torch as th
+from torch.nn import functional as F
 
 from agents import BaseAgent
 from agents.base_callback import ListCallback
@@ -110,6 +111,8 @@ class SAC(BaseAgent):
 
             if step < self.learning_starts:
                 action = env.action_space.sample()
+                # Scale the action to -1, 1
+                action = self.policy.scale_action(action)
             else:
                 action = self.policy.get_action(obs)
 
@@ -245,8 +248,8 @@ class SAC(BaseAgent):
                 critic_target - alpha * log_prob_tp1
             )
 
-        loss_1 = ((critic_1 - target) ** 2).mean()
-        loss_2 = ((critic_2 - target) ** 2).mean()
+        loss_1 = 0.5 * F.mse_loss(critic_1, target)
+        loss_2 = 0.5 * F.mse_loss(critic_2, target)
         # Adding the two loss is computationally more efficient as we backpropagate only once
         loss = loss_1 + loss_2
         return loss
@@ -268,13 +271,3 @@ class SAC(BaseAgent):
 
         loss = (alpha * log_prob - critic).mean()
         return loss
-
-    def get_rollout(
-        self,
-        action: np.ndarray,
-        obs: np.ndarray,
-        callback: ListCallback,
-        scale_action: bool = False,
-    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
-        """Get the rollout."""
-        return super().get_rollout(action, obs, callback, scale_action=scale_action)

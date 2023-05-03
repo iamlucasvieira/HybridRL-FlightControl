@@ -6,6 +6,7 @@ import numpy as np
 import wandb
 
 from agents import BaseCallback
+from envs import BaseEnv
 from helpers.wandb_helpers import evaluate
 
 
@@ -189,7 +190,8 @@ class SACCallback(BaseCallback):
 
     def on_episode_end(self, episode_return) -> None:
         """Runs after each episode."""
-
+        if not isinstance(self.env, BaseEnv):
+            return
         self.agent.save(run=str(self.agent.num_steps))
 
         episode_length = self.env.current_time

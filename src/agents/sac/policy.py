@@ -197,7 +197,7 @@ class SACPolicy(BasePolicy):
             action, _ = self.actor(state, **kwargs)
         return action.cpu().numpy()
 
-    def predict(
+    def _predict(
         self, observation: np.ndarray, deterministic: bool = True
     ) -> np.ndarray:
         """Predict action."""

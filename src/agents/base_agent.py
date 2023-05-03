@@ -101,7 +101,6 @@ class BaseAgent(ABC):
         action: np.ndarray,
         obs: np.ndarray,
         callback: ListCallback,
-        scale_action: bool = True,
     ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
         """Get the rollout.
 
@@ -113,9 +112,12 @@ class BaseAgent(ABC):
         """
         callback.on_rollout_start()
 
+        # Unscale the action to the environmnet ranges
+        action = self.policy.unscale_action(action)
+
         # Get the rollout
         obs_tp1, reward, terminated, truncated, info = self.env.step(
-            action, scale_action=scale_action
+            action,
         )
 
         self.rewards.append(reward)
@@ -211,7 +213,8 @@ class BaseAgent(ABC):
         self.logger.record(
             "rollout/total_time", (time.time_ns() - self.start_time) / 1e9
         )
-        self.logger.record("rollout/nmae", self.env.nmae)
+        if hasattr(self.env, "nmae"):
+            self.logger.record("rollout/nmae", self.env.nmae)
         self.logger.dump(step=self.num_steps)
 
     def _init_callback(self, callback: List[BaseCallback]) -> ListCallback:
