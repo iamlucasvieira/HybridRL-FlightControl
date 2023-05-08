@@ -18,5 +18,4 @@ env:
   name: "LTI"
   kwargs:
     dt: 0.01
-    reference_type: sin
-    tracked_state: q
+    task_type: sin_q

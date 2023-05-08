@@ -259,8 +259,8 @@ class DSACPolicy(BasePolicy):
             device=self.device,
         )
 
-    def predict(
-        self, observation: np.ndarray, deterministic: bool = False
+    def _predict(
+        self, observation: np.ndarray, deterministic: bool = True
     ) -> np.ndarray:
         """Predict action for a given observation."""
         observation = th.as_tensor(observation).float().to(self.device)
