@@ -18,7 +18,7 @@ class Attitude(BaseTask, ABC):
     @property
     def scale(self):
         """The scale of each state tracked in the task."""
-        return np.array([1 / 30, 1 / 30, 1 / 7.5]) * 180 / np.pi
+        return 1 / np.deg2rad([30, 30, 7])
 
 
 class AttitudeTrain(Attitude):
@@ -89,4 +89,14 @@ class SineAttitude(Attitude):
         # Beta reference
         beta_ref = 0
 
-        return np.hstack((theta_ref, phi_ref, beta_ref))
+        return np.hstack((beta_ref, phi_ref, beta_ref))
+
+
+class SinAttitudeEvaluate(SineAttitude):
+    def __init__(self, env):
+        super().__init__(env)
+        self.amp_phi = np.deg2rad(20)  # amplitude [rad]
+        self.amp_theta = np.deg2rad(10)  # amplitude [rad]
+
+    def __str__(self):
+        return "sin_att_eval"

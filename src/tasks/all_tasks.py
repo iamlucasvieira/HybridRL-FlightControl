@@ -1,4 +1,4 @@
-from tasks.attitude import AttitudeTrain, SineAttitude
+from tasks.attitude import AttitudeTrain, SinAttitudeEvaluate, SineAttitude
 from tasks.sinusoidal import SineQ, SineTheta
 
 
@@ -15,4 +15,5 @@ AVAILABLE_TASKS = {
     "sin_theta": SineTheta,
     "att_train": AttitudeTrain,
     "sin_att": SineAttitude,
+    "sin_att_eval": SinAttitudeEvaluate,
 }
