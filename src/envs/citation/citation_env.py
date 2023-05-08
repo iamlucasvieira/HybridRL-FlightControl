@@ -15,7 +15,7 @@ class CitationEnv(BaseEnv):
     def __init__(
         self,
         model: str = "default",
-        dt: float = 0.1,
+        dt: float = 0.01,
         episode_steps: int = 100,
         reward_scale: float = 1.0,
         task_type: str = "sin_q",
