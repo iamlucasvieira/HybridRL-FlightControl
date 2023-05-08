@@ -3,10 +3,11 @@ import os
 import pathlib as pl
 
 import wandb
-from rich.progress import track
+from rich.progress import Progress, TextColumn, TimeElapsedColumn
 
 from helpers.misc import verbose_print
 from helpers.paths import Path
+from hrl_fc.console import console
 from hrl_fc.experiment_builder import ExperimentBuilder
 
 
@@ -29,31 +30,40 @@ class Runner:
         """Run an experiment."""
         self.print("Running experiment...")
 
-        for sweep in track(self.experiment.sweeps, description=":brain: Learning..."):
+        for sweep in self.experiment.sweeps:
             sweep_config = sweep.config
+            with Progress(
+                *Progress.get_default_columns(),
+                TimeElapsedColumn(),
+                TextColumn("{task.completed} of {task.total}"),
+                console=console
+            ) as progress:
+                sweep.learn_kwargs["callback"].append(
+                    ("progress", {"progress": progress})
+                )
 
-            wandb_run = wandb.init(
-                project=sweep_config.name,
-                config=sweep_config.dict(),
-                sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
-                save_code=False,  # optional
-                monitor_gym=True,
-            )
+                wandb_run = wandb.init(
+                    project=sweep_config.name,
+                    config=sweep_config.dict(),
+                    sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+                    save_code=False,  # optional
+                    monitor_gym=True,
+                )
 
-            # Learn
-            sweep.learn(name=wandb_run.name)
+                # Learn
+                sweep.learn(name=wandb_run.name)
 
-            config_path = None
+                config_path = None
 
-            if self.config.save_model:
-                config_path = self.experiment.file_path / self.experiment.filename
-                sweep.save_model(config_path=config_path)
+                if self.config.save_model:
+                    config_path = self.experiment.file_path / self.experiment.filename
+                    sweep.save_model(config_path=config_path)
 
-            # Evaluate
-            if self.config.evaluate:
-                sweep.evaluate(config_path)
+                # Evaluate
+                if self.config.evaluate:
+                    sweep.evaluate(config_path)
 
-            wandb_run.finish()
+                wandb_run.finish()
 
     def evaluate(self, sweep):
         """Evaluate a sweep."""
@@ -98,7 +108,7 @@ class Runner:
 
 
 def main():
-    Runner("exp_sac_citation").run()
+    Runner("exp_dsac_lti").run()
 
 
 if __name__ == "__main__":

@@ -90,17 +90,21 @@ class Sweep:
         callbacks = []
 
         for callback in self.learn_kwargs["callback"]:
-            if callback not in AVAILABLE_CALLBACKS:
+            if isinstance(callback, tuple):
+                name, kwargs = callback
+            else:
+                name, kwargs = callback, {}
+
+            if name not in AVAILABLE_CALLBACKS:
                 raise ValueError(f"Callback {callback} not available.")
             else:
                 callbacks.append(
-                    AVAILABLE_CALLBACKS[callback](
-                        verbose=self.config.verbose,
-                    )
+                    AVAILABLE_CALLBACKS[name](verbose=self.config.verbose, **kwargs)
                 )
+
         self.learn_kwargs["callback"] = callbacks
 
-    def learn(self, name=None):
+    def learn(self, name=None, progress=None):
         """Learn the experiment."""
         if name is None:
             name = get_name([self.config.name, self.agent_config.name])
@@ -136,7 +140,13 @@ class Sweep:
         # Load best model
         if config_path is not None:
             self.agent.load(path=self.agent.save_dir / self.agent.run_name, run="best")
-        evaluate(self.agent, self.env, n_times=self.config.evaluate)
+
+        eval_task = (
+            self.config.task_eval
+            if self.config.task_eval is not None
+            else self.config.env.kwargs.task_type
+        )
+        evaluate(self.agent, self.env, n_times=self.config.evaluate, task=eval_task)
 
 
 class ExperimentBuilder:

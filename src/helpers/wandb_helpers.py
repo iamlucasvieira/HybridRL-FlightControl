@@ -5,10 +5,12 @@ import wandb
 from envs import BaseEnv, CitationEnv
 
 
-def evaluate(agent, env, n_times=1, to_wandb=True):
+def evaluate(agent, env, n_times=1, to_wandb=True, task=None):
     """Run the experiment n times."""
 
     for _ in range(n_times):
+        if task is not None:
+            env.set_task(task)
         obs, _ = env.reset()
         done = False
         steps = 0
