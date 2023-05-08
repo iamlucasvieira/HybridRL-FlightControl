@@ -191,8 +191,9 @@ class BaseEnv(gym.Env, ABC):
     @property
     def nmae(self):
         """Normalized mean absolute error."""
-        error = np.array(self.error)
         reference = np.array(self.reference)
+        track = np.array(self.track)
+        error = reference - track
         observation_ranges = reference.max(axis=0) - reference.min(axis=0)
         observation_ranges[observation_ranges <= 0] = np.deg2rad(5) - np.deg2rad(-5)
 
