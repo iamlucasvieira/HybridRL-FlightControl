@@ -36,6 +36,7 @@ class TensorboardCallback(BaseCallback):
                     "learning/step": self.agent.num_steps,
                 }
             )
+        return True
 
 
 class OnlineCallback(BaseCallback):
@@ -142,6 +143,7 @@ class IDHPCallback(BaseCallback):
 
         wandb.log({"idhp/actor_lr": actor_lr, "idhp/step": self.agent.num_steps})
         wandb.log({"idhp/critic_lr": critic_lr, "idhp/step": self.agent.num_steps})
+        return True
 
 
 class IDHPSACCallback(BaseCallback):
@@ -175,6 +177,7 @@ class IDHPSACCallback(BaseCallback):
             {f"actor/idhp_w_{idx}": i for idx, i in enumerate(actor_weights)}
             | {"train/step": step}
         )
+        return True
 
 
 class SACCallback(BaseCallback):
@@ -186,7 +189,7 @@ class SACCallback(BaseCallback):
         self.best_nmae = np.inf
 
     def _on_step(self) -> bool:
-        pass
+        self.agent.logger.record("rollout/best_nmae", f"{self.best_nmae * 100 :.2f}%")
 
     def on_episode_end(self, episode_return) -> None:
         """Runs after each episode."""
@@ -211,6 +214,28 @@ class SACCallback(BaseCallback):
         if eval_nmae < self.best_nmae:
             self.best_nmae = eval_nmae
             self.agent.save(run="best")
+            self.agent.logger.record(
+                "rollout/best_nmae", f"{self.best_nmae * 100 :.2f}%"
+            )
+
+
+class ProgressCallback(BaseCallback):
+    """Callback for the progressbar."""
+
+    def __init__(self, verbose=0, progress=None):
+        super().__init__(verbose)
+        self.progress = progress
+
+    def _on_training_start(self) -> None:
+        """Method called before the training initialization."""
+        self.training = self.progress.add_task(
+            ":robot: Learning ", total=self.agent.total_steps
+        )
+
+    def _on_step(self) -> bool:
+        """Method called after each step."""
+        self.progress.update(self.training, advance=1)
+        return True
 
 
 AVAILABLE_CALLBACKS = {
@@ -219,4 +244,5 @@ AVAILABLE_CALLBACKS = {
     "idhp_sac": IDHPSACCallback,
     "idhp": IDHPCallback,
     "sac": SACCallback,
+    "progress": ProgressCallback,
 }
