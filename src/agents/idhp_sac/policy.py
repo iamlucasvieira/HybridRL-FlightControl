@@ -169,6 +169,6 @@ class IDHPSACPolicy(BasePolicy):
     def transfer_learning(self, sac: SAC, idhp: IDHP):
         return HybridActor(idhp.policy.actor, sac.policy.actor, device=self.device)
 
-    def predict(self, observation, deterministic: bool = True):
+    def _predict(self, observation, deterministic: bool = True):
         """Predict the action."""
         pass

@@ -108,7 +108,7 @@ class Runner:
 
 
 def main():
-    Runner("exp_dsac_lti").run()
+    Runner("exp_idhp_learning").run()
 
 
 if __name__ == "__main__":
