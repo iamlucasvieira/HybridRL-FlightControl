@@ -6,7 +6,7 @@ import numpy as np
 import wandb
 
 from agents import BaseCallback
-from envs import BaseEnv
+from envs import BaseEnv, LTIEnv
 from helpers.wandb_helpers import evaluate
 
 
@@ -72,51 +72,52 @@ class OnlineCallback(BaseCallback):
         wandb.log({"online/sq_error": sq_error, "online/step": step})
         wandb.log({"online/action": action, "online/step": step})
 
-        # Log incremental model
-        wandb.log(
-            {
-                f"online/model_w_{idx}": i
-                for idx, i in enumerate(self.agent.model.theta.flatten())
-            }
-            | {"online/step": step}
-        )
-        wandb.log(
-            {
-                f"online/model_error_{idx}": abs(i)
-                for idx, i in enumerate(self.agent.model.errors[-1].flatten())
-            }
-            | {"online/step": step}
-        )
+        if isinstance(self.env, LTIEnv):
+            # Log incremental model
+            wandb.log(
+                {
+                    f"online/model_w_{idx}": i
+                    for idx, i in enumerate(self.agent.model.theta.flatten())
+                }
+                | {"online/step": step}
+            )
+            wandb.log(
+                {
+                    f"online/model_error_{idx}": abs(i)
+                    for idx, i in enumerate(self.agent.model.errors[-1].flatten())
+                }
+                | {"online/step": step}
+            )
 
-        # Log Actor
-        actor_weights = (
-            self.agent.actor.state_dict()["ff.0.weight"].flatten()[:3].numpy()
-        )
-        wandb.log(
-            {
-                "online/actor_loss": self.agent.learning_data.loss_a[-1],
-                "online/step": step,
-            }
-        )
-        wandb.log(
-            {f"online/actor_w_{idx}": i for idx, i in enumerate(actor_weights)}
-            | {"online/step": step}
-        )
+            # Log Actor
+            actor_weights = (
+                self.agent.actor.state_dict()["ff.0.weight"].flatten()[:3].numpy()
+            )
+            wandb.log(
+                {
+                    "online/actor_loss": self.agent.learning_data.loss_a[-1],
+                    "online/step": step,
+                }
+            )
+            wandb.log(
+                {f"online/actor_w_{idx}": i for idx, i in enumerate(actor_weights)}
+                | {"online/step": step}
+            )
 
-        # Log Critic
-        critic_weights = (
-            self.agent.critic.state_dict()["ff.0.weight"].flatten()[:3].numpy()
-        )
-        wandb.log(
-            {
-                "online/critic_loss": self.agent.learning_data.loss_c[-1],
-                "online/step": step,
-            }
-        )
-        wandb.log(
-            {f"online/critic_w_{idx}": i for idx, i in enumerate(critic_weights)}
-            | {"online/step": step}
-        )
+            # Log Critic
+            critic_weights = (
+                self.agent.critic.state_dict()["ff.0.weight"].flatten()[:3].numpy()
+            )
+            wandb.log(
+                {
+                    "online/critic_loss": self.agent.learning_data.loss_c[-1],
+                    "online/step": step,
+                }
+            )
+            wandb.log(
+                {f"online/critic_w_{idx}": i for idx, i in enumerate(critic_weights)}
+                | {"online/step": step}
+            )
         return True
 
     def _on_training_end(self) -> None:
@@ -190,6 +191,7 @@ class SACCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         self.agent.logger.record("rollout/best_nmae", f"{self.best_nmae * 100 :.2f}%")
+        return True
 
     def on_episode_end(self, episode_return) -> None:
         """Runs after each episode."""
