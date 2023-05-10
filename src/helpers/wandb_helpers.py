@@ -1,4 +1,5 @@
 """Module that defines helper functions for wandb."""
+import numpy as np
 import torch
 import wandb
 

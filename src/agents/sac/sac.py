@@ -122,12 +122,6 @@ class SAC(BaseAgent):
             done = terminated or truncated
             episode_return += reward
 
-            self.replay_buffer.push(
-                Transition(
-                    obs=obs, action=action, reward=reward, obs_=obs_tp1, done=done
-                )
-            )
-
             # If done, reset the environment
             if done:
                 callback.on_episode_end(episode_return)
@@ -135,15 +129,20 @@ class SAC(BaseAgent):
                 self._episode_num += 1
                 episode_return = 0
             else:
+                self.replay_buffer.push(
+                    Transition(
+                        obs=obs, action=action, reward=reward, obs_=obs_tp1, done=done
+                    )
+                )
                 obs = obs_tp1
 
-            if self.num_steps % log_interval == 0:
-                self.dump_logs()
+                if self.num_steps % log_interval == 0:
+                    self.dump_logs()
 
-            if step >= self.learning_starts:
-                for gradient_step in range(self.gradient_steps):
-                    self.update()
-                    self.update_target_networks()
+                if step >= self.learning_starts:
+                    for gradient_step in range(self.gradient_steps):
+                        self.update()
+                        self.update_target_networks()
 
     def update(self) -> None:
         """Update the policy."""
@@ -261,13 +260,27 @@ class SAC(BaseAgent):
             transition: Transition tuple.
         """
         s_t = to_tensor(transition.obs, device=self.device)
+        s_tp1 = to_tensor(transition.obs_, device=self.device)
 
         a_t, log_prob = self.policy.actor(s_t)
+        # with th.no_grad():
+        #     a_tp1, _ = self.policy.actor(s_tp1)
+
         alpha = self.entropy_coefficient
 
         critic_1 = self.policy.critic_1(s_t, a_t)
         critic_2 = self.policy.critic_2(s_t, a_t)
         critic = th.min(critic_1, critic_2)
 
-        loss = (alpha * log_prob - critic).mean()
+        # # CAPS spatial smoothness
+        # lambda_smoothness = 400
+        # a_deterministic, _ = self.policy.actor(s_t, deterministic=True)
+        # a_nearby, _ = self.policy.actor(th.normal(s_t, 0.05), deterministic=True)
+        # loss_spatial = F.mse_loss(a_deterministic, a_nearby) * lambda_smoothness / a_t.shape[0]
+        #
+        # # CAPS temporal smoothness
+        # lambda_temporal = 400
+        # loss_temporal = F.mse_loss(a_t, a_tp1) * lambda_temporal / a_t.shape[0]
+        loss_spatial, loss_temporal = 0, 0
+        loss = (alpha * log_prob - critic + loss_spatial + loss_temporal).mean()
         return loss

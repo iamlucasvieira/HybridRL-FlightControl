@@ -80,6 +80,9 @@ class CitationEnv(BaseEnv):
         return states
 
     def _check_constraints(self, reward, done, info):
+        if np.isnan(self.states[-1]).any():
+            done = True
+            reward -= 500
         return reward, done, info
 
     def _initial_state(self):

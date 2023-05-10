@@ -22,6 +22,7 @@ class BaseNetwork(nn.Module, ABC):
         hidden_layers=None,
         device: Union[str, th.device] = None,
         build_network: bool = True,
+        clip_grad: float = 1.0,
     ):
         """Initialize critic network.
 
@@ -49,6 +50,7 @@ class BaseNetwork(nn.Module, ABC):
         self.action_dim = action_space.shape[0]
         self.action_space = action_space
         self.device = device
+        self.clip_grad = clip_grad
 
         if build_network:
             self.ff = self._build_network()
@@ -70,6 +72,11 @@ class BaseNetwork(nn.Module, ABC):
     def load_checkpoint(self):
         """Load checkpoint."""
         self.load_state_dict(th.load(self.checkpoint_file))
+
+    def clip_gradient(self) -> None:
+        """Clip gradient to [-clip_grad, clip_grad]."""
+        for param in self.parameters():
+            param.grad.data.clamp_(-self.clip_grad, self.clip_grad)
 
 
 def mlp(
