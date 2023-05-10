@@ -150,7 +150,6 @@ class IDHP(BaseAgent):
 
             # Sample and scale action
             action = self.actor(obs_t)
-            scaled_action = self.env.scale_action(action)
             critic_t = self.critic(obs_t)
 
             ##############
@@ -159,9 +158,9 @@ class IDHP(BaseAgent):
             da_ds = []
             for i in range(action.shape[0]):
                 grad_i = th.autograd.grad(
-                    scaled_action[i],
+                    action[i],
                     obs_t,
-                    grad_outputs=th.ones_like(scaled_action[i]),
+                    grad_outputs=th.ones_like(action[i]),
                     retain_graph=True,
                 )
                 da_ds.append(grad_i[0])
@@ -267,16 +266,6 @@ class IDHP(BaseAgent):
             obs_t = obs_t1  # Update obs
 
         return self
-
-    def get_rollout(
-        self,
-        action: np.ndarray,
-        obs: np.ndarray,
-        callback: ListCallback,
-        scale_action: bool = False,
-    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
-        """Get the rollout."""
-        return super().get_rollout(action, obs, callback, scale_action=scale_action)
 
 
 @dataclass

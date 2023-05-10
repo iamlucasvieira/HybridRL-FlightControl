@@ -6,16 +6,16 @@ n_learning: 1
 agent:
   name: IDHP
   kwargs:
-    discount_factor: 0.8
+    excitation: decay
   learn:
-    total_steps: 1_000
+    total_steps: 5_000
     log_interval: 10
 
 env:
   name: "citation"
   kwargs:
     dt: 0.01
-    reference_type: sin
-    tracked_state: q
+    episode_steps: 5_000
+    task_type: sin_q
 
-seed: 54
+seed: 53

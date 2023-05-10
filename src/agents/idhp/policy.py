@@ -79,7 +79,7 @@ class Actor(BaseNetworkIDHP):
             activation=nn.Tanh,
             output_activation=nn.Tanh,
             bias=False,
-            layer_norm=True,
+            layer_norm=False,
         )
 
         return ff
@@ -88,11 +88,9 @@ class Actor(BaseNetworkIDHP):
         """Gets the network loss."""
         return -(dr1_ds1 + gamma * critic_t1) @ G_t_1
 
-    def forward(self, x: Union[np.ndarray, th.Tensor], to_scale: bool = False):
+    def forward(self, x: Union[np.ndarray, th.Tensor]):
         """Forward pass."""
         action = super().forward(x)
-        if to_scale:
-            action = scale_action(action, self.action_space) * 10
         return action
 
 
@@ -153,12 +151,6 @@ class IDHPPolicy(BasePolicy):
             **self.critic_kwargs
         )
 
-    def predict(self, observation: th.Tensor, deterministic: bool = True):
+    def _predict(self, observation: th.Tensor, deterministic: bool = True):
         """Predict the action."""
         return self.actor(observation)
-
-
-def scale_action(action: th.tensor, action_space) -> np.ndarray:
-    """Scale the action to the correct range."""
-    low, high = action_space.low[0], action_space.high[0]
-    return action * (high - low) / 2 + (high + low) / 2
