@@ -56,6 +56,11 @@ class Observations:
         )
 
     @staticmethod
+    def states_error(self):
+        """Returns the all states and the reference state"""
+        return np.hstack((self.states[-1], self.error[-1])).astype(np.float32).flatten()
+
+    @staticmethod
     def noise_states_ref(self):
         """Return the all states and the reference state with noise"""
         bias = 5e-3
@@ -83,6 +88,7 @@ observations_dict = {
     "state + error": Observations.state_error,
     "states": Observations.states,
     "states + ref": Observations.states_ref,
+    "states + error": Observations.states_error,
     "noise + states + ref": Observations.noise_states_ref,
     "sac_attitude": Observations.sac_attitude,
 }

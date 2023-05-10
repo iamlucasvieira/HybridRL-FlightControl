@@ -24,10 +24,10 @@ class IncrementalModelBase(ABC):
     """
 
     def __init__(
-            self,
-            n_states,
-            n_inputs: int,
-            gamma: float = 0.8,
+        self,
+        n_states,
+        n_inputs: int,
+        gamma: float = 0.8,
     ) -> None:
         """Initialize the incremental model.
 
@@ -64,10 +64,10 @@ class IncrementalModelBase(ABC):
     def ready(self):
         """Return if the model is ready to be update."""
         READY = (
-                (self.action_k is not None)
-                and (self.state_k is not None)
-                and (self.action_k_1 is not None)
-                and (self.state_k_1 is not None)
+            (self.action_k is not None)
+            and (self.state_k is not None)
+            and (self.action_k_1 is not None)
+            and (self.state_k_1 is not None)
         )
         return READY
 
@@ -96,7 +96,7 @@ class IncrementalModelBase(ABC):
         # Update the parameter matrix theta
         theta_k1 = self.theta + (cov_at_x / (self.gamma + x_at_cov_at_x)) * e
         cov_k1 = (1 / self.gamma) * (
-                self.cov - (cov_at_x @ x_at_cov) / (self.gamma + x_at_cov_at_x)
+            self.cov - (cov_at_x @ x_at_cov) / (self.gamma + x_at_cov_at_x)
         )
 
         self.theta, self.cov = theta_k1, cov_k1
@@ -109,15 +109,15 @@ class IncrementalModelBase(ABC):
     @property
     def G(self) -> np.ndarray:
         """Return the input matrix."""
-        return self.theta[self.n_states:, :].T
+        return self.theta[self.n_states :, :].T
 
     def predict(
-            self,
-            state: np.ndarray,
-            state_before: np.ndarray,
-            action: np.ndarray,
-            action_before: np.ndarray,
-            increment=False,
+        self,
+        state: np.ndarray,
+        state_before: np.ndarray,
+        action: np.ndarray,
+        action_before: np.ndarray,
+        increment=False,
     ) -> np.ndarray:
         """Predict the next state given the current state and action.
 

@@ -15,13 +15,13 @@ class BaseNetworkIDHP(BaseNetwork):
     """Base network class for the IDHP agent."""
 
     def __init__(
-            self,
-            *args,
-            hidden_layers: List[int] = None,
-            lr_low: float = 0.005,
-            lr_high: float = 0.08,
-            lr_threshold: float = 1,
-            **kwargs
+        self,
+        *args,
+        hidden_layers: List[int] = None,
+        lr_low: float = 0.005,
+        lr_high: float = 0.08,
+        lr_threshold: float = 1,
+        **kwargs
     ):
         """Initialize the base network.
 
@@ -79,7 +79,7 @@ class Actor(BaseNetworkIDHP):
             activation=nn.Tanh,
             output_activation=nn.Tanh,
             bias=False,
-            layer_norm=False,
+            layer_norm=True,
         )
 
         return ff
@@ -105,9 +105,7 @@ class Critic(BaseNetworkIDHP):
     def _build_network(self) -> Type[nn.Sequential]:
         """Build the network."""
         ff = mlp(
-            [self.observation_space.shape[0]]
-            + self.hidden_layers
-            + [self.n_states],
+            [self.observation_space.shape[0]] + self.hidden_layers + [self.n_states],
             activation=nn.Tanh,
             bias=False,
         )
@@ -116,7 +114,7 @@ class Critic(BaseNetworkIDHP):
     def get_loss(self, dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad):
         """Gets the network loss."""
         return critic_t - (dr1_ds1 + gamma * critic_t1) @ (
-                F_t_1 + G_t_1 @ obs_grad[:, :-1]
+            F_t_1 + G_t_1 @ obs_grad[:, :-1]
         )
 
 
@@ -124,12 +122,12 @@ class IDHPPolicy(BasePolicy):
     """Class that implements the IDHP policy."""
 
     def __init__(
-            self,
-            observation_space: spaces.Space,
-            action_space: spaces.Space,
-            actor_kwargs: Optional[dict] = None,
-            critic_kwargs: Optional[dict] = None,
-            device: Optional[str] = None,
+        self,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        actor_kwargs: Optional[dict] = None,
+        critic_kwargs: Optional[dict] = None,
+        device: Optional[str] = None,
     ):
         """Initialize the IDHP policy."""
         self.actor_kwargs = {} if actor_kwargs is None else actor_kwargs

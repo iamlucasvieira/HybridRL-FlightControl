@@ -10,6 +10,7 @@ from torch import nn
 
 from helpers.torch_helpers import get_device, to_tensor
 
+
 spaces_type_alias = Union[spaces.Box, spaces.Space]
 
 
@@ -17,11 +18,11 @@ class BasePolicy(nn.Module, ABC):
     """Base policy class."""
 
     def __init__(
-            self,
-            observation_space: spaces_type_alias,
-            action_space: spaces_type_alias,
-            _init_setup_policy: bool = True,
-            device: Optional[str] = None,
+        self,
+        observation_space: spaces_type_alias,
+        action_space: spaces_type_alias,
+        _init_setup_policy: bool = True,
+        device: Optional[str] = None,
     ):
         """Initialize policy.
 
@@ -46,13 +47,13 @@ class BasePolicy(nn.Module, ABC):
 
     @abstractmethod
     def _predict(
-            self, observation: np.ndarray, deterministic: bool = True
+        self, observation: np.ndarray, deterministic: bool = True
     ) -> np.ndarray:
         """Predict action."""
         pass
 
     def predict(
-            self, observation: np.ndarray, deterministic: bool = True
+        self, observation: np.ndarray, deterministic: bool = True
     ) -> np.ndarray:
         """Predict action."""
         action = self._predict(observation, deterministic)

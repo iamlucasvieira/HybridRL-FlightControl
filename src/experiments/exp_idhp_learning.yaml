@@ -16,4 +16,4 @@ env:
     dt: 0.01
     episode_steps: 5_000
     task_type: sin_q
-seed: 110
+seed: 110212

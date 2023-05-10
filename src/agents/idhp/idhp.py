@@ -19,25 +19,25 @@ class IDHP(BaseAgent):
     name = "IDHP"
 
     def __init__(
-            self,
-            env: Type[BaseEnv],
-            discount_factor: float = 0.6,
-            discount_factor_model: float = 0.8,
-            verbose: int = 1,
-            log_dir: Optional[str] = None,
-            save_dir: Optional[str] = None,
-            seed: int = None,
-            actor_kwargs: Optional[dict] = None,
-            critic_kwargs: Optional[dict] = None,
-            device: Optional[str] = None,
-            excitation: Optional[str] = None,
-            lr_a_low: float = 0.005,
-            lr_a_high: float = 0.08,
-            lr_c_low: float = 0.0005,
-            lr_c_high: float = 0.005,
-            lr_threshold: float = 0.01,
-            t_warmup: int = 100,
-            **kwargs,
+        self,
+        env: Type[BaseEnv],
+        discount_factor: float = 0.6,
+        discount_factor_model: float = 0.8,
+        verbose: int = 1,
+        log_dir: Optional[str] = None,
+        save_dir: Optional[str] = None,
+        seed: int = None,
+        actor_kwargs: Optional[dict] = None,
+        critic_kwargs: Optional[dict] = None,
+        device: Optional[str] = None,
+        excitation: Optional[str] = None,
+        lr_a_low: float = 0.005,
+        lr_a_high: float = 0.08,
+        lr_c_low: float = 0.0005,
+        lr_c_high: float = 0.005,
+        lr_threshold: float = 0.01,
+        t_warmup: int = 100,
+        **kwargs,
     ):
         """Initialize the IDHP algorithm.
 
@@ -103,7 +103,9 @@ class IDHP(BaseAgent):
         self.t_warmup = t_warmup
 
         # Initialize model
-        self.model = IncrementalCitation(self.env, self.states_mask, gamma=discount_factor_model)
+        self.model = IncrementalCitation(
+            self.env, self.states_mask, gamma=discount_factor_model
+        )
 
         self.learning_data = IDHPLearningData(
             [0],
@@ -122,7 +124,7 @@ class IDHP(BaseAgent):
     def _setup_env(env: Type[BaseEnv]) -> Type[BaseEnv]:
         """Adds the required reward and observation fucntion to env."""
         env.set_reward_function("sq_error")
-        env.set_observation_function("states + ref")
+        env.set_observation_function("states + error")
         return env
 
     @property
@@ -136,11 +138,11 @@ class IDHP(BaseAgent):
         return self.policy.critic
 
     def _learn(
-            self,
-            total_steps: int,
-            callback: ListCallback,
-            log_interval: int,
-            **kwargs,
+        self,
+        total_steps: int,
+        callback: ListCallback,
+        log_interval: int,
+        **kwargs,
     ):
         """Learn the policy."""
         obs_t, _ = self.env.reset()
@@ -158,7 +160,6 @@ class IDHP(BaseAgent):
 
             # Sample and scale action
             action = self.actor(obs_t)
-            unscaled_action = self.policy.unscale_action(action)
             critic_t = self.critic(obs_t)
 
             ##############
@@ -167,9 +168,9 @@ class IDHP(BaseAgent):
             da_ds = []
             for i in range(action.shape[0]):
                 grad_i = th.autograd.grad(
-                    unscaled_action[i],
+                    action[i],
                     obs_t,
-                    grad_outputs=th.ones_like(unscaled_action[i]),
+                    grad_outputs=th.ones_like(action[i]),
                     retain_graph=True,
                 )
                 da_ds.append(grad_i[0])
@@ -206,7 +207,7 @@ class IDHP(BaseAgent):
 
                 # Get the reward gradient with respect to the state at time t+1
                 dr1_ds1 = (
-                        -2 * error_t1 * th.as_tensor(self.env.task.mask, device=self.device)
+                    -2 * error_t1 * th.as_tensor(self.env.task.mask, device=self.device)
                 )
 
                 critic_t1 = self.critic(obs_t1)
