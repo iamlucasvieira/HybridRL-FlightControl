@@ -105,7 +105,7 @@ class ActorNetwork(BaseNetwork):
         else:
             log_prob = None
 
-        action = th.tanh(action) * self.action_max
+        action = th.tanh(action)  # * self.action_max
 
         return action, log_prob
 
