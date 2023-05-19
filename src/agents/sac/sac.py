@@ -263,8 +263,8 @@ class SAC(BaseAgent):
         s_tp1 = to_tensor(transition.obs_, device=self.device)
 
         a_t, log_prob = self.policy.actor(s_t)
-        # with th.no_grad():
-        #     a_tp1, _ = self.policy.actor(s_tp1)
+        with th.no_grad():
+            a_tp1, _ = self.policy.actor(s_tp1)
 
         alpha = self.entropy_coefficient
 
@@ -273,14 +273,16 @@ class SAC(BaseAgent):
         critic = th.min(critic_1, critic_2)
 
         # # CAPS spatial smoothness
-        # lambda_smoothness = 400
-        # a_deterministic, _ = self.policy.actor(s_t, deterministic=True)
-        # a_nearby, _ = self.policy.actor(th.normal(s_t, 0.05), deterministic=True)
-        # loss_spatial = F.mse_loss(a_deterministic, a_nearby) * lambda_smoothness / a_t.shape[0]
-        #
-        # # CAPS temporal smoothness
-        # lambda_temporal = 400
-        # loss_temporal = F.mse_loss(a_t, a_tp1) * lambda_temporal / a_t.shape[0]
-        loss_spatial, loss_temporal = 0, 0
+        lambda_smoothness = 400
+        a_deterministic, _ = self.policy.actor(s_t, deterministic=True)
+        a_nearby, _ = self.policy.actor(th.normal(s_t, 0.05), deterministic=True)
+        loss_spatial = (
+            F.mse_loss(a_deterministic, a_nearby) * lambda_smoothness / a_t.shape[0]
+        )
+
+        # CAPS temporal smoothness
+        lambda_temporal = 400
+        loss_temporal = F.mse_loss(a_t, a_tp1) * lambda_temporal / a_t.shape[0]
+        # loss_spatial, loss_temporal = 0, 0
         loss = (alpha * log_prob - critic + loss_spatial + loss_temporal).mean()
         return loss
