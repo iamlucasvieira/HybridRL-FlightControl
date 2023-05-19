@@ -159,7 +159,7 @@ class IDHPDSAC(BaseAgent):
             log_interval=log_interval,
         )
 
-        self.logger.record("nMAE_sac", self.dsac.env.nmae * 100)
+        self.logger.record("nMAE_dsac", self.dsac.env.nmae * 100)
         self.logger.record("nMAE_idhp", self.idhp.env.nmae * 100)
         self.logger.dump()
 

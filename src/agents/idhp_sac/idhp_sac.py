@@ -42,10 +42,12 @@ class IDHPSAC(BaseAgent):
             agent_dict["seed"] = seed
 
         # Make sure environment follows IDHP requirements
-        env = IDHP._setup_env(env)
+        idhp_kwargs["actor_observation_type"] = "sac_attitude"
 
         # Make copies of env for SAC and IDHP
-        env_sac, env_idhp = copy(env), copy(env)
+        env_sac = copy(env)
+        env_idhp = IDHP._setup_env(env)
+
         self.idhp = IDHP(
             env_idhp,
             **idhp_kwargs,
@@ -101,7 +103,7 @@ class IDHPSAC(BaseAgent):
         if sac_model is not None:
             self.print("Loading SAC")
             sac_model_path = Path.models / sac_model
-            self.sac.load(sac_model_path)
+            self.sac.load(sac_model_path, run="best")
         else:
             self.print("Learning SAC")
             self.sac.learn(
@@ -153,3 +155,6 @@ class IDHPSAC(BaseAgent):
         self.sac.save(*args, **kwargs)
         self.idhp.save(*args, **kwargs)
         super().save(*args, **kwargs)
+
+    def load(self, *args, **kwargs):
+        pass

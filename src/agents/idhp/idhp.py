@@ -11,6 +11,8 @@ from agents.idhp.excitation import get_excitation_function
 from agents.idhp.incremental_model import IncrementalCitation
 from agents.idhp.policy import IDHPPolicy
 from envs import BaseEnv, CitationEnv
+from envs.observations import get_observation
+from helpers.torch_helpers import to_tensor
 
 
 class IDHP(BaseAgent):
@@ -37,6 +39,7 @@ class IDHP(BaseAgent):
         lr_c_high: float = 0.005,
         lr_threshold: float = 0.01,
         t_warmup: int = 100,
+        actor_observation_type: Optional[str] = None,
         **kwargs,
     ):
         """Initialize the IDHP algorithm.
@@ -65,9 +68,19 @@ class IDHP(BaseAgent):
         n_states = env.n_states
         if isinstance(env, CitationEnv):
             # Removes the final three states from the Citation model
-            self.states_mask = np.array([True] * (n_states - 3) + [False] * 3)
+            self.states = ["p", "q", "r", "alpha", "theta", "phi", "beta"]
+            states_idx = [env.states_name.index(s) for s in self.states]
+            mask = np.zeros(n_states, dtype=bool)
+            mask[states_idx] = True
+            self.states_mask = mask
         else:
+            self.states = env.states_name
             self.states_mask = np.array([True] * n_states)
+
+        self.tracked_states = np.zeros((env.task.mask.sum(), len(self.states)))
+
+        for i, state in enumerate(env.task.tracked_states):
+            self.tracked_states[i][self.states.index(state)] = 1
 
         # Create the policy kwargs
         actor_kwargs = {} if actor_kwargs is None else actor_kwargs
@@ -116,6 +129,12 @@ class IDHP(BaseAgent):
             None if excitation is None else get_excitation_function(excitation)
         )
 
+        self.actor_observation = (
+            None
+            if actor_observation_type is None
+            else get_observation(actor_observation_type)
+        )
+
     def setup_model(self):
         """Setup model."""
         pass
@@ -124,7 +143,11 @@ class IDHP(BaseAgent):
     def _setup_env(env: Type[BaseEnv]) -> Type[BaseEnv]:
         """Adds the required reward and observation fucntion to env."""
         env.set_reward_function("sq_error")
-        env.set_observation_function("states + error")
+        if isinstance(env, CitationEnv):
+            env.set_observation_function("idhp_citation")
+
+        else:
+            env.set_observation_function("states + error")
         return env
 
     @property
@@ -136,6 +159,16 @@ class IDHP(BaseAgent):
     def critic(self) -> th.nn.Module:
         """Get critic."""
         return self.policy.critic
+
+    def get_observation_actor(self, obs):
+        if self.actor_observation is not None:
+            obs_t_actor = to_tensor(
+                self.actor_observation(self.env), device=self.device
+            )
+        else:
+            obs_t_actor = obs
+
+        return obs_t_actor
 
     def _learn(
         self,
@@ -159,7 +192,10 @@ class IDHP(BaseAgent):
             self.num_steps += 1
 
             # Sample and scale action
-            action = self.actor(obs_t)
+            with th.no_grad():
+                actor_obs = self.get_observation_actor(obs_t)
+                actor_obs.requires_grad = True
+            action = self.actor(actor_obs)
             critic_t = self.critic(obs_t)
 
             ##############
@@ -169,13 +205,17 @@ class IDHP(BaseAgent):
             for i in range(action.shape[0]):
                 grad_i = th.autograd.grad(
                     action[i],
-                    obs_t,
+                    actor_obs,
                     grad_outputs=th.ones_like(action[i]),
                     retain_graph=True,
                 )
                 da_ds.append(grad_i[0])
             da_ds = th.stack(da_ds)
+            # Only keeps the gradients with respect to the states and not the errors
+            da_ds = da_ds[:, : -self.env.error[-1].shape[0]]
 
+            da_ds_all_states = th.zeros((da_ds.shape[0], len(self.states)))
+            da_ds_all_states[: da_ds.shape[0], : da_ds.shape[1]] = da_ds
             with th.no_grad():
                 # Step environment
 
@@ -207,7 +247,11 @@ class IDHP(BaseAgent):
 
                 # Get the reward gradient with respect to the state at time t+1
                 dr1_ds1 = (
-                    -2 * error_t1 * th.as_tensor(self.env.task.mask, device=self.device)
+                    -2
+                    * error_t1
+                    @ th.as_tensor(
+                        self.tracked_states, dtype=th.float32, device=self.device
+                    )
                 )
 
                 critic_t1 = self.critic(obs_t1)
@@ -221,7 +265,13 @@ class IDHP(BaseAgent):
                     dr1_ds1, self.gamma, critic_t1, G_t_1
                 )
                 loss_gradient_c = self.critic.get_loss(
-                    dr1_ds1, self.gamma, critic_t, critic_t1, F_t_1, G_t_1, da_ds
+                    dr1_ds1,
+                    self.gamma,
+                    critic_t,
+                    critic_t1,
+                    F_t_1,
+                    G_t_1,
+                    da_ds_all_states,
                 )
 
             ########################
@@ -229,7 +279,7 @@ class IDHP(BaseAgent):
             ########################
 
             # Update actor network
-            action = self.actor(obs_t)
+            action = self.actor(self.get_observation_actor(obs_t))
             self.actor.optimizer.zero_grad()
             loss_a = action * loss_gradient_a
             loss_a.backward(gradient=th.ones_like(loss_gradient_a))

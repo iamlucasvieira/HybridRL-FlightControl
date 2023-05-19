@@ -80,6 +80,14 @@ class Observations:
 
         return np.hstack((self.states[-1][states_idx], self.error[-1]))
 
+    @staticmethod
+    def idhp_citation(self):
+        """Citation observation for IDHP attitude tracking."""
+        obs_states = ["p", "q", "r", "alpha", "theta", "phi", "beta"]
+        states_idx = [self.states_name.index(s) for s in obs_states]
+
+        return np.hstack((self.states[-1][states_idx], self.error[-1]))
+
 
 observations_dict = {
     "states + ref + error": Observations.states_ref_error,
@@ -91,6 +99,7 @@ observations_dict = {
     "states + error": Observations.states_error,
     "noise + states + ref": Observations.noise_states_ref,
     "sac_attitude": Observations.sac_attitude,
+    "idhp_citation": Observations.idhp_citation,
 }
 
 AVAILABLE_OBSERVATIONS = list(observations_dict.keys())

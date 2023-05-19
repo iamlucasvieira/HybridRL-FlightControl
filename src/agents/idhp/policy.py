@@ -113,9 +113,7 @@ class Critic(BaseNetworkIDHP):
 
     def get_loss(self, dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad):
         """Gets the network loss."""
-        return critic_t - (dr1_ds1 + gamma * critic_t1) @ (
-            F_t_1 + G_t_1 @ obs_grad[:, :-1]
-        )
+        return critic_t - (dr1_ds1 + gamma * critic_t1) @ (F_t_1 + G_t_1 @ obs_grad)
 
 
 class IDHPPolicy(BasePolicy):
