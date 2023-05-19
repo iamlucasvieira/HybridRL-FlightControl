@@ -20,9 +20,9 @@ env:
   name: "citation"
   kwargs:
     dt: 0.01
-    task_type: "att_train"
+    task_type: "sin_att"
     episode_steps: 2000
     reward_type: clip
     observation_type: "sac_attitude"
 
-task_eval: "att_train"
+task_eval: "sin_att_eval"
