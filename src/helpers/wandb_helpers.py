@@ -39,7 +39,7 @@ def evaluate(agent, env, n_times=1, to_wandb=True, task=None):
                 )
 
                 if isinstance(env, BaseEnv):
-                    log_base_env(env, steps)
+                    log_base_env(env, steps, done)
 
                 if isinstance(env, CitationEnv):
                     log_citation_env(env, steps)
@@ -49,7 +49,7 @@ def evaluate(agent, env, n_times=1, to_wandb=True, task=None):
         return episode_return
 
 
-def log_base_env(env: BaseEnv, step: int):
+def log_base_env(env: BaseEnv, step: int, done: bool):
     """Log the base environment information after a step."""
 
     for idx, tracked_state in enumerate(env.task.tracked_states):
@@ -74,8 +74,8 @@ def log_base_env(env: BaseEnv, step: int):
                 "eval/step": step,
             }
         )
-
-    wandb.log({"nmae": env.nmae})
+    if done:
+        wandb.log({"eval/nmae": env.nmae})
 
 
 def log_citation_env(env: CitationEnv, step: int):
