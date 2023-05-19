@@ -65,7 +65,7 @@ class Runner:
 
                 wandb_run.finish()
 
-    def evaluate(self, sweep):
+    def evaluate(self, sweep, task=None):
         """Evaluate a sweep."""
         self.print("Evaluating...")
 
@@ -77,7 +77,7 @@ class Runner:
             save_code=False,  # optional
             monitor_gym=True,
         )
-        sweep.evaluate()
+        sweep.evaluate(task=task)
         wandb_run.finish()
 
     def print(self, message: str):
@@ -108,7 +108,7 @@ class Runner:
 
 
 def main():
-    Runner("exp_idhp_learning").run()
+    Runner("exp_idhp_sac_citation").run()
 
 
 if __name__ == "__main__":

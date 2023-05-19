@@ -66,11 +66,22 @@ class OnlineCallback(BaseCallback):
         step = self.agent.num_steps
 
         # Log Tracking performance
-        wandb.log(
-            {"online/reference": reference, "online/state": state, "online/step": step}
-        )
-        wandb.log({"online/sq_error": sq_error, "online/step": step})
-        wandb.log({"online/action": action, "online/step": step})
+        for idx, state_name in enumerate(self.env.task.tracked_states):
+            wandb.log(
+                {
+                    f"online/{state_name}_ref": reference[idx],
+                    f"online/{state_name}": state[idx],
+                    "online/step": step,
+                }
+            )
+            wandb.log(
+                {f"online/{state_name}_sq_error": sq_error[idx], "online/step": step}
+            )
+
+        for idx, action_name in enumerate(self.env.input_names):
+            wandb.log(
+                {f"online/action_{action_name}": action[idx], "online/step": step}
+            )
 
         if isinstance(self.env, LTIEnv):
             # Log incremental model
@@ -179,6 +190,13 @@ class IDHPSACCallback(BaseCallback):
             | {"train/step": step}
         )
         return True
+
+    def _on_training_end(self) -> None:
+        """
+        This event is triggered before exiting the `learn()` method.
+        """
+        if wandb.run is not None:
+            wandb.log({"online/nmae": self.env.nmae})
 
 
 class SACCallback(BaseCallback):

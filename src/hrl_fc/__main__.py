@@ -67,12 +67,13 @@ def eval(
     experiment_name: str = typer.Argument(..., help="Experiment name"),
     run_name: str = typer.Argument(..., help="Run name"),
     policy_name: Optional[str] = typer.Argument("best", help="Policy to evaluate"),
+    task: Optional[str] = typer.Option(None, help="Task to evaluate"),
 ):
     """Evaluates an experiment from a zip file."""
     print("Evaluating experiment...")
     runner = Runner.from_file(experiment_name, run_name, policy_name)
     for sweep in runner.experiment.sweeps:
-        runner.evaluate(sweep)
+        runner.evaluate(sweep, task=task)
     print("Evaluation finished :tada:")
 
 

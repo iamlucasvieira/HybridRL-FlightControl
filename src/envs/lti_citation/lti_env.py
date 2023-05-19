@@ -23,6 +23,7 @@ class LTIEnv(BaseEnv):
             dt=dt,
             configuration=configuration,
         )
+        self.input_names = ["de"]
 
         super().__init__(
             dt=dt,

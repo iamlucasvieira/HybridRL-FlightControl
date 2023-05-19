@@ -57,15 +57,25 @@ def log_base_env(env: BaseEnv, step: int):
             {
                 f"eval/{tracked_state}_ref": env.reference[-1][idx],
                 f"eval/{tracked_state}": env.track[-1][idx],
-                "eval/episode_step": step,
+                "eval/step": step,
             }
         )
         wandb.log(
             {
                 f"eval/{tracked_state}_sq_error": env.sq_error[-1][idx],
-                "eval/episode_step": step,
+                "eval/step": step,
             }
         )
+
+    for action_name, action_value in zip(env.input_names, env.actions[-1]):
+        wandb.log(
+            {
+                f"eval/{action_name}": action_value,
+                "eval/step": step,
+            }
+        )
+
+    wandb.log({"nmae": env.nmae})
 
 
 def log_citation_env(env: CitationEnv, step: int):

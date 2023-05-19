@@ -9,6 +9,7 @@ from typing import Any, List, Optional, SupportsFloat, Type, Union
 import gymnasium as gym
 import numpy as np
 import torch as th
+import wandb
 
 from agents.base_callback import BaseCallback, ListCallback
 from agents.base_logger import Logger
