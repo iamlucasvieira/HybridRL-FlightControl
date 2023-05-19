@@ -17,7 +17,8 @@ class Rewards:
     @staticmethod
     def sq_error(self):
         """Returns the squared error between the reference and the state."""
-        return -self.reward_scale * self.sq_error[-1]
+        sq_error = np.sum(self.sq_error[-1])
+        return -self.reward_scale * sq_error
 
     @staticmethod
     def sq_error_da(self):
