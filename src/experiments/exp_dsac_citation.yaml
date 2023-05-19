@@ -3,7 +3,7 @@ name: DSAC-citation
 description: "Tests the DSAC agent on the non-linear citation environment."
 wandb: true
 evaluate: true
-seed: 50
+seed: 3
 
 # Set the agent to use
 agent:
@@ -12,7 +12,7 @@ agent:
     learning_rate: 4.4e-4
     polyak: 0.005
   learn:
-    total_steps: 200_000
+    total_steps: 500_000
     log_interval: 200
 
 # Set the environment to use
