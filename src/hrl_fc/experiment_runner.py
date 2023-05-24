@@ -61,7 +61,7 @@ class Runner:
 
                 # Evaluate
                 if self.config.evaluate:
-                    sweep.evaluate(config_path)
+                    sweep.evaluate(config_path, task=self.config.task_eval)
 
                 wandb_run.finish()
 
