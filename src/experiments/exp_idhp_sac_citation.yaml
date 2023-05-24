@@ -1,29 +1,30 @@
 ---
-name: IDHP-SAC-citation
+name: E1-Citation
 description: "Tests the IHDP-SAC agent on the Citation environment."
 wandb: true
 evaluate: false
-seed: 40
+#seed: 7
 
 # Set the agent to use
 agent:
   name: IDHP-SAC
   kwargs:
     idhp_kwargs:
-      lr_c_high: 0.08
+      lr_a_high: 0.01
+      lr_c_high: 0.002
       t_warmup: 500
   learn:
     sac_steps: 100_000
-    idhp_steps: 15_000
-    sac_model: SAC-citation/decent-totem-128
+    idhp_steps: 4_000
+    sac_model: SAC-citation/charmed-shape-144
 
 # Set the environment to use
 env:
   name: "citation"
   kwargs:
     dt: 0.01
-    episode_steps: 2000
-    task_type: "att_train"
+    episode_steps: 4000
+    task_type: "exp1_hold"
     reward_type: clip
     observation_type: "sac_attitude"
 
