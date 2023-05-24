@@ -109,6 +109,10 @@ class Critic(BaseNetworkIDHP):
             activation=nn.Tanh,
             bias=False,
         )
+
+        for module in ff:
+            if isinstance(module, nn.Linear):
+                th.nn.init.trunc_normal_(module.weight, std=0.05)
         return ff
 
     def get_loss(self, dr1_ds1, gamma, critic_t, critic_t1, F_t_1, G_t_1, obs_grad):
