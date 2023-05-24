@@ -147,28 +147,42 @@ class DSAC(SAC):
 
     def get_actor_loss(self, transition: Transition) -> th.Tensor:
         """Get the actor loss."""
-        s_t = transition.obs
-        s_t = to_tensor(s_t, device=self.device)
+        s_t = to_tensor(transition.obs, device=self.device)
+        s_tp1 = to_tensor(transition.obs_, device=self.device)
 
         batch_size = len(s_t)
 
-        a_tp1, log_prob_tp1 = self.policy.actor(s_t)
+        a_t, log_prob_tp1 = self.policy.actor(s_t)
+        with th.no_grad():
+            a_tp1, _ = self.policy.actor(s_tp1)
         with torch.no_grad():
             tau_i = generate_quantiles(
                 batch_size, self.num_quantiles, device=self.device
             )
 
-        z1 = self.policy.z1(s_t, a_tp1, tau_i)
-        z2 = self.policy.z2(s_t, a_tp1, tau_i)
+        z1 = self.policy.z1(s_t, a_t, tau_i)
+        z2 = self.policy.z2(s_t, a_t, tau_i)
 
         # Compute the action-value function
         q1 = z1.mean(dim=1)
         q2 = z2.mean(dim=1)
         q = th.min(q1, q2)
 
+        # CAPS spatial smoothness
+        lambda_smoothness = 400
+        a_deterministic, _ = self.policy.actor(s_t, deterministic=True)
+        a_nearby, _ = self.policy.actor(th.normal(s_t, 0.05), deterministic=True)
+        loss_spatial = (
+            F.mse_loss(a_deterministic, a_nearby) * lambda_smoothness / a_t.shape[0]
+        )
+
+        # CAPS temporal smoothness
+        lambda_temporal = 400
+        loss_temporal = F.mse_loss(a_t, a_tp1) * lambda_temporal / a_t.shape[0]
+
         # Compute the actor loss
         alpha = self.entropy_coefficient
-        loss = (alpha * log_prob_tp1 - q).mean()
+        loss = (alpha * log_prob_tp1 - q + loss_spatial + loss_temporal).mean()
 
         return loss
 
