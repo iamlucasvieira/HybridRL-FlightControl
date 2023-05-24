@@ -43,12 +43,15 @@ class AttitudeTrain(Attitude):
         # Theta reference
         amp_theta = self.amp_theta  # amplitude [rad]
         theta_ref = amp_theta * (
-            cos_step(t, 0.25, 1) - cos_step(t, 0.5, 1) + cos_step(t, 0.75, 1)
+                cos_step(t, 0.25, 1) - cos_step(t, 0.5, 1) + cos_step(t, 0.75, 1)
         )
 
         # Phi reference
         amp_phi = self.amp_phi  # amplitude [rad]
-        phi_ref = amp_phi * (cos_step(t, 0.25, 1) - cos_step(t, 4, 1))
+        phi_ref = amp_phi * (
+                cos_step(t, 0.25, 1) - cos_step(t, 0.5, 1) + cos_step(t, 0.75, 1)
+        )
+        # phi_ref = amp_phi * (cos_step(t, 0.25, 1) - cos_step(t, 4, 1))
 
         # Beta reference
         beta_ref = 0
