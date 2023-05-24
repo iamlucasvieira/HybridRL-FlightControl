@@ -219,8 +219,10 @@ class ExperimentBuilder:
             for sweep_config in self.sweep_configs:
                 if MULTIPLE_SWEEPS:
                     sweep_config.seed = self.get_random_seed()
+                elif self.config.seed is None:
+                    sweep_config.seed = self.get_random_seed()
                 self.sweeps.append(Sweep(sweep_config))
 
     def get_random_seed(self):
         """Get a random seed."""
-        return random.randint(0, 2**32 - 1)
+        return random.randint(0, 1_000_000)
