@@ -1,6 +1,7 @@
 from tasks.attitude import AttitudeTrain, SinAttitudeEvaluate, SineAttitude
+from tasks.experiment_1 import CossStep, FixedSineAttitude, Hold, PseudoRandomSine
 from tasks.sinusoidal import SineQ, SineTheta
-from tasks.experiment_1 import FixedSineAttitude, PseudoRandomSine, CossStep, Hold
+
 
 def get_task(task_type: str):
     """Returns the task function."""

@@ -26,22 +26,3 @@ env:
     observation_type: "sac_attitude"
 
 task_eval: "sin_att_eval"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

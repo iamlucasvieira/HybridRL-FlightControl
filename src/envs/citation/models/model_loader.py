@@ -7,6 +7,7 @@ from typing import List, Optional
 @dataclass
 class Model:
     """Base class for models."""
+
     name: str
     inputs: List[str]
     states: List[str]
@@ -14,14 +15,40 @@ class Model:
     n_states: Optional[int] = None
 
     def __post_init__(self):
-        object.__setattr__(self, 'n_inputs', len(self.inputs))
-        object.__setattr__(self, 'n_states', len(self.states))
+        object.__setattr__(self, "n_inputs", len(self.inputs))
+        object.__setattr__(self, "n_states", len(self.states))
 
 
 models_dict = {
-    "default": Model(name="default",
-                     inputs=["de", "da", "dr", "de_t", "da_t", "dr_t", "df", "gear", "throttle_1", "throttle_2"],
-                     states=["p", "q", "r", "V", "alpha", "beta", "phi", "theta", "psi", "he", "xe", "ye"]),
+    "default": Model(
+        name="default",
+        inputs=[
+            "de",
+            "da",
+            "dr",
+            "de_t",
+            "da_t",
+            "dr_t",
+            "df",
+            "gear",
+            "throttle_1",
+            "throttle_2",
+        ],
+        states=[
+            "p",
+            "q",
+            "r",
+            "V",
+            "alpha",
+            "beta",
+            "phi",
+            "theta",
+            "psi",
+            "he",
+            "xe",
+            "ye",
+        ],
+    ),
 }
 
 AVAILABLE_MODELS = models_dict.keys()

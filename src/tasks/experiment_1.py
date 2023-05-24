@@ -1,8 +1,8 @@
 """Tasks for experiment 1 of the report that compares the performance on different reference signals."""
 import numpy as np
 
-from tasks.attitude import Attitude
 from helpers.signals import cos_step
+from tasks.attitude import Attitude
 
 
 class FixedSineAttitude(Attitude):
@@ -51,10 +51,11 @@ class PseudoRandomSine(Attitude):
         theta_ref = 0
 
         # Phi reference
-        phi_ref = self.amp_phi * (np.sin(2 * np.pi * 1 / 4 * t) +
-                                  np.cos(2 * np.pi * 1 / 6 * t) +
-                                  np.sin(2 * np.pi * 1 / 8 * t)
-                                  )
+        phi_ref = self.amp_phi * (
+            np.sin(2 * np.pi * 1 / 4 * t)
+            + np.cos(2 * np.pi * 1 / 6 * t)
+            + np.sin(2 * np.pi * 1 / 8 * t)
+        )
 
         # Beta reference
         beta_ref = 0
@@ -78,18 +79,20 @@ class CossStep(Attitude):
         t = self.env.current_time
 
         # Theta reference
-        theta_ref = self.amp_theta * (cos_step(t, 0.25, 2) -
-                                      cos_step(t, 4, 2) +
-                                      0.5 * cos_step(t, 8, 2) -
-                                      0.5 * cos_step(t, 12, 2)
-                                      )
+        theta_ref = self.amp_theta * (
+            cos_step(t, 0.25, 2)
+            - cos_step(t, 4, 2)
+            + 0.5 * cos_step(t, 8, 2)
+            - 0.5 * cos_step(t, 12, 2)
+        )
 
         # Phi reference
-        phi_ref = self.amp_phi * (0.3 * cos_step(t, 0.25, 3) -
-                                  0.3 * cos_step(t, 4, 3) +
-                                  cos_step(t, 9, 3) -
-                                  cos_step(t, 15, 3)
-                                  )
+        phi_ref = self.amp_phi * (
+            0.3 * cos_step(t, 0.25, 3)
+            - 0.3 * cos_step(t, 4, 3)
+            + cos_step(t, 9, 3)
+            - cos_step(t, 15, 3)
+        )
 
         # Beta reference
         beta_ref = 0
