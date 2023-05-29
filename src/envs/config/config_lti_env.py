@@ -17,8 +17,10 @@ class ConfigLTIKwargs(BaseModel):
     configuration: Optional[str | List[str]] = "sp"
     dt: Optional[float | List[float]] = 0.1  # Time step
     episode_steps: Optional[int | List[int]] = 100  # Number of steps
+    eval_steps: Optional[int | List[int]] = 100  # Number of steps
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
-    task_type: Optional[str | List[str]] = "sin_q"
+    task_train: Optional[str | List[str]] = "sin_q"
+    task_eval: Optional[str | List[str]] = "sin_q"
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
 
@@ -33,11 +35,17 @@ class ConfigLTIKwargs(BaseModel):
             raise ValueError(f"Configuration must be in {CONFIGURATIONS}")
         return configuration
 
-    @validator("task_type")
-    def check_task_type(cls, task_type):
-        if task_type not in AVAILABLE_TASKS and not isinstance(task_type, list):
+    @validator("task_train")
+    def check_task_type(cls, task_train):
+        if task_train not in AVAILABLE_TASKS and not isinstance(task_train, list):
             raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
-        return task_type
+        return task_train
+
+    @validator("task_eval")
+    def check_eval_task_type(cls, task_eval):
+        if task_eval not in AVAILABLE_TASKS and not isinstance(task_eval, list):
+            raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
+        return task_eval
 
     @validator("reward_type")
     def check_reward_type(cls, reward_type):

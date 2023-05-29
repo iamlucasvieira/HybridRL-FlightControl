@@ -223,13 +223,35 @@ class SACCallback(BaseCallback):
         eval_nmae = self.env.nmae
         eval_episode_length = self.env.current_time
 
-        wandb.log({"sac_train/episode_return": episode_return})
-        wandb.log({"sac_train/episode_length": episode_length})
-        wandb.log({"sac_train/nmae": train_nmae})
+        wandb.log(
+            {
+                "sac_train/episode_return": episode_return,
+                "sac_train/steps": self.agent.num_steps,
+            }
+        )
+        wandb.log(
+            {
+                "sac_train/episode_length": episode_length,
+                "sac_train/steps": self.agent.num_steps,
+            }
+        )
+        wandb.log(
+            {"sac_train/nmae": train_nmae, "sac_train/steps": self.agent.num_steps}
+        )
 
-        wandb.log({"sac_eval/episode_return": eval_episode_return})
-        wandb.log({"sac_eval/episode_length": eval_episode_length})
-        wandb.log({"sac_eval/nmae": eval_nmae})
+        wandb.log(
+            {
+                "sac_eval/episode_return": eval_episode_return,
+                "sac_eval/steps": self.agent.num_steps,
+            }
+        )
+        wandb.log(
+            {
+                "sac_eval/episode_length": eval_episode_length,
+                "sac_eval/steps": self.agent.num_steps,
+            }
+        )
+        wandb.log({"sac_eval/nmae": eval_nmae, "sac_eval/steps": self.agent.num_steps})
 
         if eval_nmae < self.best_nmae:
             self.best_nmae = eval_nmae

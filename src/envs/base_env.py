@@ -19,8 +19,10 @@ class BaseEnv(gym.Env, ABC):
         self,
         dt: float = 0.1,
         episode_steps: int = 100,
+        eval_steps: int = 100,
         reward_scale: float = 1.0,
-        task_type: str = "sin_q",
+        task_train: str = "att_train",
+        task_eval: Optional[str] = None,
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
     ):
@@ -30,13 +32,15 @@ class BaseEnv(gym.Env, ABC):
         # Set parameters
         self.dt = dt
         self.episode_steps = episode_steps
+        self.eval_steps = eval_steps
         self.episode_length = episode_steps * dt
         self.reward_scale = reward_scale
 
         # Set spaces
         self.action_space = self._action_space()
 
-        self.task_type = task_type
+        self.task_type = task_train
+        self.task_eval = task_eval if task_eval is not None else task_train
 
         # Initialize data storage
         self.current_time = None
@@ -140,18 +144,18 @@ class BaseEnv(gym.Env, ABC):
 
         return observation, reward, terminated, truncated, info
 
-    def reset(self, seed: Optional[int] = None):
+    def reset(self, seed: Optional[int] = None, to_eval: bool = False):
         """Resets the environment."""
         super().reset(seed=seed)
-        self.initialize()
+        self.initialize(to_eval=to_eval)
         self._reset()
         observation = self.get_obs(self)
         return observation, {}
 
-    def initialize(self):
+    def initialize(self, to_eval: bool = False):
         """Initializes the environment."""
         # Set reference signal
-        self.set_task(self.task_type)
+        self.set_task(self.task_type if not to_eval else self.task_eval)
 
         self.current_time = 0
         self.actions = [np.zeros(self.action_space.shape[0])]

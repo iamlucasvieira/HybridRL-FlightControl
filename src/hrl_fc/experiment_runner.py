@@ -61,7 +61,7 @@ class Runner:
 
                 # Evaluate
                 if self.config.evaluate:
-                    sweep.evaluate(config_path, task=self.config.task_eval)
+                    sweep.evaluate(config_path)
 
                 wandb_run.finish()
 
@@ -108,7 +108,7 @@ class Runner:
 
 
 def main():
-    Runner("exp_idhp_sac_citation").run()
+    Runner("exp_sac_citation").run()
 
 
 if __name__ == "__main__":

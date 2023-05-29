@@ -1,18 +1,19 @@
 """Module that defines helper functions for wandb."""
-import numpy as np
+from copy import copy
+
 import torch
 import wandb
 
 from envs import BaseEnv, CitationEnv
 
 
-def evaluate(agent, env, n_times=1, to_wandb=True, task=None):
+def evaluate(agent, env, n_times=1, to_wandb=True):
     """Run the experiment n times."""
+    eval_env = copy(env)
+    eval_env.episode_length = eval_env.eval_steps * eval_env.dt
 
     for _ in range(n_times):
-        if task is not None:
-            env.set_task(task)
-        obs, _ = env.reset()
+        obs, _ = eval_env.reset(to_eval=True)
         done = False
         steps = 0
         episode_return = 0
@@ -23,26 +24,20 @@ def evaluate(agent, env, n_times=1, to_wandb=True, task=None):
             if isinstance(action, torch.Tensor):
                 action = action.detach().numpy()
 
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, info = eval_env.step(action)
             done = terminated or truncated
             episode_return += reward
 
-            env.render()
+            eval_env.render()
 
             if wandb.run is not None and to_wandb:
-                wandb.log({"reward": reward, "episode_step": steps})
-                wandb.log(
-                    {
-                        "action": action,
-                        "episode_step": steps,
-                    }
-                )
+                wandb.log({"eval/reward": reward, "eval/step": steps})
 
-                if isinstance(env, BaseEnv):
-                    log_base_env(env, steps, done)
+                if isinstance(eval_env, BaseEnv):
+                    log_base_env(eval_env, steps, done)
 
-                if isinstance(env, CitationEnv):
-                    log_citation_env(env, steps)
+                if isinstance(eval_env, CitationEnv):
+                    log_citation_env(eval_env, steps)
 
             steps += 1
         print(f"finished at {steps}")

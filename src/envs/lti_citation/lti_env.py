@@ -13,7 +13,9 @@ class LTIEnv(BaseEnv):
         configuration: str = "sp",
         dt: float = 0.1,
         episode_steps: int = 100,
-        task_type: str = "sin_q",
+        eval_steps: int = 100,
+        task_train: str = "sin_q",
+        task_eval: str = "sin_q",
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
         reward_scale: float = 1.0,
@@ -28,8 +30,10 @@ class LTIEnv(BaseEnv):
         super().__init__(
             dt=dt,
             episode_steps=episode_steps,
+            eval_steps=eval_steps,
             reward_scale=reward_scale,
-            task_type=task_type,
+            task_train=task_train,
+            task_eval=task_eval,
             reward_type=reward_type,
             observation_type=observation_type,
         )
