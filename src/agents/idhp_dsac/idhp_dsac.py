@@ -81,12 +81,12 @@ class IDHPDSAC(BaseAgent):
         log_interval: int,
         dsac_steps: int = 1_000_000,
         idhp_steps: int = 1_000_000,
-        dsac_model: Optional[str] = None,
+        sac_model: Optional[str] = None,
     ) -> None:
         """Learn the agent."""
 
         self.print("Offline learning")
-        self.learn_offline(log_interval, dsac_steps, dsac_model)
+        self.learn_offline(log_interval, dsac_steps, sac_model)
 
         self.print("Online learning")
         self.learn_online(log_interval, idhp_steps)
@@ -97,12 +97,12 @@ class IDHPDSAC(BaseAgent):
         self,
         log_interval: int,
         dsac_steps: int,
-        dsac_model: Optional[str],
+        sac_model: Optional[str],
     ):
         """Offline learning part of the algorithm."""
-        if dsac_model is not None:
+        if sac_model is not None:
             self.print("Loading DSAC")
-            sac_model_path = Path.models / dsac_model
+            sac_model_path = Path.models / sac_model
             self.dsac.load(sac_model_path)
         else:
             self.print("Learning DSAC")
