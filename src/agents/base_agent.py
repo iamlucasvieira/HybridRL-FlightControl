@@ -276,7 +276,9 @@ class BaseAgent(ABC):
 
         # Load the policy
         if policy_path.is_file():
-            self.policy.load_state_dict(th.load(policy_path))
+            self.policy.load_state_dict(
+                th.load(policy_path, map_location=th.device(self.device))
+            )
         else:
             raise ValueError("Policy file not found.")
 
