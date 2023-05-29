@@ -30,7 +30,6 @@ class ConfigExperiment(BaseModel):
     env: Union[ConfigLTIEnv, ConfigCitationEnv, ConfigGymEnv] = Field(
         discriminator="name", default=ConfigLTIEnv(name="LTI")
     )
-    task_eval: Optional[str] = None
     agent: Union[
         ConfigIDHP, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC, ConfigDSAC, ConfigIDHPDSAC
     ] = Field(discriminator="name", default=ConfigSAC(name="SAC"))

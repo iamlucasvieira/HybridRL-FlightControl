@@ -75,6 +75,8 @@ class AttitudeEval(AttitudeTrain):
 
     def __init__(self, env):
         super().__init__(env)
+        self.theta_amplitude = np.deg2rad(10)
+        self.phi_amplitude = np.deg2rad(5)
         self.theta_increment = [1, 0, 1, 0, -1, 0, -1]
         self.phi_increment = [1, 0, -1, 0, -1, 0, 1]
 

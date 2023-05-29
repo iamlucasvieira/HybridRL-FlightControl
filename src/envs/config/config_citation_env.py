@@ -20,7 +20,7 @@ class ConfigCitationKwargs(BaseModel):
     eval_steps: Optional[int | List[int]] = 2_000  # Number of steps
     reward_scale: Optional[float | List[float]] = 1.0  # Reward scale
     task_train: Optional[str | List[str]] = "att_train"
-    task_eval: Optional[str | List[str]] = "att_eval"
+    task_eval: Optional[str | List[str]] = None
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
     input_names: Optional[List[str]] = None

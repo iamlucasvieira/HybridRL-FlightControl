@@ -10,22 +10,20 @@ agent:
   name: IDHP-SAC
   kwargs:
     idhp_kwargs:
-      lr_a_high: 0.01
-      lr_c_high: 0.002
+      lr_a_high: 0.2
+      lr_c_high: 0.8
       t_warmup: 500
   learn:
-    sac_steps: 100_000
     idhp_steps: 4_000
-    sac_model: SAC-citation/charmed-shape-144
+    sac_model: SAC-citation/unique-fog-168
 
 # Set the environment to use
 env:
   name: "citation"
   kwargs:
     dt: 0.01
-    episode_steps: 4000
-    task_type: "exp1_hold"
+    episode_steps: 4_000
+    eval_steps: 4_000
+    task_train: "att_eval"
     reward_type: clip
     observation_type: "sac_attitude"
-
-task_eval: "att_train"
