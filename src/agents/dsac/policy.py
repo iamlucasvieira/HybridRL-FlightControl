@@ -28,7 +28,7 @@ class CriticNetwork(BaseNetwork):
     ):
         """Initialize critic network."""
         if hidden_layers is None:
-            hidden_layers = [256, 256]
+            hidden_layers = [64, 64]
         device = get_device() if device is None else device
 
         super().__init__(
@@ -94,7 +94,7 @@ class IQN(BaseNetwork):
     ):
         """Initialize critic network."""
         if hidden_layers is None:
-            hidden_layers = [256, 256]
+            hidden_layers = [64, 64]
         elif len(hidden_layers) < 2:
             raise ValueError("Hidden layers must have at least two layers")
 

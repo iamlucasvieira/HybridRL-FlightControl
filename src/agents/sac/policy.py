@@ -146,7 +146,7 @@ class SACPolicy(BasePolicy):
 
         """
         if hidden_layers is None:
-            hidden_layers = [256, 256]
+            hidden_layers = [64, 64]
 
         self.learning_rate = learning_rate
         self.hidden_layers = hidden_layers
