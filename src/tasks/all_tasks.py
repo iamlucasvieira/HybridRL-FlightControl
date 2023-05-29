@@ -1,4 +1,9 @@
-from tasks.attitude import AttitudeTrain, SinAttitudeEvaluate, SineAttitude
+from tasks.attitude import (
+    AttitudeEval,
+    AttitudeTrain,
+    SinAttitudeEvaluate,
+    SineAttitude,
+)
 from tasks.experiment_1 import CossStep, FixedSineAttitude, Hold, PseudoRandomSine
 from tasks.sinusoidal import SineQ, SineTheta
 
@@ -15,6 +20,7 @@ AVAILABLE_TASKS = {
     "sin_q": SineQ,
     "sin_theta": SineTheta,
     "att_train": AttitudeTrain,
+    "att_eval": AttitudeEval,
     "sin_att": SineAttitude,
     "sin_att_eval": SinAttitudeEvaluate,
     "exp1_fixed_sin": FixedSineAttitude,
