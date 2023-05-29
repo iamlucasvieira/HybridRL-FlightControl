@@ -125,7 +125,7 @@ class IDHPSAC(BaseAgent):
 
         # Evaluate SAC
         self.print("Evaluating SAC")
-        evaluate(self.sac, self.sac.env)
+        _, sac_nmae = evaluate(self.sac, self.sac.env)
 
         self.print("Tranfering learning from SAC -> IDHP")
         self.idhp.policy.actor = self.policy.transfer_learning(self.sac, self.idhp)
@@ -143,7 +143,7 @@ class IDHPSAC(BaseAgent):
             log_interval=log_interval,
         )
 
-        self.logger.record("nMAE_sac", self.sac.env.nmae * 100)
+        self.logger.record("nMAE_sac", sac_nmae * 100)
         self.logger.record("nMAE_idhp", self.idhp.env.nmae * 100)
         self.logger.dump()
 

@@ -121,7 +121,7 @@ class IDHPDSAC(BaseAgent):
         """Online learning part of the algorithm."""
         # Evaluate SAC
         self.print("Evaluating SAC")
-        evaluate(self.dsac, self.dsac.env)
+        _, dsac_name = evaluate(self.dsac, self.dsac.env)
 
         self.print("Tranfering learning from SAC -> IDHP")
         self.idhp.policy.actor = self.policy.transfer_learning(self.dsac, self.idhp)
@@ -139,7 +139,7 @@ class IDHPDSAC(BaseAgent):
             log_interval=log_interval,
         )
 
-        self.logger.record("nMAE_dsac", self.dsac.env.nmae * 100)
+        self.logger.record("nMAE_dsac", dsac_name * 100)
         self.logger.record("nMAE_idhp", self.idhp.env.nmae * 100)
         self.logger.dump()
 

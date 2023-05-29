@@ -41,7 +41,7 @@ def evaluate(agent, env, n_times=1, to_wandb=True):
 
             steps += 1
         print(f"finished at {steps}")
-        return episode_return
+        return episode_return, eval_env.nmae
 
 
 def log_base_env(env: BaseEnv, step: int, done: bool):
