@@ -3,7 +3,7 @@ name: SAC-citation
 description: "Tests the SAC agent on the non-linear citation environment."
 wandb: true
 evaluate: true
-seed: 2
+seed: 7
 
 # Set the agent to use
 agent:
@@ -20,9 +20,9 @@ env:
   name: "citation"
   kwargs:
     dt: 0.01
-    task_type: "sin_att"
-    episode_steps: 2000
+    task_train: "att_train"
+    task_eval: "att_eval"
+    episode_steps: 2_000
+    eval_steps: 4_000
     reward_type: clip
     observation_type: "sac_attitude"
-
-task_eval: "sin_att_eval"
