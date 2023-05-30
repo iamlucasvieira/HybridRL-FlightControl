@@ -219,8 +219,7 @@ class SACCallback(BaseCallback):
 
         episode_length = self.env.current_time
         train_nmae = self.env.nmae
-        eval_episode_return = evaluate(self.agent, self.env, to_wandb=False)
-        eval_nmae = self.env.nmae
+        eval_episode_return, eval_nmae = evaluate(self.agent, self.env, to_wandb=False)
         eval_episode_length = self.env.current_time
 
         wandb.log(
