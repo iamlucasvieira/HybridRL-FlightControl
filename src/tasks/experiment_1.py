@@ -21,10 +21,10 @@ class FixedSineAttitude(Attitude):
         t = self.env.current_time
 
         # Theta reference
-        theta_ref = self.amp_theta * np.sin(2 * np.pi * 0.25 * t)
+        theta_ref = self.amp_theta * np.sin(2 * np.pi * 1 / 10 * t)
 
         # Phi reference
-        phi_ref = self.amp_phi * np.sin(2 * np.pi * 0.25 * t)
+        phi_ref = self.amp_phi * np.sin(2 * np.pi * 1 / 10 * t)
 
         # Beta reference
         beta_ref = 0
@@ -52,9 +52,10 @@ class PseudoRandomSine(Attitude):
 
         # Phi reference
         phi_ref = self.amp_phi * (
-            np.sin(2 * np.pi * 1 / 4 * t)
-            + np.cos(2 * np.pi * 1 / 6 * t)
-            + np.sin(2 * np.pi * 1 / 8 * t)
+            np.sin(2 * np.pi * 1 / 10 * t)
+            + np.cos(2 * np.pi * 1 / 15 * t)
+            + np.sin(2 * np.pi * 1 / 20 * t)
+            - np.cos(2 * np.pi * 1 / 25 * t)
         )
 
         # Beta reference
