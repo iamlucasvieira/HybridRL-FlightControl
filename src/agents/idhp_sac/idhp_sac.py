@@ -58,6 +58,10 @@ class IDHPSAC(BaseAgent):
             **sac_kwargs,
         )
 
+        self.sac_nmae = None
+        self.idhp_nmae = None
+
+
         super().__init__(
             IDHPSACPolicy,
             env,
@@ -125,7 +129,8 @@ class IDHPSAC(BaseAgent):
 
         # Evaluate SAC
         self.print("Evaluating SAC")
-        _, sac_nmae = evaluate(self.sac, self.sac.env)
+        _, sac_nmae = evaluate(self.sac, self.sac.env, to_wandb=True)
+        self.sac_nmae = sac_nmae
 
         self.print("Tranfering learning from SAC -> IDHP")
         self.idhp.policy.actor = self.policy.transfer_learning(self.sac, self.idhp)
@@ -146,6 +151,8 @@ class IDHPSAC(BaseAgent):
         self.logger.record("nMAE_sac", sac_nmae * 100)
         self.logger.record("nMAE_idhp", self.idhp.env.nmae * 100)
         self.logger.dump()
+
+        self.idhp_nmae = self.idhp.env.nmae
 
     def save(self, *args, **kwargs):
         """Save the agent."""

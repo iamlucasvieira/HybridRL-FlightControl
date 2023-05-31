@@ -46,6 +46,8 @@ def evaluate(config):
             idhp_kwargs=ConfigIDHPKwargs(
                 lr_a_high=config.lr_a_high,
                 lr_c_high=config.lr_c_high,
+                discount_factor=config.discount_factor,
+                discount_factor_model=config.discount_factor_model,
             )
         ),
         learn=AgentLearn(
@@ -74,27 +76,23 @@ def evaluate(config):
 sweep_config_sac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.8]},
-        "lr_c_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.3]},
+        "lr_c_high": {"values": [0.001]},
+        "discount_factor": {"values": [0.8]},
+        "discount_factor_model": {"values": [0.8]},
         "task_train": {"values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin"]},
         "sac_model": {"values": ["SAC-citation/divine-grass-171", "SAC-citation/denim-leaf-172",
                                  "SAC-citation/firm-feather-173"]},
         "seed": {"values": [1, 2, 3, 4, 5]},
-        "algorithm": {"values": ["IDHPSAC"]},
+        "agent": {"values": ["IDHPSAC"]},
     }
 }
 
-sweep_config_dsac = sweep_config_sac.copy()
-sweep_config_dsac["parameters"]["sac_model"] = {
-    "values": ["DSAC-citation/icy-meadow-174", "DSAC-citation/icy-meadow-175", "DSAC-citation/icy-meadow-176"]}
-sweep_config_dsac["parameters"]["algorithm"] = {"values": ["IDHPDSAC"]}
-
-
 def main():
-    wandb.init(project="exp1_test")
+    wandb.init(project="exp1_reference_signals")
     results = evaluate(wandb.config)
     wandb.log(results)
 
 
-sweep_id = wandb.sweep(sweep_config, project="exp1_test")
+sweep_id = wandb.sweep(sweep_config_sac, project="exp1_reference_signals")
 wandb.agent(sweep_id, function=main)
