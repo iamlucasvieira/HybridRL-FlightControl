@@ -3,9 +3,12 @@ from envs.config.config_citation_env import ConfigCitationEnv, ConfigCitationKwa
 
 from agents.idhp_sac.idhp_sac import IDHPSAC
 from envs.citation.citation_env import CitationEnv
+from helpers.paths import Path
 import numpy as np
 import wandb
+import os
 
+os.environ["WANDB_DIR"] = str(Path().logs)
 np.random.seed(2)
 
 
@@ -58,8 +61,9 @@ sweep_config = {
     "parameters": {
         "lr_a_high": {'values': [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]},
         "lr_c_high": {'values': [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]},
+        "task_train": {"values": ["exp1_pseudo_random_sin"]}
     },
-    "name": "learning_rates"
+    "name": "learning_rates_v2"
 }
 
 sweep_config_task = {
@@ -98,4 +102,4 @@ def main():
 
 
 sweep_id = wandb.sweep(sweep_config, project="idhp-sac-hyperparams")
-wandb.agent(sweep_id, function=main, count=200)
+wandb.agent(sweep_id, function=main, count=300)
