@@ -10,7 +10,7 @@ ROOT = pl.Path(__file__).resolve().parents[2]
 
 # Data paths
 SRC = ROOT / pl.Path("src")
-DATA = SRC / pl.Path("_data")
+DATA = SRC / pl.Path("results/data")
 MODELS = ROOT / pl.Path("models")
 LOGS = ROOT / pl.Path("logs")
 EXP = SRC / pl.Path("experiments")

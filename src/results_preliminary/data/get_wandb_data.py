@@ -21,7 +21,7 @@ def get_wandb_data(project_name):
         runs = api.runs(f"lucasv/{project_name}")
         df_all_episode, df_all_learning = pd.DataFrame(), pd.DataFrame()
         for run in runs:
-            # Episode _data
+            # Episode results_preliminary
             episode_data_list = [
                 get_columns(run, ["episode_step", "tracking_error"]),
                 get_columns(run, ["episode_step", "state", "reference"]),
@@ -33,7 +33,7 @@ def get_wandb_data(project_name):
                 [df.set_index("episode_step") for df in episode_data_list], axis=1
             ).reset_index()
 
-            # Training _data
+            # Training results_preliminary
             learning_data_list = [
                 get_columns(run, ["rollout/ep_len_mean", "global_step"]),
                 get_columns(run, ["rollout/ep_rew_mean", "global_step"]),
