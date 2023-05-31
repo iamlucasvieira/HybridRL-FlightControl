@@ -3,14 +3,14 @@ name: SAC-citation
 description: "Tests the SAC agent on the non-linear citation environment."
 wandb: true
 evaluate: true
-seed: 7
+seed: 5
 
 # Set the agent to use
 agent:
   name: SAC
   kwargs:
     learning_rate: 4.4e-4
-    polyak: 0.005
+#    polyak: 0.005
   learn:
     total_steps: 1_000_000
     log_interval: 200

@@ -1,7 +1,7 @@
 ---
-name: E1-Citation
+name: EXP1-fixed-sin
 description: "Tests the IHDP-SAC agent on the Citation environment."
-wandb: true
+wandb: false
 evaluate: false
 #seed: 7
 
@@ -10,12 +10,12 @@ agent:
   name: IDHP-SAC
   kwargs:
     idhp_kwargs:
-      lr_a_high: 0.2
-      lr_c_high: 0.8
+      lr_a_high: 0.5
+      lr_c_high: 0.005
       t_warmup: 500
   learn:
     idhp_steps: 4_000
-    sac_model: SAC-citation/unique-fog-168
+    sac_model: SAC-citation/divine-grass-171
 
 # Set the environment to use
 env:
@@ -24,6 +24,6 @@ env:
     dt: 0.01
     episode_steps: 4_000
     eval_steps: 4_000
-    task_train: "att_eval"
+    task_train: "exp1_hold"
     reward_type: clip
     observation_type: "sac_attitude"

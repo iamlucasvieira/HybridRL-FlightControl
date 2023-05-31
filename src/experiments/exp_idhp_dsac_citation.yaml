@@ -1,5 +1,5 @@
 ---
-name: IDHP-DSAC-Citation
+name: E1-Citation
 description: "Tests the IHDP-DSAC agent on the Citation environment."
 wandb: true
 evaluate: false
@@ -15,7 +15,7 @@ agent:
   learn:
     dsac_steps: 100_000
     idhp_steps: 4_000
-    dsac_model: DSAC-citation/leafy-butterfly-17
+    sac_model: DSAC-citation/dauntless-sun-27
 
 # Set the environment to use
 env:
@@ -23,7 +23,7 @@ env:
   kwargs:
     dt: 0.01
     episode_steps: 4000
-    task_type: "exp1_hold"
+    task_type: "exp1_fixed_sin"
     reward_type: clip
     observation_type: "sac_attitude"
 
