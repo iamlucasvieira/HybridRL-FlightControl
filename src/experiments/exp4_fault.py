@@ -36,8 +36,9 @@ def evaluate(config):
             eval_steps=4_000,
             task_train=task_train,
             reward_type="clip",
-            observation_type="sac_attitude_noise",
+            observation_type="sac_attitude",
             filter_action=False,
+            action_scale=[0.3, 1, 1]
         )
     )
     env = CitationEnv(**env_config.kwargs.dict())
@@ -59,7 +60,6 @@ def evaluate(config):
         kwargs=AgentKwargs(
             verbose=0,
             seed=np.random.randint(0, 1000),
-            idhp_actor_observation="sac_attitude_noise",
             idhp_kwargs=ConfigIDHPKwargs(
                 lr_a_high=config.lr_a_high,
                 lr_c_high=config.lr_c_high,
@@ -111,10 +111,10 @@ sweep_config_sac = {
 
 
 def main():
-    wandb.init(project="exp2_noise")
+    wandb.init(project="exp3_fault")
     results = evaluate(wandb.config)
     wandb.log(results)
 
 
-sweep_id = wandb.sweep(sweep_config_sac, project="exp2_noise")
+sweep_id = wandb.sweep(sweep_config_sac, project="exp3_fault")
 wandb.agent(sweep_id, function=main)

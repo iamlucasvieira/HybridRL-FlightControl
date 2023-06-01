@@ -25,6 +25,7 @@ class ConfigCitationKwargs(BaseModel):
     observation_type: Optional[str | List[str]] = "states + ref + error"
     input_names: Optional[List[str]] = None
     filter_action: Optional[bool] = False
+    action_scale: Optional[List[float] | float] = 1
 
     @validator("model")
     def check_config(cls, model):

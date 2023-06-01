@@ -1,6 +1,6 @@
 """Creates a gym environment for the high fidelity citation  model."""
 from collections import namedtuple
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from gymnasium import spaces
@@ -25,6 +25,7 @@ class CitationEnv(BaseEnv):
         observation_type: str = "states + ref + error",
         input_names: List[str] = None,
         filter_action: bool = False,
+        action_scale: Optional[List[float] | float] = 1,
     ):
         self.model = load_model(model)
         self.input_names = ["de", "da", "dr"] if input_names is None else input_names
@@ -48,6 +49,7 @@ class CitationEnv(BaseEnv):
             reward_type=reward_type,
             observation_type=observation_type,
             filter_action=filter_action,
+            action_scale=action_scale,
         )
 
     def _action_space(self):

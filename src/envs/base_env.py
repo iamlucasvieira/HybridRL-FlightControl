@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 import gymnasium as gym
 import numpy as np
@@ -16,16 +16,17 @@ class BaseEnv(gym.Env, ABC):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
-        self,
-        dt: float = 0.1,
-        episode_steps: int = 100,
-        eval_steps: int = 100,
-        reward_scale: float = 1.0,
-        task_train: str = "att_train",
-        task_eval: Optional[str] = None,
-        reward_type: str = "sq_error",
-        observation_type: str = "states + ref + error",
-        filter_action: bool = False,
+            self,
+            dt: float = 0.1,
+            episode_steps: int = 100,
+            eval_steps: int = 100,
+            reward_scale: float = 1.0,
+            task_train: str = "att_train",
+            task_eval: Optional[str] = None,
+            reward_type: str = "sq_error",
+            observation_type: str = "states + ref + error",
+            filter_action: bool = False,
+            action_scale: Optional[List[float] | float] = 1,
     ):
         """Initialize the environment."""
         super().__init__()
@@ -59,6 +60,12 @@ class BaseEnv(gym.Env, ABC):
         self.get_obs = None
         self.set_reward_function(reward_type)
         self.set_observation_function(observation_type)
+
+        if isinstance(action_scale, list) and len(action_scale) != self.n_inputs:
+            raise ValueError(
+                f"Length of action_scale ({len(action_scale)}) does not match number of inputs ({self.n_inputs})."
+            )
+        self.action_scale = np.array(action_scale)
 
     @property
     def n_states(self):
@@ -110,6 +117,10 @@ class BaseEnv(gym.Env, ABC):
         if self.filter_action:
             action = self.low_pass(action, self.actions[-1], 40 * 2 * np.pi, self.dt)
 
+        # Allow scaling actions after 10 seconds to simulate control effectiveness limitations
+        if self.current_time > 10:
+            action = self.action_scale * action
+
         # Advance time
         self.current_time += self.dt
 
@@ -119,7 +130,7 @@ class BaseEnv(gym.Env, ABC):
 
         # Tracking error
         e = (tracked_x_t1 - self.reference[-1]) * self.task.scale
-        e_2 = e**2
+        e_2 = e ** 2
 
         # Store values
         self.actions.append(action)
