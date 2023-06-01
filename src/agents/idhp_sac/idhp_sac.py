@@ -29,6 +29,7 @@ class IDHPSAC(BaseAgent):
         _init_setup_model: bool = True,
         idhp_kwargs: dict = None,
         sac_kwargs: dict = None,
+        idhp_actor_observation: str = "sac_attitude",
     ):
         """Initialize the agent."""
         # Build the IDHP agent
@@ -42,7 +43,7 @@ class IDHPSAC(BaseAgent):
             agent_dict["seed"] = seed
 
         # Make sure environment follows IDHP requirements
-        idhp_kwargs["actor_observation_type"] = "sac_attitude"
+        idhp_kwargs["actor_observation_type"] = idhp_actor_observation
 
         # Make copies of env for SAC and IDHP
         env_sac = copy(env)
@@ -60,7 +61,6 @@ class IDHPSAC(BaseAgent):
 
         self.sac_nmae = None
         self.idhp_nmae = None
-
 
         super().__init__(
             IDHPSACPolicy,

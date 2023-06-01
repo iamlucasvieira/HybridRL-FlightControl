@@ -81,6 +81,18 @@ class Observations:
         return np.hstack((self.states[-1][states_idx], self.error[-1]))
 
     @staticmethod
+    def sac_attitude_noise(self):
+        """Citation observation for sac attitude tracking"""
+        obs_states = ["p", "q", "r"]
+        states_idx = [self.states_name.index(s) for s in obs_states]
+
+        noise_bias = 3e-5
+        noise_variance = 4e-7
+        noise = np.random.normal(noise_bias, noise_variance, len(states_idx))
+
+        return np.hstack((self.states[-1][states_idx] + noise, self.error[-1]))
+
+    @staticmethod
     def idhp_citation(self):
         """Citation observation for IDHP attitude tracking."""
         obs_states = ["p", "q", "r", "alpha", "theta", "phi", "beta"]
@@ -99,6 +111,7 @@ observations_dict = {
     "states + error": Observations.states_error,
     "noise + states + ref": Observations.noise_states_ref,
     "sac_attitude": Observations.sac_attitude,
+    "sac_attitude_noise": Observations.sac_attitude_noise,
     "idhp_citation": Observations.idhp_citation,
 }
 
