@@ -24,6 +24,7 @@ class ConfigCitationKwargs(BaseModel):
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
     input_names: Optional[List[str]] = None
+    filter_action: Optional[bool] = False
 
     @validator("model")
     def check_config(cls, model):

@@ -25,6 +25,7 @@ class BaseEnv(gym.Env, ABC):
         task_eval: Optional[str] = None,
         reward_type: str = "sq_error",
         observation_type: str = "states + ref + error",
+        filter_action: bool = False,
     ):
         """Initialize the environment."""
         super().__init__()
@@ -35,6 +36,7 @@ class BaseEnv(gym.Env, ABC):
         self.eval_steps = eval_steps
         self.episode_length = episode_steps * dt
         self.reward_scale = reward_scale
+        self.filter_action = filter_action
 
         # Set spaces
         self.action_space = self._action_space()
@@ -104,6 +106,9 @@ class BaseEnv(gym.Env, ABC):
 
     def step(self, action: np.ndarray) -> tuple:
         info = {}
+
+        if self.filter_action:
+            action = self.low_pass(action, self.actions[-1], 40 * 2 * np.pi, self.dt)
 
         # Advance time
         self.current_time += self.dt
@@ -208,3 +213,9 @@ class BaseEnv(gym.Env, ABC):
     def states_name(self):
         """The names of the states."""
         raise NotImplementedError
+
+    @staticmethod
+    def low_pass(value, previous_value, w_0, dt):
+        """Low pass filter"""
+        alpha = dt / (1 / w_0 + dt)
+        return alpha * value + (1 - alpha) * previous_value
