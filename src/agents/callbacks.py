@@ -6,7 +6,7 @@ import numpy as np
 import wandb
 
 from agents import BaseCallback
-from envs import BaseEnv, LTIEnv
+from envs import BaseEnv, CitationEnv, LTIEnv
 from helpers.wandb_helpers import evaluate
 
 
@@ -129,6 +129,18 @@ class OnlineCallback(BaseCallback):
                 {f"online/critic_w_{idx}": i for idx, i in enumerate(critic_weights)}
                 | {"online/step": step}
             )
+
+        elif isinstance(self.env, CitationEnv):
+            # Log states
+            for state_name, state_value in zip(
+                self.env.model.states, self.env.states[-1]
+            ):
+                wandb.log(
+                    {
+                        f"online_states/{state_name}": state_value,
+                        "online_states/step": step,
+                    }
+                )
         return True
 
     def _on_training_end(self) -> None:
