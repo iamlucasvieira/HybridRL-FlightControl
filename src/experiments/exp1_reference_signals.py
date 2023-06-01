@@ -1,14 +1,29 @@
-from agents.config.config_idhp_sac import ConfigIDHPSAC, ConfigIDHPSACKwargs, ConfigIDHPSACLearn, ConfigIDHPKwargs
-from agents.config.config_idhp_dsac import ConfigIDHPDSAC, ConfigIDHPDSACKwargs, ConfigIDHPDSACLearn
-from envs.config.config_citation_env import ConfigCitationEnv, ConfigCitationKwargs
+import os
 
-from agents.idhp_sac.idhp_sac import IDHPSAC
-from agents.idhp_dsac.idhp_dsac import IDHPDSAC
-from envs.citation.citation_env import CitationEnv
 import numpy as np
 import wandb
 
-np.random.seed(2)
+from agents.config.config_idhp_dsac import (
+    ConfigIDHPDSAC,
+    ConfigIDHPDSACKwargs,
+    ConfigIDHPDSACLearn,
+)
+from agents.config.config_idhp_sac import (
+    ConfigIDHPKwargs,
+    ConfigIDHPSAC,
+    ConfigIDHPSACKwargs,
+    ConfigIDHPSACLearn,
+)
+from agents.idhp_dsac.idhp_dsac import IDHPDSAC
+from agents.idhp_sac.idhp_sac import IDHPSAC
+from envs.citation.citation_env import CitationEnv
+from envs.config.config_citation_env import ConfigCitationEnv, ConfigCitationKwargs
+from helpers.paths import Path
+
+
+os.environ["WANDB_DIR"] = str(Path().logs)
+
+np.random.seed(4)
 
 
 def evaluate(config):
@@ -22,6 +37,7 @@ def evaluate(config):
             task_train=task_train,
             reward_type="clip",
             observation_type="sac_attitude",
+            filter_action=False,
         )
     )
     env = CitationEnv(**env_config.kwargs.dict())
@@ -48,14 +64,13 @@ def evaluate(config):
                 lr_c_high=config.lr_c_high,
                 discount_factor=config.discount_factor,
                 discount_factor_model=config.discount_factor_model,
-            )
+            ),
         ),
         learn=AgentLearn(
             idhp_steps=4_000,
             sac_model=config.sac_model,
             callback=[],
         ),
-
     )
     hybrid_agent = Agent(env=env, **hybrid_config.kwargs.dict())
 
@@ -80,13 +95,21 @@ sweep_config_sac = {
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
-        "task_train": {"values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin"]},
-        "sac_model": {"values": ["SAC-citation/divine-grass-171", "SAC-citation/denim-leaf-172",
-                                 "SAC-citation/firm-feather-173"]},
+        "task_train": {
+            "values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin"]
+        },
+        "sac_model": {
+            "values": [
+                "SAC-citation/divine-grass-171",
+                "SAC-citation/denim-leaf-172",
+                "SAC-citation/firm-feather-173",
+            ]
+        },
         "seed": {"values": [1, 2, 3, 4, 5]},
         "agent": {"values": ["IDHPSAC"]},
-    }
+    },
 }
+
 
 def main():
     wandb.init(project="exp1_reference_signals")
