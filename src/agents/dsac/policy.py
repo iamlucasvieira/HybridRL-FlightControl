@@ -237,7 +237,7 @@ class DSACPolicy(BasePolicy):
         self.z1 = CriticNetwork(
             self.observation_space,
             self.action_space,
-            hidden_layers=self.hidden_layers,
+            hidden_layers=[64, 64],
             embedding_dim=self.embedding_dim,
             layer_norm=self.layer_norm,
             learning_rate=self.learning_rate,
@@ -246,7 +246,7 @@ class DSACPolicy(BasePolicy):
         self.z2 = CriticNetwork(
             self.observation_space,
             self.action_space,
-            hidden_layers=self.hidden_layers,
+            hidden_layers=[64, 64],
             embedding_dim=self.embedding_dim,
             layer_norm=self.layer_norm,
             learning_rate=self.learning_rate,
@@ -255,6 +255,7 @@ class DSACPolicy(BasePolicy):
         self.actor = ActorNetwork(
             self.observation_space,
             self.action_space,
+            hidden_layers=[64, 64],
             learning_rate=self.learning_rate,
             device=self.device,
         )
