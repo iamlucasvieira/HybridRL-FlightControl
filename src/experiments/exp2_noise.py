@@ -109,6 +109,21 @@ sweep_config_sac = {
     },
 }
 
+sweep_config_dsac = {
+    "method": "grid",
+    "parameters": {
+        "lr_a_high": {"values": [0.3]},
+        "lr_c_high": {"values": [0.001]},
+        "discount_factor": {"values": [0.8]},
+        "discount_factor_model": {"values": [0.8]},
+        "task_train": {"values": ["exp1_pseudo_random_sin"]},
+         "sac_model": {"values": ["DSAC-citation/desert-fog-33", "DSAC-citation/smart-durian-34",
+                                 "DSAC-citation/vague-hill-35"]},
+        "seed": {"values": [1, 2, 3, 4, 5]},
+        "agent": {"values": ["IDHPDSAC"]},
+    },
+}
+
 
 def main():
     wandb.init(project="exp2_noise")
