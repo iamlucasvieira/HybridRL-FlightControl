@@ -34,6 +34,7 @@ class ConfigIDHPDSACKwargs(BaseModel):
     dsac_kwargs: Optional[
         ConfigDSACKwargs | List[ConfigDSACKwargs]
     ] = ConfigDSACKwargs()
+    idhp_actor_observation: Optional[str | List[str]] = "sac_attitude"
 
     class Config:
         extra = Extra.forbid

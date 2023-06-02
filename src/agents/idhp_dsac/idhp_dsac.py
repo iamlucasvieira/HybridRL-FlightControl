@@ -30,6 +30,8 @@ class IDHPDSAC(BaseAgent):
         _init_setup_model: bool = True,
         idhp_kwargs: dict = None,
         dsac_kwargs: dict = None,
+        idhp_actor_observation: str = "sac_attitude",
+
     ):
         """Initialize the agent."""
         # Build the IDHP agent
@@ -43,7 +45,7 @@ class IDHPDSAC(BaseAgent):
             agent_dict["seed"] = seed
 
         # Make sure environment follows IDHP requirements
-        idhp_kwargs["actor_observation_type"] = "sac_attitude"
+        idhp_kwargs["actor_observation_type"] = idhp_actor_observation
 
         env_sac = copy(env)
         env_idhp = IDHP._setup_env(env)
@@ -57,6 +59,9 @@ class IDHPDSAC(BaseAgent):
             env_sac,
             **dsac_kwargs,
         )
+
+        self.sac_nmae = None
+        self.idhp_nmae = None
 
         super().__init__(
             IDHPSACPolicy,
@@ -121,7 +126,8 @@ class IDHPDSAC(BaseAgent):
         """Online learning part of the algorithm."""
         # Evaluate SAC
         self.print("Evaluating SAC")
-        _, dsac_name = evaluate(self.dsac, self.dsac.env)
+        _, dsac_name = evaluate(self.dsac, self.dsac.env, to_wandb=True)
+        self.sac_nmae = dsac_name
 
         self.print("Tranfering learning from SAC -> IDHP")
         self.idhp.policy.actor = self.policy.transfer_learning(self.dsac, self.idhp)
@@ -143,6 +149,7 @@ class IDHPDSAC(BaseAgent):
         self.logger.record("nMAE_idhp", self.idhp.env.nmae * 100)
         self.logger.dump()
 
+        self.idhp_nmae = self.idhp.env.nmae
     def save(self, *args, **kwargs):
         """Save the agent."""
         # Give same run name for sac and idhp
