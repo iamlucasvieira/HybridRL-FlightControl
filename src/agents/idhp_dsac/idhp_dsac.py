@@ -108,7 +108,7 @@ class IDHPDSAC(BaseAgent):
         if sac_model is not None:
             self.print("Loading DSAC")
             sac_model_path = Path.models / sac_model
-            self.dsac.load(sac_model_path)
+            self.dsac.load(sac_model_path, run="best")
         else:
             self.print("Learning DSAC")
             self.dsac.learn(
@@ -138,9 +138,9 @@ class IDHPDSAC(BaseAgent):
             idhp_steps,
             run_name="IDHP",
             callback=[
-                OnlineCallback(verbose=self.verbose),
-                TensorboardCallback(verbose=self.verbose),
-                IDHPSACCallback(verbose=self.verbose),
+                # OnlineCallback(verbose=self.verbose),
+                # TensorboardCallback(verbose=self.verbose),
+                # IDHPSACCallback(verbose=self.verbose),
             ],
             log_interval=log_interval,
         )

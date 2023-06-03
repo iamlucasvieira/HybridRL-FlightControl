@@ -265,7 +265,7 @@ class BaseAgent(ABC):
 
         th.save(self.policy.state_dict(), policy_path)
 
-    def load(self, path: pl.Path, run: str = "final"):
+    def load(self, path: pl.Path, run: str = "best"):
         """Load the model.
 
         Args:
