@@ -278,7 +278,7 @@ sweep_config_actor_dsac = {
                 "DSAC-citation/vague-hill-35",
             ]
         },
-        "agent": {"values": ["IDHPSAC"]},
+        "agent": {"values": ["IDHPDSAC"]},
     },
     "name": "fixed-critic-actor-changing-dsac",
 }
