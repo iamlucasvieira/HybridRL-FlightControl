@@ -10,7 +10,7 @@ agent:
   name: DSAC
   kwargs:
     learning_rate: 4.4e-4
-#    polyak: 0.005
+    #    polyak: 0.005
     device: cuda
   learn:
     total_steps: 1_000_000
@@ -27,4 +27,3 @@ env:
     eval_steps: 4_000
     reward_type: clip
     observation_type: "sac_attitude"
-

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import List, Optional
 
 import gymnasium as gym
 import numpy as np
@@ -16,17 +16,17 @@ class BaseEnv(gym.Env, ABC):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
-            self,
-            dt: float = 0.1,
-            episode_steps: int = 100,
-            eval_steps: int = 100,
-            reward_scale: float = 1.0,
-            task_train: str = "att_train",
-            task_eval: Optional[str] = None,
-            reward_type: str = "sq_error",
-            observation_type: str = "states + ref + error",
-            filter_action: bool = False,
-            action_scale: Optional[List[float] | float] = 1,
+        self,
+        dt: float = 0.1,
+        episode_steps: int = 100,
+        eval_steps: int = 100,
+        reward_scale: float = 1.0,
+        task_train: str = "att_train",
+        task_eval: Optional[str] = None,
+        reward_type: str = "sq_error",
+        observation_type: str = "states + ref + error",
+        filter_action: bool = False,
+        action_scale: Optional[List[float] | float] = 1,
     ):
         """Initialize the environment."""
         super().__init__()
@@ -130,7 +130,7 @@ class BaseEnv(gym.Env, ABC):
 
         # Tracking error
         e = (tracked_x_t1 - self.reference[-1]) * self.task.scale
-        e_2 = e ** 2
+        e_2 = e**2
 
         # Store values
         self.actions.append(action)

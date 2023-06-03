@@ -83,9 +83,7 @@ Style = namedtuple("style", ["font", "width"])
 
 defaults = Style(
     font=dict(
-        family="Fira Sans, Helvetica, Arial, sans-serif",
-        color="#333333",
-        size=20),
+        family="Fira Sans, Helvetica, Arial, sans-serif", color="#333333", size=20
+    ),
     width=500,  # Pixels
-
 )

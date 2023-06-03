@@ -1,7 +1,7 @@
-from helpers.paths import Path
-
 import pandas as pd
 import wandb
+
+from helpers.paths import Path
 
 
 def download_summary_data(project, sweep=None, file_name=None, file_name_after=None):
@@ -24,8 +24,8 @@ def download_summary_data(project, sweep=None, file_name=None, file_name_after=N
         # .config contains the hyperparameters.
         #  We remove special values that start with _.
         config_list.append(
-            {k: v for k, v in run.config.items()
-             if not k.startswith('_')})
+            {k: v for k, v in run.config.items() if not k.startswith("_")}
+        )
 
         # .name is the human-readable name of the run.
         name_list.append(run.name)
@@ -33,7 +33,7 @@ def download_summary_data(project, sweep=None, file_name=None, file_name_after=N
     # Make a dataframe from list of dicts, expanding dicts into columns
     summary_df = pd.DataFrame.from_records(summary_list)
     config_df = pd.DataFrame.from_records(config_list)
-    name_df = pd.DataFrame({'name': name_list})
+    name_df = pd.DataFrame({"name": name_list})
     runs_df = pd.concat([name_df, config_df, summary_df], axis=1)
 
     if file_name is None:

@@ -8,19 +8,18 @@ from agents.config.config_idhp_dsac import (
     ConfigIDHPDSACKwargs,
     ConfigIDHPDSACLearn,
 )
-
 from agents.config.config_idhp_sac import (
     ConfigIDHPKwargs,
     ConfigIDHPSAC,
     ConfigIDHPSACKwargs,
     ConfigIDHPSACLearn,
 )
-
-from agents.idhp_sac.idhp_sac import IDHPSAC
 from agents.idhp_dsac.idhp_dsac import IDHPDSAC
+from agents.idhp_sac.idhp_sac import IDHPSAC
 from envs.citation.citation_env import CitationEnv
 from envs.config.config_citation_env import ConfigCitationEnv, ConfigCitationKwargs
 from helpers.paths import Path
+
 
 os.environ["WANDB_DIR"] = str(Path().logs)
 np.random.seed(2)
@@ -190,12 +189,15 @@ sweep_config_dsac = {
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {"values": [0.6]},
         "discount_factor_model": {"values": [0.6]},
-        "sac_model": {"values": ["DSAC-citation/desert-fog-33",
-                                 "DSAC-citation/smart-durian-34",
-                                 "DSAC-citation/vague-hill-35"]},
+        "sac_model": {
+            "values": [
+                "DSAC-citation/desert-fog-33",
+                "DSAC-citation/smart-durian-34",
+                "DSAC-citation/vague-hill-35",
+            ]
+        },
         "agent": {"values": ["IDHPDSAC"]},
     },
-
     "name": "changing-actor-critic-dsac",
 }
 
@@ -224,11 +226,7 @@ sweep_config_actor = {
                 0.9,
             ]
         },
-        "lr_c_high": {
-            "values": [
-                0.001
-            ]
-        },
+        "lr_c_high": {"values": [0.001]},
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {"values": [0.6]},
         "discount_factor_model": {"values": [0.6]},
@@ -269,17 +267,17 @@ sweep_config_actor_dsac = {
                 0.9,
             ]
         },
-        "lr_c_high": {
-            "values": [
-                0.001
-            ]
-        },
+        "lr_c_high": {"values": [0.001]},
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {"values": [0.6]},
         "discount_factor_model": {"values": [0.6]},
-        "sac_model": {"values": ["DSAC-citation/desert-fog-33",
-                                 "DSAC-citation/smart-durian-34",
-                                 "DSAC-citation/vague-hill-35"]},
+        "sac_model": {
+            "values": [
+                "DSAC-citation/desert-fog-33",
+                "DSAC-citation/smart-durian-34",
+                "DSAC-citation/vague-hill-35",
+            ]
+        },
         "agent": {"values": ["IDHPSAC"]},
     },
     "name": "fixed-critic-actor-changing-dsac",
@@ -315,5 +313,5 @@ def main():
     )
 
 
-sweep_id = wandb.sweep(sweep_config_actor, project="idhp-sac-hyperparams")
+sweep_id = wandb.sweep(sweep_config_actor_dsac, project="idhp-sac-hyperparams")
 wandb.agent(sweep_id, function=main, count=200)
