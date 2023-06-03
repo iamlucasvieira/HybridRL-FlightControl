@@ -1,4 +1,5 @@
 """Utility functions for visualization."""
+from collections import namedtuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -76,3 +77,15 @@ def save_pgf(fig, name, path=None, tight_layout=True, padding=0.5, w=3, h=3.5):
     # reset plt params
     # plt.rcParams.update(plt.rcParamsDefault)
     # make_defaults()
+
+
+Style = namedtuple("style", ["font", "width"])
+
+defaults = Style(
+    font=dict(
+        family="Fira Sans, Helvetica, Arial, sans-serif",
+        color="#333333",
+        size=20),
+    width=500,  # Pixels
+
+)

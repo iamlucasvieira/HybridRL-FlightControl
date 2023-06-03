@@ -3,17 +3,24 @@ import os
 import numpy as np
 import wandb
 
+from agents.config.config_idhp_dsac import (
+    ConfigIDHPDSAC,
+    ConfigIDHPDSACKwargs,
+    ConfigIDHPDSACLearn,
+)
+
 from agents.config.config_idhp_sac import (
     ConfigIDHPKwargs,
     ConfigIDHPSAC,
     ConfigIDHPSACKwargs,
     ConfigIDHPSACLearn,
 )
+
 from agents.idhp_sac.idhp_sac import IDHPSAC
+from agents.idhp_dsac.idhp_dsac import IDHPDSAC
 from envs.citation.citation_env import CitationEnv
 from envs.config.config_citation_env import ConfigCitationEnv, ConfigCitationKwargs
 from helpers.paths import Path
-
 
 os.environ["WANDB_DIR"] = str(Path().logs)
 np.random.seed(2)
@@ -34,8 +41,21 @@ def evaluate(config):
     )
     env = CitationEnv(**env_config.kwargs.dict())
 
-    agent_config = ConfigIDHPSAC(
-        kwargs=ConfigIDHPSACKwargs(
+    if config.agent == "IDHPSAC":
+        AgentConfig = ConfigIDHPSAC
+        AgentKwargs = ConfigIDHPSACKwargs
+        AgentLearn = ConfigIDHPSACLearn
+        Agent = IDHPSAC
+    elif config.agent == "IDHPDSAC":
+        AgentConfig = ConfigIDHPDSAC
+        AgentKwargs = ConfigIDHPDSACKwargs
+        AgentLearn = ConfigIDHPDSACLearn
+        Agent = IDHPDSAC
+    else:
+        raise ValueError(f"Unknown agent {config.agent}")
+
+    agent_config = AgentConfig(
+        kwargs=AgentKwargs(
             verbose=0,
             seed=np.random.randint(0, 1000),
             idhp_kwargs=ConfigIDHPKwargs(
@@ -45,14 +65,14 @@ def evaluate(config):
                 discount_factor_model=config.discount_factor_model,
             ),
         ),
-        learn=ConfigIDHPSACLearn(
+        learn=AgentLearn(
             idhp_steps=4_000,
-            sac_model="SAC-citation/divine-grass-171",
+            sac_model=config.sac_model,
             callback=[],
         ),
     )
 
-    agent = IDHPSAC(env=env, **agent_config.kwargs.dict())
+    agent = Agent(env=env, **agent_config.kwargs.dict())
     try:
         agent.learn(**agent_config.learn.dict())
     except ValueError:
@@ -107,12 +127,77 @@ sweep_config = {
             ]
         },
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
-        "discount_factor": {"values": [0.6, 0.7, 0.8, 0.9, 0.99]},
-        "discount_factor_model": {"values": [0.6, 0.7, 0.8, 0.9, 0.99]},
+        "discount_factor": {"values": [0.6]},
+        "discount_factor_model": {"values": [0.6]},
+        "sac_model": {
+            "values": [
+                "SAC-citation/divine-grass-171",
+                "SAC-citation/denim-leaf-172",
+                "SAC-citation/firm-feather-173",
+            ]
+        },
+        "agent": {"values": ["IDHPSAC"]},
     },
-    "name": "learning_rates_v3",
+    "name": "changing-actor-critic",
 }
 
+sweep_config_dsac = {
+    "method": "random",
+    "metric": {"name": "idhp_nmae", "goal": "minimize"},
+    "parameters": {
+        "lr_a_high": {
+            "values": [
+                0.00001,
+                0.00005,
+                0.0001,
+                0.0005,
+                0.001,
+                0.005,
+                0.01,
+                0.05,
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5,
+                0.6,
+                0.7,
+                0.8,
+                0.9,
+            ]
+        },
+        "lr_c_high": {
+            "values": [
+                0.00001,
+                0.00005,
+                0.0001,
+                0.0005,
+                0.001,
+                0.005,
+                0.01,
+                0.05,
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5,
+                0.6,
+                0.7,
+                0.8,
+                0.9,
+            ]
+        },
+        "task_train": {"values": ["exp1_pseudo_random_sin"]},
+        "discount_factor": {"values": [0.6]},
+        "discount_factor_model": {"values": [0.6]},
+        "sac_model": {"values": ["DSAC-citation/desert-fog-33",
+                                 "DSAC-citation/smart-durian-34",
+                                 "DSAC-citation/vague-hill-35"]},
+        "agent": {"values": ["IDHPDSAC"]},
+    },
+
+    "name": "changing-actor-critic-dsac",
+}
 
 sweep_config_actor = {
     "method": "random",
@@ -139,15 +224,27 @@ sweep_config_actor = {
                 0.9,
             ]
         },
-        "lr_c_high": {"values": [0.001]},
+        "lr_c_high": {
+            "values": [
+                0.001
+            ]
+        },
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {"values": [0.6]},
         "discount_factor_model": {"values": [0.6]},
+        "sac_model": {
+            "values": [
+                "SAC-citation/divine-grass-171",
+                "SAC-citation/denim-leaf-172",
+                "SAC-citation/firm-feather-173",
+            ]
+        },
+        "agent": {"values": ["IDHPSAC"]},
     },
-    "name": "fixed_critic_changing_actor",
+    "name": "fixed-critic-actor-changing",
 }
 
-sweep_config_actor_task = {
+sweep_config_actor_dsac = {
     "method": "random",
     "metric": {"name": "idhp_nmae", "goal": "minimize"},
     "parameters": {
@@ -172,14 +269,20 @@ sweep_config_actor_task = {
                 0.9,
             ]
         },
-        "lr_c_high": {"values": [0.001]},
-        "task_train": {
-            "values": ["exp1_fixed_sin", "exp1_pseudo_random_sin", "exp1_hold"]
+        "lr_c_high": {
+            "values": [
+                0.001
+            ]
         },
+        "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {"values": [0.6]},
         "discount_factor_model": {"values": [0.6]},
+        "sac_model": {"values": ["DSAC-citation/desert-fog-33",
+                                 "DSAC-citation/smart-durian-34",
+                                 "DSAC-citation/vague-hill-35"]},
+        "agent": {"values": ["IDHPSAC"]},
     },
-    "name": "fixed_critic_changing_actor_task",
+    "name": "fixed-critic-actor-changing-dsac",
 }
 
 sweep_config_discount = {
@@ -212,5 +315,5 @@ def main():
     )
 
 
-sweep_id = wandb.sweep(sweep_config_discount, project="idhp-sac-hyperparams")
+sweep_id = wandb.sweep(sweep_config_actor, project="idhp-sac-hyperparams")
 wandb.agent(sweep_id, function=main, count=200)

@@ -29,7 +29,7 @@ class Path:
     exp: pl.Path = EXP
     figures: pl.Path = FIGURES
     paper_figures: pl.Path = pl.Path(
-        "/Users/lucas/Documents/Thesis Writing/LiteratureReview/figures"
+        "/Users/lucas/Documents/Thesis Writing/ThesisDocument/figures"
     )  # Path to report figures
 
 
