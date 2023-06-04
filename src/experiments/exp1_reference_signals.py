@@ -91,10 +91,10 @@ def evaluate(config):
 sweep_config_sac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.8]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
-        "discount_factor_model": {"values": [0.8]},
+        "discount_factor_model": {"values": [0.99]},
         "task_train": {
             "values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin"]
         },
@@ -105,7 +105,7 @@ sweep_config_sac = {
                 "SAC-citation/firm-feather-173",
             ]
         },
-        "seed": {"values": [1, 2, 3, 4, 5]},
+        "seed": {"values": [1, 2, 3, 4]},
         "agent": {"values": ["IDHPSAC"]},
     },
 }
@@ -128,7 +128,7 @@ sweep_config_dsac = {
                 "DSAC-citation/vague-hill-35",
             ]
         },
-        "seed": {"values": [1, 2, 3, 4, 5]},
+        "seed": {"values": [1, 2, 3, 4]},
         "agent": {"values": ["IDHPDSAC"]},
     },
 }
