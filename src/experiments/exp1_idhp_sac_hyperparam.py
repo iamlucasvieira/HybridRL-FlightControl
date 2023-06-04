@@ -333,6 +333,7 @@ sweep_config_discount_dsac = {
     "name": "sac-learning-rates-dsac",
 }
 
+
 def main():
     wandb.init(project="idhp-sac-hyperparams")
     idhp_nmae, sac_nmae = evaluate(wandb.config)
