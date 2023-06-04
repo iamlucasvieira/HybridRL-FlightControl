@@ -287,7 +287,7 @@ sweep_config_discount = {
     "method": "random",
     "metric": {"name": "idhp_nmae", "goal": "minimize"},
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.8]},
         "lr_c_high": {"values": [0.001]},
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {
@@ -296,10 +296,42 @@ sweep_config_discount = {
         "discount_factor_model": {
             "values": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]
         },
+        "sac_model": {
+            "values": [
+                "SAC-citation/divine-grass-171",
+                "SAC-citation/denim-leaf-172",
+                "SAC-citation/firm-feather-173",
+            ]
+        },
+        "agent": {"values": ["IDHPSAC"]},
     },
-    "name": "discount-factors",
+    "name": "sac-learning-rates",
 }
 
+sweep_config_discount_dsac = {
+    "method": "random",
+    "metric": {"name": "idhp_nmae", "goal": "minimize"},
+    "parameters": {
+        "lr_a_high": {"values": [0.8]},
+        "lr_c_high": {"values": [0.001]},
+        "task_train": {"values": ["exp1_pseudo_random_sin"]},
+        "discount_factor": {
+            "values": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]
+        },
+        "discount_factor_model": {
+            "values": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]
+        },
+        "sac_model": {
+            "values": [
+                "DSAC-citation/desert-fog-33",
+                "DSAC-citation/smart-durian-34",
+                "DSAC-citation/vague-hill-35",
+            ]
+        },
+        "agent": {"values": ["IDHPDSAC"]},
+    },
+    "name": "sac-learning-rates-dsac",
+}
 
 def main():
     wandb.init(project="idhp-sac-hyperparams")
@@ -313,5 +345,5 @@ def main():
     )
 
 
-sweep_id = wandb.sweep(sweep_config_actor_dsac, project="idhp-sac-hyperparams")
+sweep_id = wandb.sweep(sweep_config, project="idhp-sac-hyperparams")
 wandb.agent(sweep_id, function=main, count=200)
