@@ -86,13 +86,9 @@ sweep_config = {
         "lr_a_high": {
             "values": [
                 0.00001,
-                0.00005,
                 0.0001,
-                0.0005,
                 0.001,
-                0.005,
                 0.01,
-                0.05,
                 0.1,
                 0.2,
                 0.3,
@@ -107,13 +103,9 @@ sweep_config = {
         "lr_c_high": {
             "values": [
                 0.00001,
-                0.00005,
                 0.0001,
-                0.0005,
                 0.001,
-                0.005,
                 0.01,
-                0.05,
                 0.1,
                 0.2,
                 0.3,
@@ -147,13 +139,9 @@ sweep_config_dsac = {
         "lr_a_high": {
             "values": [
                 0.00001,
-                0.00005,
                 0.0001,
-                0.0005,
                 0.001,
-                0.005,
                 0.01,
-                0.05,
                 0.1,
                 0.2,
                 0.3,
@@ -168,13 +156,9 @@ sweep_config_dsac = {
         "lr_c_high": {
             "values": [
                 0.00001,
-                0.00005,
                 0.0001,
-                0.0005,
                 0.001,
-                0.005,
                 0.01,
-                0.05,
                 0.1,
                 0.2,
                 0.3,
@@ -208,13 +192,9 @@ sweep_config_actor = {
         "lr_a_high": {
             "values": [
                 0.00001,
-                0.00005,
                 0.0001,
-                0.0005,
                 0.001,
-                0.005,
                 0.01,
-                0.05,
                 0.1,
                 0.2,
                 0.3,
@@ -249,13 +229,9 @@ sweep_config_actor_dsac = {
         "lr_a_high": {
             "values": [
                 0.00001,
-                0.00005,
                 0.0001,
-                0.0005,
                 0.001,
-                0.005,
                 0.01,
-                0.05,
                 0.1,
                 0.2,
                 0.3,
@@ -287,7 +263,7 @@ sweep_config_discount = {
     "method": "random",
     "metric": {"name": "idhp_nmae", "goal": "minimize"},
     "parameters": {
-        "lr_a_high": {"values": [0.8]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {
@@ -312,7 +288,7 @@ sweep_config_discount_dsac = {
     "method": "random",
     "metric": {"name": "idhp_nmae", "goal": "minimize"},
     "parameters": {
-        "lr_a_high": {"values": [0.8]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "task_train": {"values": ["exp1_pseudo_random_sin"]},
         "discount_factor": {
@@ -346,5 +322,5 @@ def main():
     )
 
 
-sweep_id = wandb.sweep(sweep_config, project="idhp-sac-hyperparams")
+sweep_id = wandb.sweep(sweep_config_discount_dsac, project="idhp-sac-hyperparams")
 wandb.agent(sweep_id, function=main, count=200)
