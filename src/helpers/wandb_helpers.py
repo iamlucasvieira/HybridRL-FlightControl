@@ -31,13 +31,17 @@ def evaluate(agent, env, n_times=1, to_wandb=True):
             eval_env.render()
 
             if wandb.run is not None and to_wandb:
-                wandb.log({"eval/reward": reward, "eval/step": steps})
+                if steps % 50 == 0:
+                    wandb.log({"eval/reward": reward, "eval/step": steps})
 
-                if isinstance(eval_env, BaseEnv):
-                    log_base_env(eval_env, steps, done)
+                    if isinstance(eval_env, BaseEnv):
+                        log_base_env(eval_env, steps, done)
 
-                if isinstance(eval_env, CitationEnv):
-                    log_citation_env(eval_env, steps)
+                    if isinstance(eval_env, CitationEnv):
+                        log_citation_env(eval_env, steps)
+
+                elif done and isinstance(eval_env, CitationEnv):
+                    wandb.log({"eval/nmae": eval_env.nmae})
 
             steps += 1
         print(f"finished at {steps}")
@@ -69,8 +73,7 @@ def log_base_env(env: BaseEnv, step: int, done: bool):
                 "eval/step": step,
             }
         )
-    if done:
-        wandb.log({"eval/nmae": env.nmae})
+
 
 
 def log_citation_env(env: CitationEnv, step: int):
