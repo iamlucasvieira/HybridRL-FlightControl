@@ -32,8 +32,8 @@ def evaluate(config):
     env_config = ConfigCitationEnv(
         kwargs=ConfigCitationKwargs(
             dt=0.01,
-            episode_steps=4_000,
-            eval_steps=4_000,
+            episode_steps=10_000,
+            eval_steps=10_000,
             task_train=task_train,
             reward_type="clip",
             observation_type="sac_attitude_noise",
@@ -68,8 +68,9 @@ def evaluate(config):
             ),
         ),
         learn=AgentLearn(
-            idhp_steps=4_000,
+            idhp_steps=10_000,
             sac_model=config.sac_model,
+            log_interval=50,
             callback=[],
         ),
     )
@@ -78,13 +79,13 @@ def evaluate(config):
     results = {}
     try:
         hybrid_agent.learn(**hybrid_config.learn.dict())
-        results["hybrid_name"] = hybrid_agent.idhp_nmae * 100
+        results["hybrid_nmae"] = hybrid_agent.idhp_nmae * 100
         results["non_hybrid_nmae"] = hybrid_agent.sac_nmae * 100
     except ValueError:
-        results["hybrid_name"] = 1e10
+        results["hybrid_nmae"] = 1e10
         results["non_hybrid_nmae"] = hybrid_agent.sac_nmae * 100
 
-    results["hybrid_improvement"] = results["non_hybrid_nmae"] - results["hybrid_name"]
+    results["hybrid_improvement"] = results["non_hybrid_nmae"] - results["hybrid_nmae"]
 
     return results
 
@@ -92,7 +93,7 @@ def evaluate(config):
 sweep_config_sac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
@@ -112,7 +113,7 @@ sweep_config_sac = {
 sweep_config_dsac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},

@@ -32,13 +32,13 @@ def evaluate(config):
     env_config = ConfigCitationEnv(
         kwargs=ConfigCitationKwargs(
             dt=0.01,
-            episode_steps=4_000,
-            eval_steps=4_000,
+            episode_steps=10_000,
+            eval_steps=10_000,
             task_train=task_train,
             reward_type="clip",
             observation_type="sac_attitude",
             filter_action=False,
-            action_scale=[0.3, 1, 1],
+            action_scale=config.action_scale,
         )
     )
     env = CitationEnv(**env_config.kwargs.dict())
@@ -68,8 +68,9 @@ def evaluate(config):
             ),
         ),
         learn=AgentLearn(
-            idhp_steps=4_000,
+            idhp_steps=10_000,
             sac_model=config.sac_model,
+            log_interval=50,
             callback=[],
         ),
     )
@@ -78,13 +79,13 @@ def evaluate(config):
     results = {}
     try:
         hybrid_agent.learn(**hybrid_config.learn.dict())
-        results["hybrid_name"] = hybrid_agent.idhp_nmae * 100
+        results["hybrid_nmae"] = hybrid_agent.idhp_nmae * 100
         results["non_hybrid_nmae"] = hybrid_agent.sac_nmae * 100
     except ValueError:
-        results["hybrid_name"] = 1e10
+        results["hybrid_nmae"] = 1e10
         results["non_hybrid_nmae"] = hybrid_agent.sac_nmae * 100
 
-    results["hybrid_improvement"] = results["non_hybrid_nmae"] - results["hybrid_name"]
+    results["hybrid_improvement"] = results["non_hybrid_nmae"] - results["hybrid_nmae"]
 
     return results
 
@@ -92,7 +93,7 @@ def evaluate(config):
 sweep_config_sac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
@@ -106,13 +107,14 @@ sweep_config_sac = {
         },
         "seed": {"values": [1, 2, 3, 4, 5]},
         "agent": {"values": ["IDHPSAC"]},
+        "action_scale": {"values": [[0.3, 1, 1]]},
     },
 }
 
 sweep_config_dsac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
@@ -126,9 +128,51 @@ sweep_config_dsac = {
         },
         "seed": {"values": [1, 2, 3, 4, 5]},
         "agent": {"values": ["IDHPDSAC"]},
+        "action_scale": {"values": [[0.3, 1, 1]]},
     },
 }
 
+sweep_config_sac_da = {
+    "method": "grid",
+    "parameters": {
+        "lr_a_high": {"values": [0.1]},
+        "lr_c_high": {"values": [0.001]},
+        "discount_factor": {"values": [0.8]},
+        "discount_factor_model": {"values": [0.8]},
+        "task_train": {"values": ["exp1_pseudo_random_sin"]},
+        "sac_model": {
+            "values": [
+                "SAC-citation/divine-grass-171",
+                "SAC-citation/denim-leaf-172",
+                "SAC-citation/firm-feather-173",
+            ]
+        },
+        "seed": {"values": [1, 2, 3, 4, 5]},
+        "agent": {"values": ["IDHPSAC"]},
+        "action_scale": {"values": [[1, 0.1, 1]]},
+    },
+}
+
+sweep_config_dsac_da = {
+    "method": "grid",
+    "parameters": {
+        "lr_a_high": {"values": [0.1]},
+        "lr_c_high": {"values": [0.001]},
+        "discount_factor": {"values": [0.8]},
+        "discount_factor_model": {"values": [0.8]},
+        "task_train": {"values": ["exp1_pseudo_random_sin"]},
+        "sac_model": {
+            "values": [
+                "DSAC-citation/desert-fog-33",
+                "DSAC-citation/smart-durian-34",
+                "DSAC-citation/vague-hill-35",
+            ]
+        },
+        "seed": {"values": [1, 2, 3, 4, 5]},
+        "agent": {"values": ["IDHPDSAC"]},
+        "action_scale": {"values": [[1, 0.1, 1]]},
+    },
+}
 
 def main():
     wandb.init(project="exp3_fault")
@@ -136,5 +180,5 @@ def main():
     wandb.log(results)
 
 
-sweep_id = wandb.sweep(sweep_config_sac, project="exp3_fault")
+sweep_id = wandb.sweep(sweep_config_dsac_da, project="exp3_fault")
 wandb.agent(sweep_id, function=main)

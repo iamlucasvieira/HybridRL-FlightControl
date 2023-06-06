@@ -32,8 +32,8 @@ def evaluate(config):
     env_config = ConfigCitationEnv(
         kwargs=ConfigCitationKwargs(
             dt=0.01,
-            episode_steps=4_000,
-            eval_steps=4_000,
+            episode_steps=10_000,
+            eval_steps=10_000,
             task_train=task_train,
             reward_type="clip",
             observation_type="sac_attitude",
@@ -67,7 +67,7 @@ def evaluate(config):
             ),
         ),
         learn=AgentLearn(
-            idhp_steps=4_000,
+            idhp_steps=10_000,
             sac_model=config.sac_model,
             callback=[],
         ),
@@ -91,10 +91,10 @@ def evaluate(config):
 sweep_config_sac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.8]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
-        "discount_factor_model": {"values": [0.99]},
+        "discount_factor_model": {"values": [0.8]},
         "task_train": {
             "values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin"]
         },
@@ -105,7 +105,7 @@ sweep_config_sac = {
                 "SAC-citation/firm-feather-173",
             ]
         },
-        "seed": {"values": [1, 2, 3, 4]},
+        "seed": {"values": [1, 2, 3, 4, 5]},
         "agent": {"values": ["IDHPSAC"]},
     },
 }
@@ -114,7 +114,7 @@ sweep_config_sac = {
 sweep_config_dsac = {
     "method": "grid",
     "parameters": {
-        "lr_a_high": {"values": [0.3]},
+        "lr_a_high": {"values": [0.1]},
         "lr_c_high": {"values": [0.001]},
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
@@ -128,7 +128,7 @@ sweep_config_dsac = {
                 "DSAC-citation/vague-hill-35",
             ]
         },
-        "seed": {"values": [1, 2, 3, 4]},
+        "seed": {"values": [1, 2, 3, 4, 5]},
         "agent": {"values": ["IDHPDSAC"]},
     },
 }
@@ -140,5 +140,5 @@ def main():
     wandb.log(results)
 
 
-sweep_id = wandb.sweep(sweep_config_sac, project="exp1_reference_signals")
+sweep_id = wandb.sweep(sweep_config_dsac, project="exp1_reference_signals")
 wandb.agent(sweep_id, function=main)
