@@ -48,7 +48,7 @@ class ConfigIDHPDSACLearn(BaseModel):
     idhp_steps: Optional[int] = 1_000
     sac_model: Optional[str] = None
     callback: Optional[list] = ["idhp_sac"]
-    log_interval: Optional[int] = 1
+    log_interval: Optional[int] = 100
     run_name: Optional[str] = get_auto("run_name")
 
     class Config:

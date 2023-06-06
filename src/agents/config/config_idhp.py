@@ -53,7 +53,7 @@ class ConfigIDHPLearn(BaseModel):
 
     total_steps: Optional[int] = 1_000
     callback: Optional[list] = ["online", "tensorboard", "idhp"]
-    log_interval: Optional[int] = 1
+    log_interval: Optional[int] = 100
     run_name: Optional[str] = get_auto("run_name")
 
     class Config:
