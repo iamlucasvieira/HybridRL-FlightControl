@@ -97,7 +97,12 @@ sweep_config_sac = {
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
         "task_train": {
-            "values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin", "att_eval"]
+            "values": [
+                "exp1_hold",
+                "exp1_fixed_sin",
+                "exp1_pseudo_random_sin",
+                "att_eval",
+            ]
         },
         "sac_model": {
             "values": [

@@ -174,6 +174,7 @@ sweep_config_dsac_da = {
     },
 }
 
+
 def main():
     wandb.init(project="exp3_fault")
     results = evaluate(wandb.config)

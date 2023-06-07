@@ -75,7 +75,6 @@ def log_base_env(env: BaseEnv, step: int, done: bool):
         )
 
 
-
 def log_citation_env(env: CitationEnv, step: int):
     """Log the Citation env information after a step."""
     for input_name, input_value in zip(env.input_names, env.actions[-1]):
