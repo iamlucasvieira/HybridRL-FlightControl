@@ -11,7 +11,7 @@ def env_kwargs():
         "configuration": "sp",
         "dt": 0.1,
         "episode_steps": 100,
-        "task_type": "sin_q",
+        "task_train": "sin_q",
         "reward_type": "sq_error",
         "observation_type": "states + ref + error",
         "reward_scale": 1.0,

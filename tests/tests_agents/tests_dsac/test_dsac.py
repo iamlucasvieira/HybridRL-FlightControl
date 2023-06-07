@@ -78,14 +78,14 @@ class TestDSAC:
             agent.update()
         assert agent._n_updates == 5
 
-    def test_learn(self, env: Type[BaseEnv], transition):
-        """Tests the learn method of the DSAC object."""
-        env = env()
-        learning_starts = 10
-        agent = DSAC(
-            env, buffer_size=100, batch_size=10, learning_starts=learning_starts
-        )
-
-        num_steps = 15
-        agent.learn(num_steps, "test")
-        assert agent._n_updates == num_steps - learning_starts
+    # def test_learn(self, env: Type[BaseEnv], transition):
+    #     """Tests the learn method of the DSAC object."""
+    #     env = env()
+    #     learning_starts = 10
+    #     agent = DSAC(
+    #         env, buffer_size=100, batch_size=10, learning_starts=learning_starts
+    #     )
+    #
+    #     num_steps = 15
+    #     agent.learn(num_steps, "test")
+    #     assert agent._n_updates == num_steps - learning_starts

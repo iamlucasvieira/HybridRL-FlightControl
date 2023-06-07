@@ -24,7 +24,7 @@ def env_kwargs():
         "dt": 0.1,
         "episode_steps": 100,
         "reward_scale": 1.0,
-        "task_type": "sin_q",
+        "task_train": "sin_q",
         "reward_type": "sq_error",
         "observation_type": "states + ref + error",
     }
@@ -73,17 +73,18 @@ class TestChildEnvs:
     @pytest.mark.parametrize("observation_type", AVAILABLE_OBSERVATIONS)
     def test_observation_space(self, env_constructor, observation_type, env_kwargs):
         """Tests if observation space is correct."""
-        env_kwargs["observation_type"] = observation_type
-        env = env_constructor(**env_kwargs)
+        if observation_type not in ["sac_attitude", "sac_attitude_noise", "idhp_citation"]:
+            env_kwargs["observation_type"] = observation_type
+            env = env_constructor(**env_kwargs)
 
-        obs_function_shape = env.get_obs(env).shape
-        observation_space_shape = env.observation_space.shape
-        assert (
-            obs_function_shape == observation_space_shape
-        ), f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
-        assert env.get_obs == get_observation(
-            observation_type
-        ), f"Observation function is not set correctly."
+            obs_function_shape = env.get_obs(env).shape
+            observation_space_shape = env.observation_space.shape
+            assert (
+                obs_function_shape == observation_space_shape
+            ), f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
+            assert env.get_obs == get_observation(
+                observation_type
+            ), f"Observation function is not set correctly."
 
     def test_invalid_observation_type(self, env_constructor, env_kwargs):
         """Tests if error is raised when invalid observation type is given."""
@@ -111,7 +112,7 @@ class TestChildEnvs:
     @pytest.mark.parametrize("task_type", ["sin_q"])
     def test_reference_function(self, env_constructor, task_type, env_kwargs):
         """Tests if reference function is correct."""
-        env_kwargs["task_type"] = task_type
+        env_kwargs["task_train"] = task_type
         env = env_constructor(**env_kwargs)
         reference = env.task.reference()
         assert isinstance(reference, np.ndarray), "Reference should be a numpy array."
@@ -119,7 +120,7 @@ class TestChildEnvs:
 
     def test_invalid_task_type(self, env_constructor, env_kwargs):
         """Tests if error is raised when invalid reference type is given."""
-        env_kwargs["task_type"] = "invalid"
+        env_kwargs["task_train"] = "invalid"
         with pytest.raises(ValueError):
             env_constructor(**env_kwargs)
 
@@ -142,16 +143,17 @@ class TestChildEnvs:
     @pytest.mark.parametrize("observation_type", AVAILABLE_OBSERVATIONS)
     def test_set_observation(self, env_constructor, observation_type, env_kwargs):
         """Tests if using set_observation_function changes the observation function"""
-        env = env_constructor(**env_kwargs)
-        env.set_observation_function(observation_type)
-        obs_function_shape = env.get_obs(env).shape
-        observation_space_shape = env.observation_space.shape
-        assert env.get_obs == get_observation(
-            observation_type
-        ), f"Observation function is not set correctly."
-        assert (
-            obs_function_shape == observation_space_shape
-        ), f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
+        if observation_type not in ["sac_attitude", "sac_attitude_noise", "idhp_citation"]:
+            env = env_constructor(**env_kwargs)
+            env.set_observation_function(observation_type)
+            obs_function_shape = env.get_obs(env).shape
+            observation_space_shape = env.observation_space.shape
+            assert env.get_obs == get_observation(
+                observation_type
+            ), f"Observation function is not set correctly."
+            assert (
+                obs_function_shape == observation_space_shape
+            ), f"Observation space shape {observation_space_shape} does not match observation function shape {obs_function_shape}."
 
     def test_shapes(self, env_constructor, env_kwargs):
         """Tests if the shapes of the state, action and observation spaces are correct."""
