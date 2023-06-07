@@ -31,7 +31,6 @@ class IDHPDSAC(BaseAgent):
         idhp_kwargs: dict = None,
         dsac_kwargs: dict = None,
         idhp_actor_observation: str = "sac_attitude",
-
     ):
         """Initialize the agent."""
         # Build the IDHP agent
@@ -138,9 +137,9 @@ class IDHPDSAC(BaseAgent):
             idhp_steps,
             run_name="IDHP",
             callback=[
-                # OnlineCallback(verbose=self.verbose),
-                # TensorboardCallback(verbose=self.verbose),
-                # IDHPSACCallback(verbose=self.verbose),
+                OnlineCallback(verbose=self.verbose),
+                TensorboardCallback(verbose=self.verbose),
+                IDHPSACCallback(verbose=self.verbose),
             ],
             log_interval=log_interval,
         )
@@ -150,6 +149,7 @@ class IDHPDSAC(BaseAgent):
         self.logger.dump()
 
         self.idhp_nmae = self.idhp.env.nmae
+
     def save(self, *args, **kwargs):
         """Save the agent."""
         # Give same run name for sac and idhp
