@@ -70,6 +70,7 @@ def evaluate(config):
             idhp_steps=10_000,
             sac_model=config.sac_model,
             callback=[],
+            log_interval=50,
         ),
     )
     hybrid_agent = Agent(env=env, **hybrid_config.kwargs.dict())
@@ -96,7 +97,7 @@ sweep_config_sac = {
         "discount_factor": {"values": [0.8]},
         "discount_factor_model": {"values": [0.8]},
         "task_train": {
-            "values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin"]
+            "values": ["exp1_hold", "exp1_fixed_sin", "exp1_pseudo_random_sin", "att_eval"]
         },
         "sac_model": {
             "values": [
@@ -140,5 +141,5 @@ def main():
     wandb.log(results)
 
 
-sweep_id = wandb.sweep(sweep_config_dsac, project="exp1_reference_signals")
+sweep_id = wandb.sweep(sweep_config_sac, project="exp1_reference_signals")
 wandb.agent(sweep_id, function=main)
