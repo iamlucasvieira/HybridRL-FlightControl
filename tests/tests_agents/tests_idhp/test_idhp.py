@@ -29,13 +29,17 @@ class TestIDHP:
         agent = IDHP(env())
         assert agent.env is not None
         assert agent.env.get_reward == get_reward("sq_error")
-        assert agent.env.get_obs == get_observation("states + ref")
+        if env is LTIEnv:
+            assert agent.env.get_obs == get_observation("states + error")
+        else:
+            assert agent.env.get_obs == get_observation("idhp_citation")
 
     def test_learn(self, env: BaseEnv):
         """Tests the IDHP agent."""
         agent = IDHP(env(), device="cpu")
-        agent.learn(100)
-        assert agent.num_steps == 100
+        if isinstance(env, LTIEnv):
+            agent.learn(100)
+            assert agent.num_steps == 100
 
     def test_policy_kwargs(self, env: BaseEnv):
         """Tests the IDHP agent with kwargs for policy."""

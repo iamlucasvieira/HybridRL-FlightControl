@@ -14,7 +14,7 @@ class TestIncrementalCitation:
         env = env()
         n_states = env.n_states
         n_inputs = env.n_inputs
-        model = IncrementalCitation(env)
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
         assert model.n_inputs == n_inputs
         assert model.n_states == n_states
         assert model.cov.shape == (n_inputs + n_states, n_inputs + n_states)
@@ -26,7 +26,8 @@ class TestIncrementalCitation:
     def test_increment_not_enough_data(self, env):
         """Tests the increment method."""
         env = env()
-        model = IncrementalCitation(env)
+        n_states = env.n_states
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
 
         assert not model.ready
         with pytest.raises(ValueError):
@@ -35,7 +36,8 @@ class TestIncrementalCitation:
     def test_increment(self, env):
         """Tests the increment method."""
         env = env()
-        model = IncrementalCitation(env)
+        n_states = env.n_states
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
         env.step(env.action_space.sample())
         model.increment(env)
         assert model.ready
@@ -43,7 +45,8 @@ class TestIncrementalCitation:
     def test_update_not_ready(self, env):
         """Test the update method when not ready to update."""
         env = env()
-        model = IncrementalCitation(env)
+        n_states = env.n_states
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
         env.step(env.action_space.sample())
         assert not model.ready
         model.update(env)
@@ -52,7 +55,8 @@ class TestIncrementalCitation:
     def test_update(self, env):
         """Test the update method."""
         env = env()
-        model = IncrementalCitation(env)
+        n_states = env.n_states
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
         for _ in range(2):
             env.step(env.action_space.sample())
             model.update(env)
@@ -61,7 +65,8 @@ class TestIncrementalCitation:
     def test_predict(self, env):
         """Test the predict method."""
         env = env()
-        model = IncrementalCitation(env)
+        n_states = env.n_states
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
         env.step(env.action_space.sample())
         model.update(env)
 
@@ -73,7 +78,8 @@ class TestIncrementalCitation:
     def test_predict_increment(self, env):
         """Test the predict method also returning the increment."""
         env = env()
-        model = IncrementalCitation(env)
+        n_states = env.n_states
+        model = IncrementalCitation(env, states_mask=[1] * n_states)
         env.step(env.action_space.sample())
         model.update(env)
 
