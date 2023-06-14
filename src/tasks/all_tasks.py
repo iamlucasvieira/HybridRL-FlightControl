@@ -5,6 +5,7 @@ from tasks.attitude import (
     SineAttitude,
 )
 from tasks.experiment_1 import CossStep, FixedSineAttitude, Hold, PseudoRandomSine
+from tasks.experiment_4_stall import StallTask
 from tasks.sinusoidal import SineQ, SineTheta
 
 
@@ -27,4 +28,5 @@ AVAILABLE_TASKS = {
     "exp1_pseudo_random_sin": PseudoRandomSine,
     "exp1_coss_step": CossStep,
     "exp1_hold": Hold,
+    "stall": StallTask,
 }

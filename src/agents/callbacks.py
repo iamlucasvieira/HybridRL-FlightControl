@@ -226,6 +226,12 @@ class SACCallback(BaseCallback):
     def on_episode_end(self, episode_return) -> None:
         """Runs after each episode."""
         if not isinstance(self.env, BaseEnv):
+            wandb.log(
+                {
+                    "sac_train/episode_return": episode_return,
+                    "sac_train/steps": self.agent.num_steps,
+                }
+            )
             return
         self.agent.save(run=str(self.agent.num_steps))
 
