@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 RUN apt-get update
 RUN apt-get -y install gcc
@@ -7,10 +7,7 @@ WORKDIR /app
 
 COPY . .
 
-ENV PYTHONPATH=${PYTHONPATH}:${PWD}
-RUN pip3 install poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev
+RUN uv install --no-dev
 
 
 WORKDIR /
