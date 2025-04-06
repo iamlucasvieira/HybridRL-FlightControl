@@ -15,12 +15,16 @@ Preliminary work for my control systems with RL MSc thesis
 
 To run the code in this repository, you will need to create a Python environment as follows:
 
-1. Create a conda environment \
-   `conda env create -f environmnet.yml -n HRL-FC`
-2. Activate the environment\
-   `conda activate HRL-FC`
-3. Add the conda environment to Jupiter kernel \
-   `python3 -m ipykernel install --user --name tesis-pilot --display-name "Python 3.9 (thesis_pilot)`
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. Run the application:
+```
+uv run hrl <args>
+```
+
+### Example: Running an experiment
+```bash
+uv run hrl run exp_sac_hyml.yaml
+```
 
 ## Repository contents 📚
 
