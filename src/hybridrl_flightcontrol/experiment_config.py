@@ -22,8 +22,8 @@ class ConfigExperiment(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    name: Optional[str]
-    description: Optional[str]
+    name: Optional[str] = None
+    description: Optional[str] = None
     wandb: Optional[bool] = True
     n_learning: Optional[int] = 1
     evaluate: Optional[bool | int] = 1

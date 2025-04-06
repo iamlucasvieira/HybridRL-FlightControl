@@ -3,7 +3,7 @@
 from typing import Callable, Literal, Optional
 
 import gymnasium as gym
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 
 class ConfigGymKwargs(BaseModel):
@@ -31,8 +31,8 @@ class ConfigGymEnv(BaseModel):
     sweep: Optional[ConfigGymKwargs] = None
     object: Optional[Callable] = gym.make
 
-    @field_validator("sweep")
-    def check_sweep(cls, sweep, values):
-        if sweep is None and "kwargs" in values:
-            return values["kwargs"]
-        return sweep
+    @model_validator(mode="after")
+    def set_sweep(self):
+        if self.sweep is None:
+            self.sweep = self.kwargs
+        return self
