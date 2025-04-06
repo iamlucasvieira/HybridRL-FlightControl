@@ -1,4 +1,5 @@
 """Module that runs an experiment from a configuration file."""
+
 import os
 import pathlib as pl
 
@@ -7,8 +8,8 @@ from rich.progress import Progress, TextColumn, TimeElapsedColumn
 
 from helpers.misc import verbose_print
 from helpers.paths import Path
-from hrl_fc.console import console
-from hrl_fc.experiment_builder import ExperimentBuilder
+from hybridrl_flightcontrol.console import console
+from hybridrl_flightcontrol.experiment_builder import ExperimentBuilder
 
 
 class Runner:
@@ -36,7 +37,7 @@ class Runner:
                 *Progress.get_default_columns(),
                 TimeElapsedColumn(),
                 TextColumn("{task.completed} of {task.total}"),
-                console=console
+                console=console,
             ) as progress:
                 sweep.learn_kwargs["callback"].append(
                     ("progress", {"progress": progress})

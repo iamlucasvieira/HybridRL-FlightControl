@@ -1,7 +1,8 @@
 """Module with Seres' DSAC configuration."""
+
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from agents.base_agent import BaseAgent
 from agents.seres_dsac.seres_dsac_agent import DSAC
@@ -28,11 +29,10 @@ class ConfigSDSACSweep(BaseModel):
 class ConfigSDSAC(BaseModel):
     """Configuration of Seres' DSAC."""
 
-    name: Literal["DSAC"] = "DSAC"
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+
+    name: Literal["SDSAC"] = "SDSAC"
     args: Optional[ConfigSDSACArgs] = ConfigSDSACArgs()
     kwargs: Optional[ConfigSDSACKwargs] = ConfigSDSACKwargs()
     sweep: Optional[ConfigSDSACSweep] = ConfigSDSACSweep()
     object: BaseAgent = DSAC
-
-    class Config:
-        extra = Extra.forbid

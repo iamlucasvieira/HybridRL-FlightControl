@@ -1,8 +1,9 @@
 """Module that configures the LTI environment."""
+
 from typing import List, Literal, Optional
 
 import gymnasium as gym
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, ConfigDict, validator
 
 from envs.lti_citation.lti_env import LTIEnv
 from envs.observations import AVAILABLE_OBSERVATIONS
@@ -12,6 +13,8 @@ from tasks.all_tasks import AVAILABLE_TASKS
 
 class ConfigLTIKwargs(BaseModel):
     """Base configuration which is passed to the gym environment."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     filename: Optional[str | List[str]] = "citation.yaml"
     configuration: Optional[str | List[str]] = "sp"
@@ -61,17 +64,13 @@ class ConfigLTIKwargs(BaseModel):
             raise ValueError(f"Observation must be in {AVAILABLE_OBSERVATIONS}")
         return observation_type
 
-    class Config:
-        extra = Extra.forbid
-
 
 class ConfigLTIEnv(BaseModel):
     """Symmetric derivatives."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     name: Literal["LTI"] = "LTI"
     kwargs: Optional[ConfigLTIKwargs] = ConfigLTIKwargs()
     sweep: Optional[ConfigLTIKwargs] = ConfigLTIKwargs()
     object: gym.Env = LTIEnv
-
-    class Config:
-        extra = Extra.forbid

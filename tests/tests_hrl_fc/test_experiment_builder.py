@@ -1,10 +1,9 @@
 import pathlib as pl
 
-import pytest
 
 from helpers.paths import Path
-from hrl_fc.experiment_builder import ExperimentBuilder, Sweep
-from hrl_fc.experiment_config import ConfigExperiment
+from hybridrl_flightcontrol.experiment_builder import Sweep
+from hybridrl_flightcontrol.experiment_config import ConfigExperiment
 
 
 TESTS_PATH = pl.Path(__file__).parent

@@ -1,4 +1,5 @@
 """Module that allows building an experiment based on yaml configutaion."""
+
 import itertools
 import operator
 import pathlib as pl
@@ -13,7 +14,7 @@ from helpers.config_auto import validate_auto
 from helpers.misc import get_name
 from helpers.paths import Path
 from helpers.wandb_helpers import evaluate
-from hrl_fc.experiment_config import ConfigExperiment
+from hybridrl_flightcontrol.experiment_config import ConfigExperiment
 
 
 class Sweep:

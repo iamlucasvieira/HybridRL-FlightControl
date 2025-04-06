@@ -1,7 +1,8 @@
 """Module with SAC configuration."""
+
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from agents import SAC, BaseAgent
 from helpers.config_auto import get_auto
@@ -10,14 +11,15 @@ from helpers.config_auto import get_auto
 class ConfigSACArgs(BaseModel):
     """Arguments for IDHP object."""
 
-    env: Optional[str] = get_auto("env")
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    class Config:
-        extra = Extra.forbid
+    env: Optional[str] = get_auto("env")
 
 
 class ConfigSACKwargs(BaseModel):
     """Keyword arguments for IDHP object."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     learning_rate: Optional[float | List[float]] = 3e-4
     policy_kwargs: Optional[dict | List[dict]] = None
@@ -36,25 +38,23 @@ class ConfigSACKwargs(BaseModel):
     polyak: Optional[float | List[float]] = 0.995
     device: Optional[str | List[str]] = "cpu"
 
-    class Config:
-        extra = Extra.forbid
-
 
 class ConfigSACLearn(BaseModel):
     """Allows defining parameters that can be passed to learn method."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     total_steps: Optional[int] = 1_000
     callback: Optional[list] = ["tensorboard", "sac"]
     log_interval: Optional[int] = 100
     run_name: Optional[str] = get_auto("run_name")
 
-    class Config:
-        extra = Extra.forbid
-
 
 # Configuration of Agents
 class ConfigSAC(BaseModel):
     """Configuration of SAC."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     name: Literal["SAC"] = "SAC"
     args: Optional[ConfigSACArgs] = ConfigSACArgs()
@@ -62,6 +62,3 @@ class ConfigSAC(BaseModel):
     sweep: Optional[ConfigSACKwargs] = ConfigSACKwargs()
     learn: Optional[ConfigSACLearn] = ConfigSACLearn()
     object: BaseAgent = SAC
-
-    class Config:
-        extra = Extra.forbid

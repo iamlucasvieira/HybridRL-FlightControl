@@ -1,8 +1,9 @@
 """Module that configures the LTI environment."""
+
 from typing import List, Literal, Optional
 
 import gymnasium as gym
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, ConfigDict, validator
 
 from envs.citation.citation_env import CitationEnv
 from envs.citation.models.model_loader import AVAILABLE_MODELS
@@ -13,6 +14,8 @@ from tasks.all_tasks import AVAILABLE_TASKS
 
 class ConfigCitationKwargs(BaseModel):
     """Base configuration which is passed to the gym environment."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     model: Optional[str | List[str]] = "default"
     dt: Optional[float | List[float]] = 0.01  # Time step
@@ -59,17 +62,13 @@ class ConfigCitationKwargs(BaseModel):
             raise ValueError(f"Observation must be in {AVAILABLE_OBSERVATIONS}")
         return observation_type
 
-    class Config:
-        extra = Extra.forbid
-
 
 class ConfigCitationEnv(BaseModel):
     """Symmetric derivatives."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     name: Literal["citation"] = "citation"
     kwargs: Optional[ConfigCitationKwargs] = ConfigCitationKwargs()
     sweep: Optional[ConfigCitationKwargs] = ConfigCitationKwargs()
     object: gym.Env = CitationEnv
-
-    class Config:
-        extra = Extra.forbid

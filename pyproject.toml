@@ -1,40 +1,43 @@
-[tool.poetry]
-name = "HRL-FC"
+[project]
+name = "hybridrl-flightcontrol"
 version = "0.1.0"
-description = "Preliminary work for my control systems with RL MSc thesis"
-authors = ["lucas <lucas6eng@gmail.com>"]
-license = "MIT"
-include = [
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "coverage>=7.8.0",
+    "gymnasium[classic-control]>=1.1.1",
+    "ipykernel>=6.29.5",
+    "jupyter>=1.1.1",
+    "pandas>=2.2.3",
+    "plotly>=6.0.1",
+    "pydantic>=2.11.2",
+    "pyyaml>=6.0.2",
+    "rich>=14.0.0",
+    "rliable>=1.2.0",
+    "seaborn>=0.13.2",
+    "tensorboard>=2.19.0",
+    "torch>=2.6.0",
+    "typer>=0.15.2",
+    "wandb>=0.19.9",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-torch = "^2.0.0"
-gymnasium = {extras = ["classic-control"], version = "^0.27.1"}
-pyyaml = "^6.0"
-pydantic = "^1.10.6"
-wandb = "^0.14.0"
-tensorboard = "^2.12.0"
-typer = "^0.7.0"
-rich = "^13.3.2"
-pandas = "^2.0.2"
-jupyter = "^1.0.0"
-seaborn = "^0.12.2"
-plotly = "^5.14.1"
-kaleido = "0.2.1"
-ipykernel = "^6.23.1"
-coverage = "^7.2.7"
-rliable = "^1.0.8"
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "flake8>=7.2.0",
+    "mypy>=1.15.0",
+    "nox>=2025.2.9",
+    "prettier>=0.0.7",
+    "pytest>=8.3.5",
+]
 
-[tool.poetry.dev-dependencies]
-flake8 = "^5.0.4"
-prettier = "^0.0.7"
-mypy = "^0.982"
-nox = "^2022.8.7"
+[project.scripts]
+hrl = "hybridrl_flightcontrol.__main__:app"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.2.2"
-black = "^23.1.0"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.mypy]
 # strict = true
@@ -63,10 +66,3 @@ exclude = ["sandbox"]
 profile = "black"
 force_single_line = false
 lines_after_imports = 2
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-hrl = "hrl_fc.__main__:app"

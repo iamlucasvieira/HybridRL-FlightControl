@@ -1,7 +1,8 @@
 """Module that define configuration of algorithms."""
+
 from typing import Optional, Union
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from agents.config import (
     ConfigDSAC,
@@ -19,6 +20,8 @@ from envs.config.gym_env import ConfigGymEnv
 class ConfigExperiment(BaseModel):
     """Class that defines the configuration of the sweep."""
 
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+
     name: Optional[str]
     description: Optional[str]
     wandb: Optional[bool] = True
@@ -33,6 +36,3 @@ class ConfigExperiment(BaseModel):
     agent: Union[
         ConfigIDHP, ConfigSDSAC, ConfigSAC, ConfigIDHPSAC, ConfigDSAC, ConfigIDHPDSAC
     ] = Field(discriminator="name", default=ConfigSAC(name="SAC"))
-
-    class Config:
-        extra = Extra.forbid

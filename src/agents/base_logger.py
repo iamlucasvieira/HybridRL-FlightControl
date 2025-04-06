@@ -1,4 +1,5 @@
 """Module that defines  the logger for the agents."""
+
 import pathlib as pl
 from collections import defaultdict
 from typing import Any, Optional
@@ -6,7 +7,7 @@ from typing import Any, Optional
 from rich.table import Table
 
 from helpers.paths import Path
-from hrl_fc.console import console
+from hybridrl_flightcontrol.console import console
 
 
 class Logger:

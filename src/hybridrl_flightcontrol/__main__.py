@@ -9,7 +9,7 @@ from rich.prompt import Confirm, IntPrompt
 from rich.table import Table
 
 from helpers.paths import Path
-from hrl_fc.experiment_runner import Runner
+from hybridrl_flightcontrol.experiment_runner import Runner
 
 
 app = typer.Typer()

@@ -1,6 +1,6 @@
 """Module that defines the base agent that is stable-baselines3 like."""
+
 import pathlib as pl
-import pickle
 import random
 import time
 from abc import ABC, abstractmethod
@@ -9,7 +9,6 @@ from typing import Any, List, Optional, SupportsFloat, Type, Union
 import gymnasium as gym
 import numpy as np
 import torch as th
-import wandb
 
 from agents.base_callback import BaseCallback, ListCallback
 from agents.base_logger import Logger
@@ -17,7 +16,7 @@ from agents.base_policy import BasePolicy
 from agents.buffer import ReplayBuffer, Transition
 from envs import BaseEnv
 from helpers.torch_helpers import get_device
-from hrl_fc.console import console
+from hybridrl_flightcontrol.console import console
 
 
 class BaseAgent(ABC):
