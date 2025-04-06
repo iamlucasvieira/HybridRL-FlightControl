@@ -2,7 +2,7 @@
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from agents import IDHP, BaseAgent
 from agents.idhp.excitation import AVAILABLE_EXCITATION_FUNCTIONS
@@ -38,7 +38,7 @@ class ConfigIDHPKwargs(BaseModel):
     lr_threshold: Optional[float | List[float]] = 0.001
     t_warmup: Optional[int | List[int]] = 100
 
-    @validator("excitation")
+    @field_validator("excitation")
     def excitation_validator(cls, v):
         if v is not None and v not in AVAILABLE_EXCITATION_FUNCTIONS:
             raise ValueError(

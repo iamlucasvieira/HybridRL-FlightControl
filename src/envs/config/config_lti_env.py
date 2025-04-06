@@ -3,7 +3,7 @@
 from typing import List, Literal, Optional
 
 import gymnasium as gym
-from pydantic import BaseModel, ConfigDict, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from envs.lti_citation.lti_env import LTIEnv
 from envs.observations import AVAILABLE_OBSERVATIONS
@@ -27,7 +27,7 @@ class ConfigLTIKwargs(BaseModel):
     reward_type: Optional[str | List[str]] = "sq_error"
     observation_type: Optional[str | List[str]] = "states + ref + error"
 
-    @validator("configuration")
+    @field_validator("configuration")
     def check_config(cls, configuration):
         CONFIGURATIONS = [
             "symmetric",
@@ -38,25 +38,25 @@ class ConfigLTIKwargs(BaseModel):
             raise ValueError(f"Configuration must be in {CONFIGURATIONS}")
         return configuration
 
-    @validator("task_train")
+    @field_validator("task_train")
     def check_task_type(cls, task_train):
         if task_train not in AVAILABLE_TASKS and not isinstance(task_train, list):
             raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
         return task_train
 
-    @validator("task_eval")
+    @field_validator("task_eval")
     def check_eval_task_type(cls, task_eval):
         if task_eval not in AVAILABLE_TASKS and not isinstance(task_eval, list):
             raise ValueError(f"Task must be in {AVAILABLE_TASKS}")
         return task_eval
 
-    @validator("reward_type")
+    @field_validator("reward_type")
     def check_reward_type(cls, reward_type):
         if reward_type not in AVAILABLE_REWARDS and not isinstance(reward_type, list):
             raise ValueError(f"Reward must be in {AVAILABLE_REWARDS}")
         return reward_type
 
-    @validator("observation_type")
+    @field_validator("observation_type")
     def check_observation_type(cls, observation_type):
         if observation_type not in AVAILABLE_OBSERVATIONS and not isinstance(
             observation_type, list
