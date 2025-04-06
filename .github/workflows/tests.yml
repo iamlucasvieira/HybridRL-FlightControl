@@ -3,16 +3,17 @@ on: push
 jobs:
   tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-    name: Python ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      - run: pip install nox==2022.11.21
-      - run: pip install poetry==1.2.2
-      - run: nox -s=tests
+      - uses: actions/checkout@v4
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run Tests
+        run: uv run pytest
+      - name: Run Flake8
+        run: uv run flake8 src tests
+      - name: Run Black
+        run: uv run black src tests
+      - name: MyPy
+        run: uv run mypy src
+
+
